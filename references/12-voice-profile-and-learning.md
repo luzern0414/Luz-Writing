@@ -50,7 +50,7 @@
 
 ## 规则记录格式
 
-通用的偏好、教训和有效信息写进经验库 `experience/experience.json`，用 `scripts/04-experience.py note` 按 key 更新：同一话题只留一条，新说法替换旧说法，旧文自动留一条 `previous` 备查。一次调用里学到的东西在结束前写入，下次调用开始先 `search`。
+通用的偏好、教训和有效信息写进经验库 `experience/notes.json`，用 `scripts/04-experience.py note` 按 key 更新：同一话题只留一条，新说法替换旧说法，旧文自动留一条 `previous` 备查。一次调用里学到的东西在结束前写入，下次调用开始先 `search`。
 
 某个写作项目专属的文风，优先追加到该项目的文风档案；用户明确要求修改本 Skill 包时，才追加到本文件末尾的“项目规则”区：
 

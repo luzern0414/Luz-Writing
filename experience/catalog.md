@@ -1,6 +1,6 @@
 # 经验库
 
-由 `scripts/04-experience.py` 自动生成，不要手改。按 key 更新替换；上限：偏好 60、教训 120、有效信息 120。
+由 `scripts/04-experience.py` 根据 `experience/notes.json` 自动生成，不要手改。按 key 更新替换；上限：偏好 60、教训 120、有效信息 120。
 
 ## 偏好
 

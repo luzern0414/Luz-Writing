@@ -1,59 +1,64 @@
 {
-  "version": 1,
-  "entries": [
+  "schema_version": "1.0",
+  "caps": {
+    "preference": 60,
+    "lesson": 120,
+    "fact": 120
+  },
+  "notes": [
     {
-      "kind": "preference",
       "key": "不写空话",
+      "kind": "preference",
       "text": "删掉赋能、一站式、全方位这类空泛词和铺垫，每句话要落到具体事实、动作或结论",
       "why": "references/06、17",
-      "created": "2026-10-28",
-      "last_confirmed": "2026-10-28",
-      "uses": 1
+      "uses": 1,
+      "first_seen": "2026-10-28",
+      "last_confirmed": "2026-10-28"
     },
     {
-      "kind": "preference",
       "key": "只交付所要",
+      "kind": "preference",
       "text": "只交付用户要的文案，不附建议、评分、改动说明、备选版本或客套",
       "why": "references/15，优先级高于其他交付习惯",
-      "created": "2026-10-28",
-      "last_confirmed": "2026-10-28",
-      "uses": 1
+      "uses": 1,
+      "first_seen": "2026-10-28",
+      "last_confirmed": "2026-10-28"
     },
     {
-      "kind": "preference",
       "key": "封面风格",
+      "kind": "preference",
       "text": "保留 3D 潮玩和软陶质感两种封面风格，按题材再从风格菜单补选其他风格",
       "why": "用户明确要求保留并扩充；references/14 风格菜单",
-      "created": "2026-10-28",
-      "last_confirmed": "2026-10-28",
-      "uses": 1
+      "uses": 1,
+      "first_seen": "2026-10-28",
+      "last_confirmed": "2026-10-28"
     },
     {
-      "kind": "preference",
       "key": "语气",
+      "kind": "preference",
       "text": "用平实口语写，像跟人讲事，不要机器腔、报告腔和排比套话",
       "why": "references/04、17 与用户对资讯稿太僵硬的反馈",
-      "created": "2026-10-28",
-      "last_confirmed": "2026-10-28",
-      "uses": 1
+      "uses": 1,
+      "first_seen": "2026-10-28",
+      "last_confirmed": "2026-10-28"
     },
     {
-      "kind": "preference",
       "key": "输出结构",
+      "kind": "preference",
       "text": "每个会话只交付一个 NNN-主题.html，旁边一个 raw/ 放简报、来源、草稿、采集和图片",
       "why": "references/16",
-      "created": "2026-10-28",
-      "last_confirmed": "2026-10-28",
-      "uses": 1
+      "uses": 1,
+      "first_seen": "2026-10-28",
+      "last_confirmed": "2026-10-28"
     },
     {
-      "kind": "preference",
       "key": "阅读版式",
+      "kind": "preference",
       "text": "成品 HTML 的阅读版式遵循 Luz-Design 阅读规范与模板",
       "why": "references/16、assets/01-article-template.html",
-      "created": "2026-10-28",
-      "last_confirmed": "2026-10-28",
-      "uses": 1
+      "uses": 1,
+      "first_seen": "2026-10-28",
+      "last_confirmed": "2026-10-28"
     }
   ]
 }

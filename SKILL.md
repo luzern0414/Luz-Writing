@@ -24,13 +24,15 @@ Every artifact goes to `D:\Codes\skill输出\Luz-Writing\NNN-主题\`: one final
 
 ## 每次调用后沉淀
 
-Mandatory. At the start of every call, run `python -X utf8 scripts/04-experience.py search "<topic or channel>"` and apply what it returns. Before finishing, record with `note --kind preference|lesson|fact --key <topic> --text "…" --why "…"`:
+Mandatory on every call. One store, `experience/notes.json`, with the same shape and commands in Luz-System, Luz-Design, Luz-Dev and Luz-Writing:
 
-- **preference**: any writing preference the user stated or corrected (tone, length habits, cover style, layout).
-- **fact**: a source, route, Imagegen parameter or Luz-Crawl query that proved effective or failed.
-- **lesson**: any rule correction or fix after a failure.
+- **Start:** `python -X utf8 scripts/04-experience.py search <关键词> [--kind preference|lesson|fact]` and apply what matches.
+- **Before finishing:** `python -X utf8 scripts/04-experience.py note --kind preference|lesson|fact --key <主题> --text "<一句话原则>" [--why "<依据>"]` — preference: what the user stated or corrected; fact: a route, source or parameter that worked or failed; lesson: a rule correction or fix. The general principle, not task trivia.
+- **Fields:** `key`, `kind`, `text`, `why` (optional), `uses`, `first_seen`, `last_confirmed` (YYYY-MM-DD), `previous` (`{text, replaced_at}`, only after a replacement).
+- **Replace, never pile up:** the same key replaces the text (one `previous` kept, `uses` +1); the same statement under another key confirms that note. Caps: preference 60, lesson 120, fact 120; over a cap the fewest uses, then the oldest confirmation, go first. `list [--kind]` shows notes; `prune` enforces caps and lists notes unconfirmed for 180 days; `check` fails on duplicate keys or statements, missing fields, overflow and private data.
+- **Public repository:** no phone numbers, emails, WeChat IDs, user-home paths, credentials, personal or client names; `note` refuses them.
 
-Write the general principle, not task trivia. Reuse an existing key so the new statement replaces the old one; never add a second entry on the same topic. No names, contacts, client names, private paths or credentials; those go only to a git-ignored `*.local.json` via `--store`. Caps (preferences 60, lessons 120, facts 120) are enforced automatically; `check` must pass.
+Here also: writing preferences cover tone, length habits, cover style and layout; facts cover sources, Imagegen parameters and Luz-Crawl queries. Anything personal goes only to a git-ignored `*.local.json` via `--store`; `render` regenerates `experience/catalog.md`.
 
 ## Route the request before drafting
 

@@ -57,7 +57,9 @@ python -X utf8 scripts/01-validate_skill.py
 
 ## 经验沉淀
 
-每次调用结束前，技能把三类内容写进 `experience/experience.json`：用户说过或纠正过的偏好、证明有效或无效的来源与参数、从失败里得到的教训。每条经验有一个话题 key，同一话题再次出现时新说法直接替换旧说法，只留一条旧文备查，不会越积越多。偏好最多 60 条，教训和有效信息各 120 条，超出时先删用得最少、最久没确认的。仓库公开，经验库不收姓名、联系方式、客户名和私人路径。
+Luz-System、Luz-Design、Luz-Dev、Luz-Writing 四个技能用同一套经验沉淀：经验库是 `experience/notes.json`，每条有主题键 `key`、类别 `kind`（偏好 preference、教训 lesson、有效信息 fact）、一句话原则 `text`、可选依据 `why`、确认次数 `uses`、首次记录 `first_seen`、最近确认 `last_confirmed`，被替换过的再带一条旧说法 `previous`。开始时用 `search` 查，结束前用 `note` 写，另有 `list`、`prune`、`check`（本仓库脚本 `scripts/04-experience.py`）。同一主题再写会替换旧说法，同一句话换了键只算再确认一次；偏好最多 60 条，教训和有效信息各 120 条，超出时先删确认最少、最久没确认的，180 天没确认的会列出来。仓库公开，手机号、邮箱、微信号、个人目录路径和密钥写不进去，检查也会拦下。
+
+本仓库另有 `render` 重新生成目录页 `experience/catalog.md`；个人数据只能用 `--store` 写进被 git 忽略的 `*.local.json`。
 
 ## 目录结构
 
@@ -66,7 +68,7 @@ SKILL.md       技能入口：路由、忠实原文规则、写作流程、每�
 references/    17 份写作指南，按需读取（含封面与插图风格菜单）
 assets/        阅读型 HTML 模板、正文格式示例、视觉生产简报
 scripts/       技能自检、文章打包、会话管理、经验库及其测试
-experience/    经验库 experience.json 与自动生成的 catalog.md
+experience/    经验库 notes.json 与自动生成的 catalog.md
 examples/      一篇完整的科技资讯示例
 evals/         人工评审方法与回归用例
 ```
