@@ -13,7 +13,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 SKILL = ROOT / "SKILL.md"
-REQUIRED_DIRS = ["references", "assets", "scripts", "evals"]
+REQUIRED_DIRS = ["references", "assets", "scripts", "evals", "experience"]
 REQUIRED_ROOT_FILES = ["SKILL.md", "README.md", "NOTICE.md"]
 # .git is version-control metadata of the repository, not packaged content.
 FORBIDDEN_ROOT_ENTRIES = [".research", "__pycache__", "working", "raw", "outputs"]
@@ -132,8 +132,18 @@ def smoke_builder() -> None:
             fail(f"session check failed: {proc.stderr or proc.stdout}")
 
 
+def check_experience() -> None:
+    proc = run([str(ROOT / "scripts" / "04-experience.py"), "check"])
+    if proc.returncode != 0:
+        fail(f"experience store check failed: {proc.stderr or proc.stdout}")
+    proc = run([str(ROOT / "scripts" / "05-test_experience.py")])
+    if proc.returncode != 0:
+        fail(f"experience unit tests failed: {proc.stderr or proc.stdout}")
+
+
 def main() -> None:
     check_layout()
+    check_experience()
     text = SKILL.read_text(encoding="utf-8")
     fields = check_frontmatter(text)
     if len(text.splitlines()) > 500:

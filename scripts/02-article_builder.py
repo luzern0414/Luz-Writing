@@ -37,17 +37,17 @@ SESSION_NAME = re.compile(r"^\d{3}-.+$")
 
 # 公众号编辑器会剥掉 class，所以正文样式都写成内联；字阶取 Luz-Design 阅读型 14/16/20/24/32
 P_STYLE = "font-size:16px;line-height:1.75;color:#202124;margin:0 0 16px;"
-H2_STYLE = "font-size:24px;line-height:1.35;font-weight:700;color:#202124;margin:40px 0 16px;"
-H3_STYLE = "font-size:20px;line-height:1.4;font-weight:700;color:#202124;margin:28px 0 12px;"
+H2_STYLE = "font-size:24px;line-height:1.35;font-weight:600;color:#202124;margin:40px 0 16px;"
+H3_STYLE = "font-size:20px;line-height:1.4;font-weight:600;color:#202124;margin:28px 0 12px;"
 QUOTE_STYLE = ("font-size:16px;line-height:1.75;color:#5f6368;margin:0 0 16px;"
                "padding:2px 0 2px 14px;border-left:3px solid #2b5f73;")
-STRONG_STYLE = "font-weight:700;color:#202124;"
+STRONG_STYLE = "font-weight:600;color:#202124;"
 HL_STYLE = "background:#e9f2f5;padding:0 4px;border-radius:4px;"
 IMG_STYLE = "display:block;width:100%;height:auto;border-radius:12px;"
 IMG_WRAP = "margin:24px 0;"
 
 COPY_CSS = """#copy-btn { position: fixed; right: 16px; bottom: calc(20px + env(safe-area-inset-bottom, 0px));
-    font: inherit; font-size: 14px; font-weight: 700; color: #ffffff; background: var(--accent);
+    font: inherit; font-size: 14px; font-weight: 600; color: #ffffff; background: var(--accent);
     border: 0; border-radius: 999px; padding: 12px 20px; cursor: pointer; }"""
 COPY_HTML = """<button id="copy-btn" type="button">复制正文</button>
 <script>

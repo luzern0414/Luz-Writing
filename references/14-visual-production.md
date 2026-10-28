@@ -112,6 +112,27 @@ Imagegen 只保存服务返回的原始图片字节，并生成同名 JSON。记
 - 不使用与内容无关的装饰性 3D 物体。
 - 一张图只解决一个视觉任务。
 
+### 封面与插图风格菜单
+
+先按题材、语气和渠道选一种风格，一篇文章的封面和分隔图只用一种。用户点名的风格优先；没有点名时，科技资讯默认 3D 潮玩或软陶质感。提示词片段放在第 4 步“视觉语言”，按需改写，不整段照抄。
+
+| 风格 | 适合 | 视觉特征 | 提示词片段 |
+| --- | --- | --- | --- |
+| **3D 潮玩** | 科技资讯、新品发布、轻松话题 | 圆润潮玩公仔、哑光质感、明快配色 | `designer-toy 3D figure, rounded proportions, matte vinyl, soft studio light` |
+| **软陶质感** | 生活方式、AI 小工具、温和科普 | 手捏黏土、指纹细节、真实接触阴影、低饱和 | `soft polymer clay miniature, handmade texture, muted pastel palette, contact shadows` |
+| 扁平插画 | 教程、科普、政策与流程解读 | 纯色块、无渐变、简化人物与物体 | `flat vector illustration, solid color shapes, no gradients, clean composition` |
+| 线性图标风 | 工具清单、功能盘点、文档类封面 | 统一线宽线稿、白底、一个强调色 | `minimal line-art icons, uniform stroke weight, white background, single accent color` |
+| 等距 2.5D | 系统架构、产业链、数据中心、流程 | 等距视角、模块化方块、层次清楚 | `isometric 2.5D scene, modular blocks, clean edges, soft ambient light` |
+| 纸艺拼贴 / 剪纸 | 节日、文化、人文与故事类 | 纸张层叠、投影、手工剪边 | `layered paper-cut collage, visible paper texture, gentle drop shadows` |
+| 极简排版 / 大字报 | 观点、评论、重大结论 | 大面积留白或纯色底，只留出给排版层放字的位置 | `minimal background, bold color field, large empty area reserved for typography` |
+| 新中式水墨 | 传统文化、节气、国货与文旅 | 水墨晕染、留白、淡彩 | `contemporary Chinese ink wash, generous negative space, light color wash` |
+| 胶片摄影感 | 人物故事、城市、深度报道的氛围图 | 颗粒、自然光、偏暖色调；不冒充真实现场 | `35mm film photography look, natural light, subtle grain, warm tones, staged scene` |
+| 赛博霓虹 | 芯片、游戏、夜间经济、未来感话题 | 深色底、霓虹描边、高对比 | `cyberpunk neon, dark background, glowing edges, high contrast, rain reflections` |
+| 手绘涂鸦 | 轻松吐槽、学生与职场日常 | 马克笔线条、随手涂抹、不规则边缘 | `hand-drawn doodle, marker strokes, playful sketchy lines, off-white paper` |
+| 数据可视化封面 | 财报、榜单、调研与趋势 | 抽象图形暗示数据走势；真实数字只在排版层 | `abstract data-visualization motif, flowing bars and lines, no numbers, no text` |
+
+这份菜单只管文章封面和插图。产品界面（小程序、后台、网站、智能体）一律按 Luz-System 与 Luz-Design 的扁平线性风格，不套用这里的 3D、拟物或霓虹风格。
+
 ## 四、Luz Design 编排
 
 需要海报、成套封面、活动视觉或长页排版时，调用 `$luz-design`（小程序、后台、网站等产品界面与原型调用 `$luz-system`）：
@@ -122,9 +143,9 @@ Imagegen 只保存服务返回的原始图片字节，并生成同名 JSON。记
 4. 主要信息、次要信息、证明、时间和行动各有明确层级。
 5. 文字、价格、日期、法律说明和二维码使用可编辑层并逐项核对。
 6. 在海报或页面中保留安全区、出血、裁切和渠道遮挡空间。
-7. 按 Luz Design 的品质检查表完成视觉、可读性、可访问性和导出复核。
+7. 按 Luz Design 规范页的“质量门禁”与 `check_document.py` 完成视觉、可读性、可访问性和导出复核。
 
-文章只需要封面或插图时，不必创建完整设计项目。依据文章结构确定一张封面、每几个话题一张图，或完全不配图；只有跨渠道视觉、详细排版或 UI/海报任务才进入完整 Luz Design 工作流。
+文章只需要封面或插图时，不必创建完整设计项目。依据文章结构确定一张封面、每几个话题一张图，或完全不配图；只有跨渠道视觉、详细排版或海报任务才进入完整 Luz Design 工作流；产品界面走 Luz System。
 
 ## 五、写作与版式结合
 

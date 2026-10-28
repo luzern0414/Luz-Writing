@@ -22,6 +22,16 @@ This rule outranks every other delivery habit in this package. Follow [15 · del
 
 Every artifact goes to `D:\Codes\skill输出\Luz-Writing\NNN-主题\`: one final `NNN-主题.html` beside a `raw\` folder that holds the brief, claims, outline, draft source, Luz-Crawl copies, and images. Never write outputs into this skill folder. Paths, commands, Luz-Crawl research, and the Luz-Design layout rules are in [16 · output paths, crawling, and layout](references/16-output-paths-and-tools.md).
 
+## 每次调用后沉淀
+
+Mandatory. At the start of every call, run `python -X utf8 scripts/04-experience.py search "<topic or channel>"` and apply what it returns. Before finishing, record with `note --kind preference|lesson|fact --key <topic> --text "…" --why "…"`:
+
+- **preference**: any writing preference the user stated or corrected (tone, length habits, cover style, layout).
+- **fact**: a source, route, Imagegen parameter or Luz-Crawl query that proved effective or failed.
+- **lesson**: any rule correction or fix after a failure.
+
+Write the general principle, not task trivia. Reuse an existing key so the new statement replaces the old one; never add a second entry on the same topic. No names, contacts, client names, private paths or credentials; those go only to a git-ignored `*.local.json` via `--store`. Caps (preferences 60, lessons 120, facts 120) are enforced automatically; `check` must pass.
+
 ## Route the request before drafting
 
 | Request or symptom | Read |
@@ -119,7 +129,7 @@ Use plain attribution for uncertain claims. "The company says adoption doubled" 
 
 For a draft, return only the finished text. For a rewrite, return only the rewritten text. For an audit the user asked for, return specific findings with a quote or location, the reader impact, and a concrete repair. When the user asks for several versions, vary the angle rather than making cosmetic synonyms, and do not label or rank them. Keep research, crawl captures, drafts, and images in the session's `raw\` folder under `D:\Codes\skill输出\Luz-Writing`.
 
-When the user states a durable style preference, record it in the project-level voice profile when one exists, using the log format in [12 · voice profile and learning](references/12-voice-profile-and-learning.md). Update the bundled reference only when the user explicitly asks to change this skill package. Store only the rule, date, scope, and a short example. Keep one-off instructions in the current artifact.
+General preferences go to the experience store (see 每次调用后沉淀). Style rules for one writing project go to that project's voice profile, using the log format in [12 · voice profile and learning](references/12-voice-profile-and-learning.md). Update the bundled reference only when the user explicitly asks to change this skill package. Keep one-off instructions in the current artifact.
 
 Create the session with [03 · session](scripts/03-session.py), import Luz-Crawl collections with its `import-crawl` command, and package the final page with [02 · article builder](scripts/02-article_builder.py) `--session`, which uses the Luz-Design reading template [01 · article template](assets/01-article-template.html) and runs `D:\Codes\Luz-Design\scripts\check_document.py`. For a body-format example, read [02 · example body](assets/02-example-body.txt). For visual production, start from [03 · visual production brief](assets/03-visual-production-brief.md). Record generated image paths, actual dimensions and formats, warnings, and crops in `raw\manifest.json`, not in the reply.
 
@@ -130,6 +140,7 @@ Run the automated checks when the environment supports them:
 ~~~powershell
 python -X utf8 scripts/01-validate_skill.py
 python -X utf8 scripts/03-session.py check "<session folder>"
+python -X utf8 scripts/04-experience.py check
 ~~~
 
 Then complete the matching manual checks in [11 · quality gates](references/11-quality-gates.md). Automated checks locate symptoms; they do not prove source accuracy, taste, or publication readiness.
