@@ -48,6 +48,10 @@ evals/        人工评审方法与回归测试用例
 
 [Luz-Design](https://github.com/luzern0414/Luz-Design) 负责版式与视觉；[Luz-Dev](https://github.com/luzern0414/Luz-Dev) 在上线时调用本技能撰写用户协议、隐私政策与上线文案；[HardwareMatch](https://github.com/luzern0414/HardwareMatch) 和本技能都通过 [Luz-Crawl](https://github.com/luzern0414/Luz-Crawl) 做调研。
 
-## 来源与许可
+## 来源
 
-写作规则吸收了公开写作类技能中的通用方法，均为独立重述，没有复制上游文本或代码；来源、固定版本与许可边界见 [NOTICE.md](NOTICE.md) 与 `references/13-sources-and-licenses.md`。本仓库暂未附带开源许可证，默认保留所有权利。
+写作规则吸收了公开写作类技能中的通用方法，均为独立重述，没有复制上游文本或代码；来源、固定版本与许可边界见 [NOTICE.md](NOTICE.md) 与 `references/13-sources-and-licenses.md`。
+
+## 许可
+
+本仓库采用 [PolyForm Noncommercial 1.0.0](LICENSE)：个人学习、研究、教学、公益组织与政府机构等**非商业用途**可以自由使用、复制、修改和分发；**禁止任何商业用途**。如需商用，请先联系作者取得授权。分发时请保留 LICENSE 与 NOTICE 中以 “Required Notice:” 开头的版权声明。

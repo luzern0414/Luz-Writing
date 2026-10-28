@@ -1,3 +1,5 @@
+Required Notice: Copyright 2026 luzern0414 (https://github.com/luzern0414/Luz-Writing)
+
 # Luz Writing · 来源与许可说明
 
 本说明补充 `references/13-sources-and-licenses.md`，记录合并来源、公开调研的使用边界和再分发前需要核对的材料。这里不替任何上游项目授予其许可证之外的权限。
