@@ -23,7 +23,8 @@ Required Notice: Copyright 2026 luzern0414 (https://github.com/luzern0414/Luz-Wr
 写作 Skill 可选择调用两个本机工作区：
 
 - `D:\Codes\Imagegen`：图片生成与参考图编辑。
-- `D:\Codes\Luz-Design`：海报、视觉系统、页面设计与排版验收。
+- `D:\Codes\Luz-Design`：海报、视觉标准与排版验收。
+- `D:\Codes\Luz-System`：产品界面、系统设计与可交互原型（文章与文案不涉及时不调用）。
 
 这两个目录没有被复制进本 Skill，也不在本说明中重新授权。它们继续受各自仓库的许可证、服务条款和素材权利约束。本 Skill 只保存调用方法、输入约束和回退规则，不包含 Imagegen 密钥。调用方不得读取、打印或复制 `Imagegen\docs\apikey.txt`。
 

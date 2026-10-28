@@ -88,7 +88,7 @@ A writing task with a visual deliverable follows [14 · visual production](refer
 1. Decide what the image or layout must help the reader see.
 2. Use `D:\Codes\Imagegen` to generate or edit text-free source imagery when the deliverable calls for it.
 3. Keep factual labels, captions, numbers, UI text, and legal copy in editable design or HTML layers.
-4. Use the local `Luz-Design` skill for posters, page systems, multi-channel cover families, and detailed visual composition.
+4. Use the local `Luz-Design` skill for posters, multi-channel cover families, document layout and detailed visual composition; product UI, system design and prototypes belong to `Luz-System`.
 5. Inspect the actual asset, record its path and generation JSON, then build and reopen the final layout.
 
 A generated image is illustration or atmosphere, not evidence of a real event, user, product, or review. Do not call Imagegen for a text-only request merely to fill space. If either local tool is unavailable, continue with the writing, preserve a concrete visual brief or placeholder, and state what was not produced or verified.

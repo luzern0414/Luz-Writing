@@ -22,7 +22,7 @@
 - 参考图编辑：`D:\Codes\Imagegen\src\imagegen_edit.py`
 - 视觉设计：`D:\Codes\Luz-Design\SKILL.md`
 
-使用 Luz Design 时，先按其路由只读取相关文件；海报优先读 `D:\Codes\Luz-Design\design\poster\SPEC.md`，视觉系统读 `design/shared/themes.md`。不要一次加载整个设计仓库。
+使用 Luz Design 时，先按其路由只读取相关文件；海报与视觉标准读 `D:\Codes\Luz-Design\references\visual-design.html`，行业配色读 `references/themes.json`，文件版式读 `references/file-design.html`。不要一次加载整个设计仓库。
 
 不要读取、打印、复制或写入 `Imagegen\docs\apikey.txt`。密钥由 Imagegen 自己解析。
 
@@ -114,7 +114,7 @@ Imagegen 只保存服务返回的原始图片字节，并生成同名 JSON。记
 
 ## 四、Luz Design 编排
 
-需要海报、成套封面、活动视觉、长页或页面设计时，调用 `$luz-design`：
+需要海报、成套封面、活动视觉或长页排版时，调用 `$luz-design`（小程序、后台、网站等产品界面与原型调用 `$luz-system`）：
 
 1. 用一句话写定位：读者是谁，在什么场景看到，先看见什么，理解什么，下一步做什么。
 2. 从定位推导色彩、字体层级、间距、形状、图像语言和密度。
@@ -135,7 +135,7 @@ Imagegen 只保存服务返回的原始图片字节，并生成同名 JSON。记
 - **小红书：** 3:4 图文时先排每页的信息顺序，再生成无文字底图；文字放在排版层。
 - **短视频：** 9:16 画幅只负责场景和视觉钩子；口播、字幕和事实不能交给图片生成。
 - **电商、活动与海报：** 同时读取本路线与 Luz Design 的海报规范，先完成信息层级和精确文案。
-- **网页或 UI：** 精确界面由 Luz Design 定义并由代码实现；Imagegen 只生成可用的无文字氛围素材。
+- **网页或 UI：** 精确界面由 Luz System 定义、视觉标准来自 Luz Design，并由代码实现；Imagegen 只生成可用的无文字氛围素材。
 
 公众号宽封面可向 Imagegen 请求自定义宽幅尺寸，例如 `2368x1008`，但必须检查实际返回尺寸。其他渠道以当前平台规则和真实显示环境为准。
 

@@ -41,12 +41,12 @@ evals/        人工评审方法与回归测试用例
 ## 依赖
 
 - Python 3.11 及以上。
-- 调研依赖 [Luz-Crawl](https://github.com/luzern0414/Luz-Crawl)；海报、页面与视觉设计依赖 [Luz-Design](https://github.com/luzern0414/Luz-Design)；配图为可选能力，需要本机的图像生成服务。
+- 调研依赖 [Luz-Crawl](https://github.com/luzern0414/Luz-Crawl)；海报、视觉与排版依赖 [Luz-Design](https://github.com/luzern0414/Luz-Design)；配图为可选能力，需要本机的图像生成服务。
 - 默认把产出写到 `D:\Codes\skill输出\Luz-Writing\`。
 
 ## 相关技能
 
-[Luz-Design](https://github.com/luzern0414/Luz-Design) 负责版式与视觉；[Luz-Dev](https://github.com/luzern0414/Luz-Dev) 在上线时调用本技能撰写用户协议、隐私政策与上线文案；[HardwareMatch](https://github.com/luzern0414/HardwareMatch) 和本技能都通过 [Luz-Crawl](https://github.com/luzern0414/Luz-Crawl) 做调研。
+[Luz-Design](https://github.com/luzern0414/Luz-Design) 负责版式与视觉；[Luz-System](https://github.com/luzern0414/Luz-System) 负责系统设计与产品界面，界面里的文案可由本技能撰写；[Luz-Dev](https://github.com/luzern0414/Luz-Dev) 在上线时调用本技能撰写用户协议、隐私政策与上线文案；Luz-System 和本技能都通过 [Luz-Crawl](https://github.com/luzern0414/Luz-Crawl) 做调研。
 
 ## 来源
 
