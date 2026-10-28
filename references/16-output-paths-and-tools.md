@@ -80,6 +80,7 @@ python -X utf8 scripts/03-session.py check "<会话目录>"
 - 正文用小标题时，`04-draft.txt` 第一行必须是 `## 小标题`；不用小标题时直接从段落开始。
 - 字阶只用 14 / 16 / 20 / 24 / 32 像素：正文 16，三级标题 20，二级标题 24，主标题 32。
 - 浅色底、单栏居中、一个主色加中性色、一个字体族。
+- 标签页必须有贴合主题的图标，不能空白：模板的 `{{ICON}}` 由 builder 填入内联 SVG（主色线稿 + 浅色圆角底），默认 `--icon auto` 按关键词选芯片 / 哑铃 / 碗 / 纸飞机 / 折线 / 书本 / 文章，选错时用 `--icon tech|fitness|food|travel|finance|education|article` 指定。
 - 不加页眉、页脚、导航、目录、浮动按钮、来源区、免责声明、“关于本文”。复制按钮只在用户明确要求时用 `--copy-button` 加入。
 - `> ` 引用块只放逐字照录的第三方原话，不放作者自己的提示或建议。
 - 生成后 article builder 会自动运行 `D:\Codes\Luz-Design\scripts\check_document.py`，必须零错误；脚本通过后仍逐元素执行删除测试。

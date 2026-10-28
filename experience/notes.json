@@ -7,6 +7,15 @@
   },
   "notes": [
     {
+      "key": "html-tab-icon-required",
+      "kind": "preference",
+      "text": "每个 HTML 成品都必须有贴合主题、好看的标签页图标，不能空白：内联 <link rel=\"icon\"> SVG，32×32 圆角浅色底 + 主色单线稿（线宽 2.5–3、最多 3 个图形、无文字、16px 可辨认），由 article builder 按主题自动选择，颜色取文章主色。",
+      "why": "用户要求：所有 HTML 交付物的浏览器标签页都要有主题图标",
+      "uses": 1,
+      "first_seen": "2026-10-28",
+      "last_confirmed": "2026-10-28"
+    },
+    {
       "key": "不写空话",
       "kind": "preference",
       "text": "删掉赋能、一站式、全方位这类空泛词和铺垫，每句话要落到具体事实、动作或结论",

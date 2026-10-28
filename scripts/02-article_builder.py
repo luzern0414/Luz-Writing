@@ -18,6 +18,7 @@ body.txt 的格式：
 
 图片默认转成 JPEG（质量 85，最长边 1600px）再 base64 内嵌；--keep-original 则原样内嵌。
 --copy-button 只在用户明确要求“一键复制到公众号”时使用。
+--icon 选浏览器标签页图标；默认 auto 按标题和正文关键词挑选，颜色取模板的 --accent / --tint。
 """
 
 import argparse
@@ -28,6 +29,7 @@ import re
 import subprocess
 import sys
 from pathlib import Path
+from urllib.parse import quote
 
 HERE = Path(__file__).resolve().parent
 TEMPLATE = HERE.parent / "assets" / "01-article-template.html"
@@ -45,6 +47,61 @@ STRONG_STYLE = "font-weight:600;color:#202124;"
 HL_STYLE = "background:#e9f2f5;padding:0 4px;border-radius:4px;"
 IMG_STYLE = "display:block;width:100%;height:auto;border-radius:12px;"
 IMG_WRAP = "margin:24px 0;"
+
+# 标签页图标：32×32 圆角浅色底 + 一笔主色线稿，最多 3 个图形、无文字，16px 下可辨认。
+# 只放在 <head>，不进入 #copy-area，不影响复制到公众号。
+ICONS = {
+    "tech": ("M10 10h12v12H10z", "M13 6v4M19 6v4M13 22v4M19 22v4M6 13h4M6 19h4M22 13h4M22 19h4"),  # 芯片
+    "fitness": ("M11 16h10", "M9 11v10M23 11v10", "M6 13.5v5M26 13.5v5"),  # 哑铃
+    "food": ("M6 15h20c0 5.5-4.5 9.5-10 9.5S6 20.5 6 15z", "M13 6.5c-1.2 1.5 1.2 2.5 0 4.5M19 6.5c-1.2 1.5 1.2 2.5 0 4.5"),  # 碗
+    "travel": ("M5.5 15 26 6.5 19.5 25.5 15 17.5z", "M15 17.5 26 6.5"),  # 纸飞机
+    "finance": ("M7 6.5v18.5h18.5", "M11 19.5l4.5-5 3.5 3 6-7"),  # 折线
+    "education": ("M16 10c-3-2-6.5-2.3-10-1.3v15c3.5-1 7-.7 10 1.3 3-2 6.5-2.3 10-1.3v-15c-3.5-1-7-.7-10 1.3z", "M16 10v15"),  # 书本
+    "article": ("M8.5 5.5h15v21h-15z", "M12.5 11h7M12.5 15.5h7M12.5 20h4"),  # 文章
+}
+# 关键词按顺序匹配，先命中的类别优先；都不命中用 article
+ICON_KEYWORDS = (
+    ("tech", ("AI", "人工智能", "大模型", "芯片", "算法", "科技", "GPT", "机器人", "智能体", "编程", "代码", "软件", "互联网")),
+    ("fitness", ("健身", "运动", "训练", "增肌", "减脂", "跑步", "瑜伽", "体能", "马甲线", "腹肌", "减肥", "肌肉")),
+    ("food", ("美食", "菜谱", "餐厅", "食谱", "烹饪", "厨房", "咖啡", "烘焙", "小吃", "做饭", "面条", "牛肉面", "火锅",
+              "甜品", "早餐", "午餐", "晚餐")),
+    ("travel", ("旅行", "旅游", "出行", "机票", "酒店", "景点", "自驾", "出游")),
+    ("finance", ("财经", "金融", "股票", "基金", "投资", "理财", "经济", "营收", "财报", "利率")),
+    ("education", ("教育", "学习", "课程", "考试", "学校", "读书", "老师", "学生")),
+)
+HEX6 = re.compile(r"#[0-9A-Fa-f]{6}")
+
+
+def pick_icon(title: str, body: str) -> str:
+    """标题命中优先（按类别顺序），其次看正文前 2000 字里出现次数最多的类别。大小写敏感，避免 AI 误配 said。"""
+    for kind, words in ICON_KEYWORDS:
+        if any(w in title for w in words):
+            return kind
+    head = body[:2000]
+    scores = {kind: sum(head.count(w) for w in words) for kind, words in ICON_KEYWORDS}
+    best = max(scores, key=lambda k: scores[k])
+    return best if scores[best] > 0 else "article"
+
+
+def template_colors(template: str):
+    """模板 :root 里的 --accent（线稿）和 --tint（底色）。"""
+    found = dict(re.findall(r"--(accent|tint):\s*(#[0-9A-Fa-f]{6})", template))
+    return found.get("accent", "#2b5f73"), found.get("tint", "#e9f2f5")
+
+
+def icon_link(kind: str, color: str, tint: str) -> str:
+    if kind not in ICONS:
+        sys.exit(f"未知图标：{kind}，可选 {', '.join(ICONS)}")
+    if not (HEX6.fullmatch(color) and HEX6.fullmatch(tint)):
+        sys.exit(f"图标颜色必须是 #RRGGBB：{color} / {tint}")
+    paths = "".join(f"<path d='{d}'/>" for d in ICONS[kind])
+    svg = ("<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'>"
+           f"<rect width='32' height='32' rx='8' fill='{tint}'/>"
+           f"<g fill='none' stroke='{color}' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'>{paths}</g>"
+           "</svg>")
+    encoded = quote(svg, safe=" '=/:,.-")
+    return f'<link rel="icon" href="data:image/svg+xml,{encoded}">'
+
 
 COPY_CSS = """#copy-btn { position: fixed; right: 16px; bottom: calc(20px + env(safe-area-inset-bottom, 0px));
     font: inherit; font-size: 14px; font-weight: 600; color: #ffffff; background: var(--accent);
@@ -205,6 +262,9 @@ def main():
     ap.add_argument("--template", default=str(TEMPLATE), help="模板路径，默认 assets/01-article-template.html")
     ap.add_argument("--keep-original", action="store_true", help="图片不转 JPEG，原样内嵌")
     ap.add_argument("--copy-button", action="store_true", help="用户明确要求时才加复制按钮")
+    ap.add_argument("--icon", default="auto", choices=["auto", *ICONS],
+                    help="标签页图标：tech 芯片 / fitness 哑铃 / food 碗 / travel 纸飞机 / finance 折线 / "
+                         "education 书本 / article 文章；默认 auto 按标题和正文关键词挑选")
     ap.add_argument("--no-check", action="store_true", help="跳过 Luz-Design 文档检查（仅测试）")
     args = ap.parse_args()
 
@@ -224,8 +284,12 @@ def main():
     body_html, n_p, n_img = render(parse_body(text), body_path.parent, args.keep_original)
 
     template = Path(args.template).read_text(encoding="utf-8")
+    if "{{ICON}}" not in template:
+        sys.exit("模板缺少 {{ICON}} 占位符：每个成品网页都必须有标签页图标")
+    icon_kind = pick_icon(args.title, text) if args.icon == "auto" else args.icon
     page = (
         template
+        .replace("{{ICON}}", icon_link(icon_kind, *template_colors(template)))
         .replace("{{TITLE}}", html.escape(args.title, quote=False))
         .replace("{{BODY}}", body_html)
         .replace("{{EXTRA_CSS}}", COPY_CSS if args.copy_button else "")
@@ -239,7 +303,7 @@ def main():
 
     size_mb = out.stat().st_size / (1024 * 1024)
     print(f"已生成：{out}")
-    print(f"段落 {n_p} 个，图片 {n_img} 张，大小 {size_mb:.2f} MB")
+    print(f"段落 {n_p} 个，图片 {n_img} 张，标签页图标 {icon_kind}，大小 {size_mb:.2f} MB")
     if size_mb > SIZE_WARN_MB:
         print(f"警告：超过 {SIZE_WARN_MB} MB，减少图片或降低质量", file=sys.stderr)
     if not args.no_check:
