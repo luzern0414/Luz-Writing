@@ -68,6 +68,15 @@
       "uses": 1,
       "first_seen": "2026-10-28",
       "last_confirmed": "2026-10-28"
+    },
+    {
+      "key": "readme-verified-vs-unverified",
+      "kind": "lesson",
+      "text": "项目 README 的验证范围用表格分 已测试、真实联调、未验证、未完成 四类，每条写清条件与日期，失败后修复的过程也照实写",
+      "why": "Demo 一键生成助手 README 重写",
+      "uses": 1,
+      "first_seen": "2026-10-28",
+      "last_confirmed": "2026-10-28"
     }
   ]
 }
