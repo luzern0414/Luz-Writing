@@ -19,7 +19,8 @@ D:\Codes\skill输出\Luz-Writing\
   001-主题\
     001-主题.html          唯一成品
     raw\
-      01-brief.md          用户原话、交付物、读者、渠道、约束
+      00-rules\            本次任务的规则卡（06-context.py 生成，读完再写）
+      01-brief.md          用户原话、交付物、读者、渠道、约束、采用的规则
       02-claims.md         声明、来源 URL、事件日期、访问日期、状态、限制
       03-outline.md        提纲与段落职责
       04-draft.txt         成品正文源（article builder 的输入）
@@ -36,24 +37,14 @@ D:\Codes\skill输出\Luz-Writing\
 
 ## 命令顺序
 
-命令都从本 Skill 目录运行：
+命令都从本 Skill 目录运行，按顺序执行：
 
-~~~powershell
-# 1. 建会话，打印会话绝对路径
-python -X utf8 scripts/03-session.py new --topic "主题"
-
-# 2. 需要找资料或参考文案时调用 Luz-Crawl（从 D:\Codes\Luz-Crawl 目录运行）
-node scripts/luz-crawl.mjs collect "主题或 URL" --read 1
-
-# 3. 把 Luz-Crawl 本次生成的合集复制进 raw/05-crawl/
-python -X utf8 scripts/03-session.py import-crawl "<会话目录>" "D:\Codes\skill输出\Luz-Crawl\NNN_主题"
-
-# 4. 把成品正文写入 raw/04-draft.txt，然后生成唯一成品
-python -X utf8 scripts/02-article_builder.py --title "标题" --session "<会话目录>"
-
-# 5. 结构检查
-python -X utf8 scripts/03-session.py check "<会话目录>"
-~~~
+1. 读规则卡：`python -X utf8 scripts/06-context.py list` 选任务类型，`python -X utf8 scripts/06-context.py <类型>` 读完整张卡。
+2. 建会话，打印会话绝对路径，规则卡同时存进 `raw/00-rules/`：`python -X utf8 scripts/03-session.py new --topic "主题" --card <类型>`。`--card` 可重复；不写时按主题关键词推断，推断不出用 `general`。
+3. 需要找资料或参考文案时调用 Luz-Crawl（从 `D:\Codes\Luz-Crawl` 目录运行）：`node scripts/luz-crawl.mjs collect "主题或 URL" --read 1`。
+4. 把 Luz-Crawl 本次生成的合集复制进 `raw/05-crawl/`：`python -X utf8 scripts/03-session.py import-crawl "<会话目录>" "D:\Codes\skill输出\Luz-Crawl\NNN_主题"`。
+5. 在 `raw/01-brief.md` 的“采用的规则”逐行写出本次落实的写作指南小节或偏好 key；用 `python -X utf8 scripts/04-experience.py note --kind preference|lesson|fact --key <主题> --text "<一句话原则>"` 写入或确认至少一条经验，把 key 填进“本次沉淀”；把成品正文写入 `raw/04-draft.txt`，然后生成唯一成品：`python -X utf8 scripts/02-article_builder.py --title "标题" --session "<会话目录>"`。没有当前规则卡（写作指南改过后要重新生成）、“采用的规则”为空，或“本次沉淀”的 key 不在经验库、确认日期早于会话创建日时，打包脚本拒绝生成并写明要运行的命令。
+6. 结构检查：`python -X utf8 scripts/03-session.py check "<会话目录>"`。
 
 `import-crawl` 优先使用 Luz-Crawl 返回的合集路径。拿不到返回路径时用 `--latest`，它取 Luz-Crawl 根目录下序号最大的合集；并行采集时不要用 `--latest`。
 
@@ -79,7 +70,8 @@ python -X utf8 scripts/03-session.py check "<会话目录>"
 - 第一行可见内容是主标题 `h1`；标题下不放摘要、导语、标签、日期、作者或字数。
 - 正文用小标题时，`04-draft.txt` 第一行必须是 `## 小标题`；不用小标题时直接从段落开始。
 - 字阶只用 14 / 16 / 20 / 24 / 32 像素：正文 16，三级标题 20，二级标题 24，主标题 32。
-- 浅色底、单栏居中、一个主色加中性色、一个字体族。
+- 浅色底、单栏居中、一个主色加中性色、一个字体族；加粗用 600，不用 700。
+- 主色按行业取，不沿用模板的中性青灰：builder 默认 `--theme auto` 按标题和正文关键词匹配 `D:\Codes\Luz-Design\references\themes.json` 的行业主题（健身、咖啡、宠物、智能体……），取主题的 `action` 作主色、`actionTint` 作浅底，引用线、高亮和标签页图标一起换色；匹配错时用 `--theme <主题 key>` 指定，没有对应行业的题材（财经、教育、旅行等）落到 `template`，即模板自带颜色。
 - 标签页必须有贴合主题的图标，不能空白：模板的 `{{ICON}}` 由 builder 填入内联 SVG（主色线稿 + 浅色圆角底），默认 `--icon auto` 按关键词选芯片 / 哑铃 / 碗 / 纸飞机 / 折线 / 书本 / 文章，选错时用 `--icon tech|fitness|food|travel|finance|education|article` 指定。
 - 不加页眉、页脚、导航、目录、浮动按钮、来源区、免责声明、“关于本文”。复制按钮只在用户明确要求时用 `--copy-button` 加入。
 - `> ` 引用块只放逐字照录的第三方原话，不放作者自己的提示或建议。

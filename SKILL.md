@@ -1,6 +1,6 @@
 ---
 name: luz-writing
-description: Use when drafting, rewriting, polishing, researching, fact-checking, structuring, or reviewing any writing, including Chinese or English articles, AI and technology news, marketing copy, social posts, scripts, essays, explainers, fiction, academic prose, documentation, titles, summaries, and platform adaptation; also use when a writing deliverable needs covers or inline imagery, a poster or page layout, or an Imagegen and Luz-Design visual-production workflow; and when a draft sounds generic, formulaic, over-polished, unsupported, too long, or obviously machine-written.
+description: Use when drafting, rewriting, polishing, researching, fact-checking, structuring, or reviewing any writing, including Chinese or English articles, AI and technology news, marketing copy, social posts, scripts, essays, explainers, fiction, academic prose, documentation, titles, summaries, and platform adaptation; also use when a writing deliverable needs covers or inline imagery, a poster or page layout, or an Imagegen and Luz-Design visual-production workflow; and when a draft sounds generic, formulaic, over-polished, unsupported, too long, or obviously machine-written. Start every call with scripts/06-context.py <kind> — its rule card carries the user's preferences, lessons, the reference text, tools and checks; templates and the article builder are skeletons only.
 ---
 
 # Luz Writing
@@ -8,6 +8,17 @@ description: Use when drafting, rewriting, polishing, researching, fact-checking
 Produce writing that fits one reader, one purpose, and one channel. Keep the user's meaning and voice, make factual claims inspectable, and choose structure from the argument rather than from a reusable template.
 
 The skill has two mature workflows from the original Luz project: evidence-led AI/technology articles and conversion-oriented marketing copy. The other routes extend those foundations to opinion, popular science, narrative, academic, and professional writing.
+
+## 调用协议（每次调用都按顺序做，不可跳过）
+
+The article template, the example body and the builder are the cheap path, and following them alone is how drafts miss the rules. They are skeletons, not standards. What a piece must do comes from the numbered references, the user's preferences and past lessons, and the rule card puts all of that in front of you.
+
+1. **Route.** Pick the task kind from the route table below. Posters, document layout and visual systems go to Luz-Design; product UI, prototypes and system design to Luz-System; backend to Luz-Dev; web capture to Luz-Crawl.
+2. **Read the rule card before writing anything, plain chat replies included.** `python -X utf8 scripts/06-context.py list` shows the kinds: tech-news, marketing-copy, opinion-explainer, narrative-fiction, academic-professional, channel-adaptation, polish-review, fact-check, visual-production, general. `python -X utf8 scripts/06-context.py <kind> [--topic 词 …]` prints the card: the user's preferences (all binding), matching lessons and facts, the reference text for this kind (always opening with 15 and the core of 01), the tools to use and the checks to pass. Read all of it; for anything it does not settle, read the named reference section in full.
+3. **Produce with the tools the card names.** Where the template, the example body or a builder default differs from the card, follow the card. A session gets its card automatically: `03-session.py new --topic "主题" --card <kind>` (repeatable; without it the kind is guessed from the topic, else `general`) saves it to `raw/00-rules/<kind>.md`.
+4. **Record what you applied.** In `raw/01-brief.md`, `## 采用的规则` lists one row per reference section or preference key and how this piece applies it. `02-article_builder.py --session` refuses a session without a current card or with an empty table, and `03-session.py check` flags a delivered page without it. A plain chat reply without a session skips the table, never the card. Because 15 outranks every delivery habit, the reply does not name the card either, even though the card's 收尾 asks for one sentence.
+5. **Pass the checks on the card.** The builder runs Luz-Design `check_document.py` and the session check and fails on any error; then work through the manual gates in [11 · quality gates](references/11-quality-gates.md).
+6. **Sediment (mandatory; packaging checks it).** Before finishing, write or confirm at least one note with `04-experience.py note` and list its key in `raw/01-brief.md` `## 本次沉淀`. The builder refuses a session whose table is empty or whose keys are missing from `experience/notes.json` or were last confirmed before the session was created. A plain chat reply without a session still runs the note command before finishing. What to record: section 每次调用后沉淀.
 
 ## Deliver only the requested copy
 
@@ -20,42 +31,47 @@ This rule outranks every other delivery habit in this package. Follow [15 · del
 
 ## Output location
 
-Every artifact goes to `D:\Codes\skill输出\Luz-Writing\NNN-主题\`: one final `NNN-主题.html` beside a `raw\` folder that holds the brief, claims, outline, draft source, Luz-Crawl copies, and images. Never write outputs into this skill folder. Paths, commands, Luz-Crawl research, and the Luz-Design layout rules are in [16 · output paths, crawling, and layout](references/16-output-paths-and-tools.md).
+Every artifact goes to `D:\Codes\skill输出\Luz-Writing\NNN-主题\`: one final `NNN-主题.html` beside a `raw\` folder that holds the rule cards (`00-rules\`), the brief, claims, outline, draft source, Luz-Crawl copies, and images. Never write outputs into this skill folder. Paths, commands, Luz-Crawl research, and the Luz-Design layout rules are in [16 · output paths, crawling, and layout](references/16-output-paths-and-tools.md).
 
 ## 每次调用后沉淀
 
-Mandatory on every call. One store, `experience/notes.json`, with the same shape and commands in Luz-System, Luz-Design, Luz-Dev and Luz-Writing:
+Mandatory on every call, sessions and plain chat replies alike: each call writes or confirms at least one note before it finishes. One store, `experience/notes.json`, with the same shape and commands in Luz-System, Luz-Design, Luz-Dev and Luz-Writing:
 
-- **Start:** `python -X utf8 scripts/04-experience.py search <关键词> [--kind preference|lesson|fact]` and apply what matches.
-- **Before finishing:** `python -X utf8 scripts/04-experience.py note --kind preference|lesson|fact --key <主题> --text "<一句话原则>" [--why "<依据>"]` — preference: what the user stated or corrected; fact: a route, source or parameter that worked or failed; lesson: a rule correction or fix. The general principle, not task trivia.
+- **Start:** the rule card already carries every preference and the matching lessons; `python -X utf8 scripts/04-experience.py search <关键词> [--kind preference|lesson|fact]` adds what matches this topic.
+- **Before finishing:** `python -X utf8 scripts/04-experience.py note --kind preference|lesson|fact --key <主题> --text "<一句话原则>" [--why "<依据>"]`. Record the general principle, not task trivia:
+  - preference: what the user newly stated or corrected (tone, length habits, cover style, layout, what to leave out);
+  - lesson: a rule correction, a pitfall, a problem the checks did not catch and the right way to handle it;
+  - fact: a writing approach or structure that worked or failed, research sources and their scope (which sites, platforms or Luz-Crawl queries were useful or useless, the keywords used), Imagegen parameters;
+  - a note that applied again this time: write the same key again to confirm it (`uses` +1) instead of adding a duplicate; when it conflicts with the old text, rewrite the same key and the old text is kept as `previous`.
+- **In a session:** list each key in `raw/01-brief.md` `## 本次沉淀` (key, kind, one line). `02-article_builder.py --session` refuses to package while the table is empty, a key is missing from the store, or a key was last confirmed before the session's creation date; `03-session.py check` reports the same for a delivered page.
 - **Fields:** `key`, `kind`, `text`, `why` (optional), `uses`, `first_seen`, `last_confirmed` (YYYY-MM-DD), `previous` (`{text, replaced_at}`, only after a replacement).
 - **Replace, never pile up:** the same key replaces the text (one `previous` kept, `uses` +1); the same statement under another key confirms that note. Caps: preference 60, lesson 120, fact 120; over a cap the fewest uses, then the oldest confirmation, go first. `list [--kind]` shows notes; `prune` enforces caps and lists notes unconfirmed for 180 days; `check` fails on duplicate keys or statements, missing fields, overflow and private data.
 - **Public repository:** no phone numbers, emails, WeChat IDs, user-home paths, credentials, personal or client names; `note` refuses them.
 
-Here also: writing preferences cover tone, length habits, cover style and layout; facts cover sources, Imagegen parameters and Luz-Crawl queries. Anything personal goes only to a git-ignored `*.local.json` via `--store`; `render` regenerates `experience/catalog.md`.
+Here also: writing preferences cover tone, length habits, cover style and layout; facts cover sources, Imagegen parameters and Luz-Crawl queries. Anything personal goes only to a git-ignored `experience/*.local.json` via `--store` (its keys count for 本次沉淀 too); `render` regenerates `experience/catalog.md`.
 
 ## Route the request before drafting
 
-| Request or symptom | Read |
-| --- | --- |
-| Unknown scope, mixed deliverable, co-authoring, or a substantial document | [01 · workflow and brief](references/01-workflow-and-brief.md) |
-| News, claims, statistics, quotations, source conflicts, current facts | [02 · evidence and fact-checking](references/02-evidence-and-fact-checking.md) |
-| Topic choice, content strategy, outline, argument flow, or reverse outlining | [03 · strategy and structure](references/03-strategy-and-structure.md) |
-| Generic, inflated, formulaic, repetitive, or "AI-sounding" prose; light edit; rewrite | [04 · natural expression](references/04-natural-expression.md), then [17 · AI pattern catalog](references/17-ai-pattern-catalog.md) for concrete words, sentence shells, punctuation, and over-correction limits |
-| AI/technology news, GitHub trends, product launches, model releases | [05 · technology news](references/05-technology-news.md) |
-| Product, landing page, ad, email, social post, slogan, commerce, campaign | [06 · marketing copy](references/06-marketing-copy.md) |
-| Opinion essay, commentary, explainer, popular science, knowledge content | [07 · opinion and explainers](references/07-opinion-and-explainers.md) |
-| Story, novel, scene, dialogue, narrative nonfiction | [08 · narrative and fiction](references/08-narrative-and-fiction.md) |
-| Academic paper, thesis, research note, literature discussion, structured document | [09 · academic and professional docs](references/09-academic-and-professional.md) |
-| Channel-specific title, length, structure, tags, or CTA | [10 · channels and formats](references/10-channels-and-formats.md) |
-| Covers, inline imagery, visual briefs, poster or page layout, Imagegen, or Luz-Design integration | [14 · visual production](references/14-visual-production.md) |
-| Final QA, audit only, publication risk, or file delivery | [11 · quality gates](references/11-quality-gates.md) |
-| A stable voice sample or recurring user corrections | [12 · voice profile and learning](references/12-voice-profile-and-learning.md) |
-| Upstream research, attribution, or license boundaries | [13 · sources and licenses](references/13-sources-and-licenses.md) |
-| Every delivery: what to include and what to leave out | [15 · deliver only what was asked](references/15-deliver-only-what-was-asked.md) |
-| Output folders, final HTML, searching sources or reference copy with Luz-Crawl | [16 · output paths, crawling, and layout](references/16-output-paths-and-tools.md) |
+| Request or symptom | Rule card | Read |
+| --- | --- | --- |
+| Unknown scope, mixed deliverable, co-authoring, or a substantial document | `general` | [01 · workflow and brief](references/01-workflow-and-brief.md) |
+| News, claims, statistics, quotations, source conflicts, current facts | `fact-check` | [02 · evidence and fact-checking](references/02-evidence-and-fact-checking.md) |
+| Topic choice, content strategy, outline, argument flow, or reverse outlining | `general` | [03 · strategy and structure](references/03-strategy-and-structure.md) |
+| Generic, inflated, formulaic, repetitive, or "AI-sounding" prose; light edit; rewrite | `polish-review` | [04 · natural expression](references/04-natural-expression.md), then [17 · AI pattern catalog](references/17-ai-pattern-catalog.md) for concrete words, sentence shells, punctuation, and over-correction limits |
+| AI/technology news, GitHub trends, product launches, model releases | `tech-news` | [05 · technology news](references/05-technology-news.md) |
+| Product, landing page, ad, email, social post, slogan, commerce, campaign | `marketing-copy` | [06 · marketing copy](references/06-marketing-copy.md) |
+| Opinion essay, commentary, explainer, popular science, knowledge content | `opinion-explainer` | [07 · opinion and explainers](references/07-opinion-and-explainers.md) |
+| Story, novel, scene, dialogue, narrative nonfiction | `narrative-fiction` | [08 · narrative and fiction](references/08-narrative-and-fiction.md) |
+| Academic paper, thesis, research note, literature discussion, structured document, agreement or policy text | `academic-professional` | [09 · academic and professional docs](references/09-academic-and-professional.md) |
+| Channel-specific title, length, structure, tags, or CTA | `channel-adaptation` | [10 · channels and formats](references/10-channels-and-formats.md) |
+| Covers, inline imagery, visual briefs, poster or page layout, Imagegen, or Luz-Design integration | `visual-production` | [14 · visual production](references/14-visual-production.md) |
+| Final QA, audit only, publication risk, or file delivery | `polish-review` | [11 · quality gates](references/11-quality-gates.md) |
+| A stable voice sample or recurring user corrections | `polish-review` (fiction: `narrative-fiction`) | [12 · voice profile and learning](references/12-voice-profile-and-learning.md) |
+| Upstream research, attribution, or license boundaries | — | [13 · sources and licenses](references/13-sources-and-licenses.md) |
+| Every delivery: what to include and what to leave out | on every card | [15 · deliver only what was asked](references/15-deliver-only-what-was-asked.md) |
+| Output folders, final HTML, searching sources or reference copy with Luz-Crawl | session cards (tools) | [16 · output paths, crawling, and layout](references/16-output-paths-and-tools.md) |
 
-Read only the references needed for the current task. Do not load every file.
+The card already carries the sections that matter for its kind; read further references only when the card does not settle a point. Do not load every file.
 
 ## Start with three decisions
 
@@ -121,7 +137,7 @@ Use plain attribution for uncertain claims. "The company says adoption doubled" 
 - Connect paragraphs by meaning. A keyword bridge, result becoming the next cause, or a real comparison is stronger than "moreover", "in addition", or "let's explore".
 - Prefer actor, action, object, and evidence for factual prose. Keep the passive when the actor is unknown, irrelevant, or legally sensitive.
 - Use concrete nouns and checkable details. Replace vague intensity with the amount, event, object, constraint, or mechanism it stands for.
-- Facts make the piece credible; expression makes it worth reading. Removing AI tells is the floor, not the goal: give each topic a scene or analogy, a reader's question answered, and a line of real stance. Keep only the one or two numbers a reader would repeat; leave the rest in `raw-claims.md`. A paragraph that is mostly numbers, rankings, or source labels has failed even if every figure is verified.
+- Facts make the piece credible; expression makes it worth reading. Removing AI tells is the floor, not the goal: give each topic a scene or analogy, a reader's question answered, and a line of real stance. Keep only the one or two numbers a reader would repeat; leave the rest in `raw/02-claims.md`. A paragraph that is mostly numbers, rankings, or source labels has failed even if every figure is verified.
 - For Luz technology news, the voice sample is the prose in [02 · example body](assets/02-example-body.txt): metaphor openings, colloquial asides, light skepticism toward vendor numbers, and a closing scene from daily life.
 - Trust the reader with implication when the genre rewards it. Fiction should show behavior and leave room for inference; factual writing should make necessary context explicit.
 - Preserve deliberate quirks from a real voice: a short aside, a mixed feeling, a repeated syllable, an unusual but relevant detail. Remove patterns because they do not work here, never because a detector listed them.
@@ -133,7 +149,7 @@ For a draft, return only the finished text. For a rewrite, return only the rewri
 
 General preferences go to the experience store (see 每次调用后沉淀). Style rules for one writing project go to that project's voice profile, using the log format in [12 · voice profile and learning](references/12-voice-profile-and-learning.md). Update the bundled reference only when the user explicitly asks to change this skill package. Keep one-off instructions in the current artifact.
 
-Create the session with [03 · session](scripts/03-session.py), import Luz-Crawl collections with its `import-crawl` command, and package the final page with [02 · article builder](scripts/02-article_builder.py) `--session`, which uses the Luz-Design reading template [01 · article template](assets/01-article-template.html) and runs `D:\Codes\Luz-Design\scripts\check_document.py`. For a body-format example, read [02 · example body](assets/02-example-body.txt). For visual production, start from [03 · visual production brief](assets/03-visual-production-brief.md). Record generated image paths, actual dimensions and formats, warnings, and crops in `raw\manifest.json`, not in the reply.
+Create the session with [03 · session](scripts/03-session.py) `new --topic "主题" --card <kind>`, which saves the rule card to `raw/00-rules/` and gives the brief its 采用的规则 and 本次沉淀 tables; import Luz-Crawl collections with its `import-crawl` command, and package the final page with [02 · article builder](scripts/02-article_builder.py) `--session`, which refuses to package without a current card and both tables filled, uses the Luz-Design reading template [01 · article template](assets/01-article-template.html) (a skeleton, not a standard) recoloured by `--theme auto` from the Luz-Design industry themes, and runs `D:\Codes\Luz-Design\scripts\check_document.py` and the session check. For a body-format example, read [02 · example body](assets/02-example-body.txt). For visual production, start from [03 · visual production brief](assets/03-visual-production-brief.md). Record generated image paths, actual dimensions and formats, warnings, and crops in `raw\manifest.json`, not in the reply.
 
 ## Validation before handoff
 
@@ -141,6 +157,7 @@ Run the automated checks when the environment supports them:
 
 ~~~powershell
 python -X utf8 scripts/01-validate_skill.py
+python -X utf8 scripts/06-context.py check
 python -X utf8 scripts/03-session.py check "<session folder>"
 python -X utf8 scripts/04-experience.py check
 ~~~

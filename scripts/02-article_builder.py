@@ -7,7 +7,12 @@
   python -X utf8 02-article_builder.py --title "标题" --body body.txt --out 测试.html   # 仅用于测试
 
 --session 时输出固定为 <会话>/<会话名>.html，正文源默认取 <会话>/raw/04-draft.txt，
-生成后自动调用 D:\\Codes\\Luz-Design\\scripts\\check_document.py，报错即失败。
+生成后自动调用 D:\\Codes\\Luz-Design\\scripts\\check_document.py 和 03-session.py 的会话检查，报错即失败。
+
+模板和本脚本只是骨架，不是规范：动笔前先运行 06-context.py <类型> 读完规则卡。--session 打包前检查
+raw/00-rules/ 有当前规则卡（写作指南改过就要重新生成）、raw/01-brief.md 的“采用的规则”不为空、
+“本次沉淀”的 key 已用 04-experience.py note 写入或确认（不早于会话创建日）；任何一项不满足就拒绝，
+并写明要运行的命令。--out 只用于测试，不能写进 Luz-Writing 输出根目录。
 
 body.txt 的格式：
   - 空行分段，一段一个 <p>
@@ -19,12 +24,17 @@ body.txt 的格式：
 图片默认转成 JPEG（质量 85，最长边 1600px）再 base64 内嵌；--keep-original 则原样内嵌。
 --copy-button 只在用户明确要求“一键复制到公众号”时使用。
 --icon 选浏览器标签页图标；默认 auto 按标题和正文关键词挑选，颜色取模板的 --accent / --tint。
+--theme 选主色：默认 auto 按标题和正文关键词匹配 Luz-Design themes.json 的行业主题（健身、咖啡、宠物……），
+取主题的 action / actionTint 作 --accent / --tint，引用线、高亮和标签页图标一起换色；没有匹配的行业时用
+template（模板自带的 --accent / --tint）。也可以直接写主题 key，例如 --theme fitness-gym。
 """
 
 import argparse
 import base64
 import html
+import importlib.util
 import io
+import json
 import re
 import subprocess
 import sys
@@ -35,16 +45,22 @@ HERE = Path(__file__).resolve().parent
 TEMPLATE = HERE.parent / "assets" / "01-article-template.html"
 OUTPUT_ROOT = Path(r"D:\Codes\skill输出\Luz-Writing")
 CHECK_DOCUMENT = Path(r"D:\Codes\Luz-Design\scripts\check_document.py")
+THEMES_FILE = Path(r"D:\Codes\Luz-Design\references\themes.json")
 SESSION_NAME = re.compile(r"^\d{3}-.+$")
+# 模板顶部“模板只是骨架”的注释只写给动笔的人看，成品里去掉。
+TEMPLATE_NOTE = re.compile(r"<!--\s*模板只是骨架.*?-->[ \t]*\r?\n?", re.S)
+CARD_HINT = ("规则卡：模板和本脚本只是骨架，内容、结构、声音与检查以规则卡为准；动笔前运行 "
+             "`python -X utf8 scripts/06-context.py <类型>`（list 看类型）读完整张卡。")
 
 # 公众号编辑器会剥掉 class，所以正文样式都写成内联；字阶取 Luz-Design 阅读型 14/16/20/24/32
 P_STYLE = "font-size:16px;line-height:1.75;color:#202124;margin:0 0 16px;"
 H2_STYLE = "font-size:24px;line-height:1.35;font-weight:600;color:#202124;margin:40px 0 16px;"
 H3_STYLE = "font-size:20px;line-height:1.4;font-weight:600;color:#202124;margin:28px 0 12px;"
+# 引用线和高亮底随主题换色：{accent} / {tint} 在生成时填入。
 QUOTE_STYLE = ("font-size:16px;line-height:1.75;color:#5f6368;margin:0 0 16px;"
-               "padding:2px 0 2px 14px;border-left:3px solid #2b5f73;")
+               "padding:2px 0 2px 14px;border-left:3px solid {accent};")
 STRONG_STYLE = "font-weight:600;color:#202124;"
-HL_STYLE = "background:#e9f2f5;padding:0 4px;border-radius:4px;"
+HL_STYLE = "background:{tint};padding:0 4px;border-radius:4px;"
 IMG_STYLE = "display:block;width:100%;height:auto;border-radius:12px;"
 IMG_WRAP = "margin:24px 0;"
 
@@ -70,6 +86,51 @@ ICON_KEYWORDS = (
     ("education", ("教育", "学习", "课程", "考试", "学校", "读书", "老师", "学生")),
 )
 HEX6 = re.compile(r"#[0-9A-Fa-f]{6}")
+
+# 主题关键词：主题自身的名称和细分（themes.json 的 label / subtype）之外补的常用说法；过于通用的细分词不参与匹配。
+THEME_ALIASES = {
+    "ai-agent": ("AI", "人工智能", "大模型", "智能体", "Agent", "GPT", "提示词"),
+    "fitness-gym": ("健身", "运动", "训练", "增肌", "减脂", "跑步", "瑜伽", "体能", "撸铁", "私教"),
+    "fast-noodle": ("牛肉面", "拉面", "米粉", "快餐"),
+    "coffee": ("咖啡", "拿铁", "美式"),
+    "milk-tea": ("奶茶", "果茶", "茶饮"),
+    "bakery-dessert": ("蛋糕", "甜品", "面包", "烘焙"),
+    "pharmacy": ("药店", "药房", "用药"),
+    "pet": ("宠物", "猫咪", "狗狗", "猫粮", "狗粮"),
+    "florist": ("鲜花", "花店", "花束"),
+}
+THEME_STOPWORDS = {"预约", "同城配送", "用品", "健康用品", "效率工具", "AI 助手"}
+
+
+def load_themes() -> dict:
+    """Luz-Design 行业主题表；读不到时返回空表，只能用 template。"""
+    try:
+        return json.loads(THEMES_FILE.read_text(encoding="utf-8")).get("themes", {})
+    except (OSError, ValueError):
+        return {}
+
+
+def theme_keywords(key: str, theme: dict) -> list[str]:
+    words = [w.strip() for w in re.split(r"[、/]", f"{theme.get('label', '')}/{theme.get('subtype', '')}")]
+    words += THEME_ALIASES.get(key, ())
+    return [w for w in dict.fromkeys(words) if len(w) >= 2 and w not in THEME_STOPWORDS]
+
+
+def pick_theme(title: str, body: str, themes: dict) -> str:
+    """标题命中优先（按主题表顺序），其次看正文前 2000 字里关键词出现次数最多的主题；都不命中用 template（模板自带颜色）。"""
+    for key, theme in themes.items():
+        if any(w in title for w in theme_keywords(key, theme)):
+            return key
+    head = body[:2000]
+    scores = {key: sum(head.count(w) for w in theme_keywords(key, theme)) for key, theme in themes.items()}
+    best = max(scores, key=lambda k: scores[k], default="template")
+    return best if scores.get(best, 0) >= 2 else "template"
+
+
+def apply_theme(template: str, accent: str, tint: str) -> str:
+    """把模板 :root 的 --accent / --tint 换成主题色。"""
+    template = re.sub(r"(--accent:\s*)#[0-9A-Fa-f]{6}", lambda m: m.group(1) + accent, template, count=1)
+    return re.sub(r"(--tint:\s*)#[0-9A-Fa-f]{6}", lambda m: m.group(1) + tint, template, count=1)
 
 
 def pick_icon(title: str, body: str) -> str:
@@ -126,11 +187,11 @@ COPY_HTML = """<button id="copy-btn" type="button">复制正文</button>
 SIZE_WARN_MB = 15
 
 
-def inline(text: str) -> str:
+def inline(text: str, accent: str = "#2b5f73", tint: str = "#e9f2f5") -> str:
     """转义后处理段内标记：**加粗**、==高亮==。"""
     s = html.escape(text, quote=False)
     s = re.sub(r"\*\*(.+?)\*\*", lambda m: f'<strong style="{STRONG_STYLE}">{m.group(1)}</strong>', s)
-    s = re.sub(r"==(.+?)==", lambda m: f'<span style="{HL_STYLE}">{m.group(1)}</span>', s)
+    s = re.sub(r"==(.+?)==", lambda m: f'<span style="{HL_STYLE.format(tint=tint)}">{m.group(1)}</span>', s)
     return s
 
 
@@ -202,7 +263,7 @@ def parse_body(text: str):
     return blocks
 
 
-def render(blocks, body_dir: Path, keep_original: bool):
+def render(blocks, body_dir: Path, keep_original: bool, accent: str = "#2b5f73", tint: str = "#e9f2f5"):
     parts = []
     n_img = 0
     n_p = 0
@@ -217,16 +278,37 @@ def render(blocks, body_dir: Path, keep_original: bool):
             n_img += 1
             parts.append(f'    <div style="{IMG_WRAP}"><img src="{src}" alt="插图{n_img}" style="{IMG_STYLE}"></div>')
         elif kind == "h2":
-            parts.append(f'    <h2 style="{H2_STYLE}">{inline(value)}</h2>')
+            parts.append(f'    <h2 style="{H2_STYLE}">{inline(value, accent, tint)}</h2>')
         elif kind == "h3":
-            parts.append(f'    <h3 style="{H3_STYLE}">{inline(value)}</h3>')
+            parts.append(f'    <h3 style="{H3_STYLE}">{inline(value, accent, tint)}</h3>')
         elif kind == "quote":
-            parts.append(f'    <blockquote style="{QUOTE_STYLE}">{inline(value)}</blockquote>')
+            parts.append(f'    <blockquote style="{QUOTE_STYLE.format(accent=accent)}">{inline(value, accent, tint)}</blockquote>')
             n_p += 1
         else:
-            parts.append(f'    <p style="{P_STYLE}">{inline(value)}</p>')
+            parts.append(f'    <p style="{P_STYLE}">{inline(value, accent, tint)}</p>')
             n_p += 1
     return "\n".join(parts), n_p, n_img
+
+
+_SESSION_MODULE = None
+
+
+def load_session_module():
+    """会话脚本 03-session.py（卡口与会话检查都在那里）；文件名带编号，按路径加载，只加载一次（测试可替换其 NOTES_FILE）。"""
+    global _SESSION_MODULE
+    if _SESSION_MODULE is None:
+        spec = importlib.util.spec_from_file_location("luz_writing_session", HERE / "03-session.py")
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        _SESSION_MODULE = module
+    return _SESSION_MODULE
+
+
+def inside_output_root(path: Path) -> bool:
+    """--out 指向 Luz-Writing 输出根目录（含其中的会话）时为 True；正式成品只能走 --session 卡口。"""
+    root = OUTPUT_ROOT.resolve()
+    target = path.resolve()
+    return target == root or root in target.parents
 
 
 def resolve_session(session: str) -> Path:
@@ -252,7 +334,7 @@ def run_document_check(out: Path) -> None:
         sys.exit("文档检查未通过，修正正文后重新生成")
 
 
-def main():
+def main(argv: list[str] | None = None):
     ap = argparse.ArgumentParser(description="把正文文本和图片打包成单文件阅读型网页")
     ap.add_argument("--title", required=True, help="大标题，也是页面第一行可见内容")
     ap.add_argument("--body", help="正文文本文件（UTF-8）；--session 时默认 raw/04-draft.txt")
@@ -265,31 +347,56 @@ def main():
     ap.add_argument("--icon", default="auto", choices=["auto", *ICONS],
                     help="标签页图标：tech 芯片 / fitness 哑铃 / food 碗 / travel 纸飞机 / finance 折线 / "
                          "education 书本 / article 文章；默认 auto 按标题和正文关键词挑选")
+    ap.add_argument("--theme", default="auto",
+                    help="主色：默认 auto 按标题和正文关键词匹配 Luz-Design 行业主题；template 用模板自带颜色；"
+                         "或直接写主题 key，例如 fitness-gym")
     ap.add_argument("--no-check", action="store_true", help="跳过 Luz-Design 文档检查（仅测试）")
-    args = ap.parse_args()
+    args = ap.parse_args(argv)
 
+    print(CARD_HINT, file=sys.stderr)
+    session_module = None
     if args.session:
         session = resolve_session(args.session)
+        session_module = load_session_module()
+        cards = sorted((session / "raw" / session_module.RULES_DIR).glob("*.md"))
+        if cards:
+            print("本会话的规则卡：" + "、".join(str(card) for card in cards), file=sys.stderr)
+        # 卡口：当前规则卡、“采用的规则”、“本次沉淀”，缺一项就不打包。
+        errors = session_module.packaging_errors(session)
+        if errors:
+            for error in errors:
+                print(f"拒绝打包：{error}", file=sys.stderr)
+            sys.exit("先读完规则卡，填写 raw/01-brief.md 的“采用的规则”，用 04-experience.py note 写入或确认经验并填进"
+                     "“本次沉淀”，再重新运行本命令")
         out = session / f"{session.name}.html"
         body_path = Path(args.body) if args.body else session / "raw" / "04-draft.txt"
     else:
         if not args.body:
             sys.exit("--out 模式需要 --body")
         out = Path(args.out)
+        if inside_output_root(out):
+            sys.exit(f"--out 只用于测试，不能写进 {OUTPUT_ROOT}；正式成品用 --session \"<会话目录>\"")
         body_path = Path(args.body)
     if not body_path.is_file():
         sys.exit(f"找不到正文：{body_path}")
 
     text = body_path.read_text(encoding="utf-8-sig")
-    body_html, n_p, n_img = render(parse_body(text), body_path.parent, args.keep_original)
+    template = TEMPLATE_NOTE.sub("", Path(args.template).read_text(encoding="utf-8"))
+    themes = load_themes()
+    theme_key = pick_theme(args.title, text, themes) if args.theme == "auto" else args.theme
+    if theme_key != "template":
+        if theme_key not in themes:
+            sys.exit(f"未知主题：{theme_key}，可选 auto、template、{'、'.join(themes) or '（读不到 ' + str(THEMES_FILE) + '）'}")
+        template = apply_theme(template, themes[theme_key]["action"], themes[theme_key]["actionTint"])
+    accent, tint = template_colors(template)
+    body_html, n_p, n_img = render(parse_body(text), body_path.parent, args.keep_original, accent, tint)
 
-    template = Path(args.template).read_text(encoding="utf-8")
     if "{{ICON}}" not in template:
         sys.exit("模板缺少 {{ICON}} 占位符：每个成品网页都必须有标签页图标")
     icon_kind = pick_icon(args.title, text) if args.icon == "auto" else args.icon
     page = (
         template
-        .replace("{{ICON}}", icon_link(icon_kind, *template_colors(template)))
+        .replace("{{ICON}}", icon_link(icon_kind, accent, tint))
         .replace("{{TITLE}}", html.escape(args.title, quote=False))
         .replace("{{BODY}}", body_html)
         .replace("{{EXTRA_CSS}}", COPY_CSS if args.copy_button else "")
@@ -303,11 +410,17 @@ def main():
 
     size_mb = out.stat().st_size / (1024 * 1024)
     print(f"已生成：{out}")
-    print(f"段落 {n_p} 个，图片 {n_img} 张，标签页图标 {icon_kind}，大小 {size_mb:.2f} MB")
+    print(f"段落 {n_p} 个，图片 {n_img} 张，标签页图标 {icon_kind}，主题 {theme_key}（{accent}），大小 {size_mb:.2f} MB")
     if size_mb > SIZE_WARN_MB:
         print(f"警告：超过 {SIZE_WARN_MB} MB，减少图片或降低质量", file=sys.stderr)
     if not args.no_check:
         run_document_check(out)
+    if session_module is not None:
+        errors = session_module.session_errors(session)
+        if errors:
+            for error in errors:
+                print(f"FAIL: {error}", file=sys.stderr)
+            sys.exit("会话检查未通过，按上面的提示修正后重新生成")
 
 
 if __name__ == "__main__":

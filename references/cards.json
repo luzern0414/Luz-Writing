@@ -1,0 +1,1231 @@
+{
+  "schema_version": "1.0",
+  "skill": "luz-writing",
+  "note_command": "python -X utf8 scripts/04-experience.py note --kind preference|lesson|fact --key <主题> --text \"<一句话原则>\" [--why \"<依据>\"]",
+  "closing": [
+    "- 采用的规则：有会话时在 raw/01-brief.md 的“采用的规则”逐行写出落实了上面哪些规则（参考文件 › 小节或偏好 key → 怎么落实）。交付给用户的文案里不提规则卡和规则（按 15 只交付所要）。",
+    "- 本次沉淀：每次调用至少写入或确认一条经验，命令 python -X utf8 scripts/04-experience.py note --kind preference|lesson|fact --key <主题> --text \"<一句话原则>\" [--why \"<依据>\"]；有会话时写进 raw/01-brief.md 的“本次沉淀”（key、类型、一句话），打包会检查；没有会话的对话回复也要在结束前运行这条命令，不在回复里提它。要记的包括但不限于：",
+    "  - preference：用户这次新说或纠正的要求（语气、长度、标题习惯、封面风格、渠道格式）；",
+    "  - lesson：被用户改掉的写法、事实核查踩的坑、规则纠正与正确做法；",
+    "  - fact：有效的选题角度与标题写法、调研来源与范围（可靠与无效的来源、Luz-Crawl 用过的站点与关键词）、Imagegen 风格参数；",
+    "  - 已有经验这次又用上了：用同一 key 再写一次即确认（次数加一），不新增重复条目；与旧经验冲突时用同一 key 改写，旧内容自动留作上一版。",
+    "- 只记一般规律，不记一次性的稿件细节；不写手机号、邮箱、个人路径、凭据和客户名称。"
+  ],
+  "always": [
+    {
+      "page": "15-deliver-only-what-was-asked.md",
+      "title": "15 · 只交付要求的文案",
+      "path": [
+        "15 · 只交付要求的文案"
+      ],
+      "label": "15 · 只交付要求的文案（全文，优先于其他交付习惯）"
+    },
+    {
+      "page": "01-workflow-and-brief.md",
+      "title": "01 · 工作流与写作简报",
+      "path": [
+        "先锁定交付对象"
+      ]
+    },
+    {
+      "page": "01-workflow-and-brief.md",
+      "title": "01 · 工作流与写作简报",
+      "path": [
+        "简报的最小充分集"
+      ]
+    },
+    {
+      "page": "01-workflow-and-brief.md",
+      "title": "01 · 工作流与写作简报",
+      "path": [
+        "起草前的一句话"
+      ]
+    },
+    {
+      "page": "01-workflow-and-brief.md",
+      "title": "01 · 工作流与写作简报",
+      "path": [
+        "输出契约"
+      ]
+    },
+    {
+      "page": "01-workflow-and-brief.md",
+      "title": "01 · 工作流与写作简报",
+      "path": [
+        "何时停下来问"
+      ]
+    }
+  ],
+  "cards": {
+    "tech-news": {
+      "title": "科技与 AI 资讯",
+      "summary": "AI 与科技新闻、GitHub 趋势、产品与模型发布、资讯合集",
+      "keywords": [
+        "AI",
+        "人工智能",
+        "大模型",
+        "模型",
+        "科技",
+        "资讯",
+        "快讯",
+        "发布会",
+        "GitHub",
+        "开源",
+        "芯片",
+        "新闻"
+      ],
+      "sections": [
+        {
+          "page": "05-technology-news.md",
+          "title": "05 · 科技与 AI 资讯",
+          "path": [
+            "05 · 科技与 AI 资讯"
+          ],
+          "label": "05 · 科技与 AI 资讯（全文）"
+        },
+        {
+          "page": "02-evidence-and-fact-checking.md",
+          "title": "02 · 证据与事实核查",
+          "path": [
+            "原则"
+          ]
+        },
+        {
+          "page": "02-evidence-and-fact-checking.md",
+          "title": "02 · 证据与事实核查",
+          "path": [
+            "声明分级"
+          ]
+        },
+        {
+          "page": "02-evidence-and-fact-checking.md",
+          "title": "02 · 证据与事实核查",
+          "path": [
+            "来源优先级"
+          ]
+        },
+        {
+          "page": "02-evidence-and-fact-checking.md",
+          "title": "02 · 证据与事实核查",
+          "path": [
+            "从来源到句子"
+          ]
+        },
+        {
+          "page": "04-natural-expression.md",
+          "title": "04 · 自然表达",
+          "path": [
+            "去掉 AI 味之后，还要有表达"
+          ]
+        },
+        {
+          "page": "04-natural-expression.md",
+          "title": "04 · 自然表达",
+          "path": [
+            "常见伪深刻结构"
+          ]
+        },
+        {
+          "page": "11-quality-gates.md",
+          "title": "11 · 质量闸门",
+          "path": [
+            "Gate 2 · 事实与证据"
+          ]
+        },
+        {
+          "page": "11-quality-gates.md",
+          "title": "11 · 质量闸门",
+          "path": [
+            "Gate 5 · 自然表达"
+          ]
+        },
+        {
+          "page": "11-quality-gates.md",
+          "title": "11 · 质量闸门",
+          "path": [
+            "Gate 9 · 文件交付"
+          ]
+        },
+        {
+          "page": "16-output-paths-and-tools.md",
+          "title": "16 · 输出路径、采集与排版",
+          "path": [
+            "会话结构"
+          ]
+        },
+        {
+          "page": "16-output-paths-and-tools.md",
+          "title": "16 · 输出路径、采集与排版",
+          "path": [
+            "调用 Luz-Crawl"
+          ]
+        },
+        {
+          "page": "16-output-paths-and-tools.md",
+          "title": "16 · 输出路径、采集与排版",
+          "path": [
+            "成品 HTML 排版"
+          ]
+        },
+        {
+          "page": "17-ai-pattern-catalog.md",
+          "title": "17 · AI 痕迹模式目录",
+          "path": [
+            "二之一、过度去味：报告腔与数字堆"
+          ]
+        },
+        {
+          "page": "17-ai-pattern-catalog.md",
+          "title": "17 · AI 痕迹模式目录",
+          "path": [
+            "九、自检顺序"
+          ]
+        }
+      ],
+      "tools": [
+        "建会话：`python -X utf8 scripts/03-session.py new --topic \"主题\" --card tech-news`；规则卡存进 raw/00-rules/，简报 raw/01-brief.md 带“采用的规则”和“本次沉淀”表",
+        "找料用 Luz-Crawl 读原文（科技资讯常用 github、hackernews、x、google、bing），合集用 `python -X utf8 scripts/03-session.py import-crawl \"<会话>\" \"<合集目录>\"` 复制进 raw/05-crawl/；每条事实写进 raw/02-claims.md（事件日期与访问日期分开）",
+        "声音样本：`assets/02-example-body.txt` 的正文文字（比喻开场、口语旁白、对厂商数字保持怀疑、结尾落到日常场景）；它是声音与格式示例，不是结构模板",
+        "正文写进 raw/04-draft.txt，填好“采用的规则”和“本次沉淀”后 `python -X utf8 scripts/02-article_builder.py --title \"标题\" --session \"<会话>\"`；缺当前规则卡或两张表有一张为空都会被拒绝",
+        "需要封面时按 14 › 封面与插图风格菜单，用户没点名时默认 3D 潮玩或软陶质感；Imagegen 先 `--dry-run`，用户要了才真正生成（先读 visual-production 卡）"
+      ],
+      "checks": [
+        "Gate 2：每条事实对应 raw/02-claims.md 的来源、事件日期与访问日期、口径和冲突；厂商自报保持归因",
+        "数字预算：每个话题一到两个数字，同段不超过两个，不复述排行榜；每个话题至少一个画面或类比、一句有态度的短评",
+        "按 17 › 九、自检顺序过一遍：改后没有变长、没有新增事实、没有统一成假口语",
+        "article builder 自动运行 `D:\\Codes\\Luz-Design\\scripts\\check_document.py` 零 ERROR；`python -X utf8 scripts/03-session.py check \"<会话>\"` 通过",
+        "回复只有成品路径和用户要的文案：无建议、改动说明、评分、备选或客套（15 › 自检）"
+      ]
+    },
+    "marketing-copy": {
+      "title": "营销文案",
+      "summary": "产品页、落地页、广告、邮件、社媒帖、Slogan、电商详情、活动文案",
+      "keywords": [
+        "营销",
+        "文案",
+        "广告",
+        "Slogan",
+        "slogan",
+        "落地页",
+        "详情页",
+        "电商",
+        "种草",
+        "推广",
+        "卖点",
+        "CTA",
+        "促销",
+        "邮件"
+      ],
+      "sections": [
+        {
+          "page": "06-marketing-copy.md",
+          "title": "06 · 营销文案",
+          "path": [
+            "06 · 营销文案"
+          ],
+          "label": "06 · 营销文案（全文）"
+        },
+        {
+          "page": "10-channels-and-formats.md",
+          "title": "10 · 渠道与格式",
+          "path": [
+            "小红书"
+          ]
+        },
+        {
+          "page": "10-channels-and-formats.md",
+          "title": "10 · 渠道与格式",
+          "path": [
+            "朋友圈"
+          ]
+        },
+        {
+          "page": "10-channels-and-formats.md",
+          "title": "10 · 渠道与格式",
+          "path": [
+            "电商详情页"
+          ]
+        },
+        {
+          "page": "10-channels-and-formats.md",
+          "title": "10 · 渠道与格式",
+          "path": [
+            "广告语与 Slogan"
+          ]
+        },
+        {
+          "page": "10-channels-and-formats.md",
+          "title": "10 · 渠道与格式",
+          "path": [
+            "海报与活动"
+          ]
+        },
+        {
+          "page": "10-channels-and-formats.md",
+          "title": "10 · 渠道与格式",
+          "path": [
+            "邮件与推送"
+          ]
+        },
+        {
+          "page": "10-channels-and-formats.md",
+          "title": "10 · 渠道与格式",
+          "path": [
+            "渠道适配原则"
+          ]
+        },
+        {
+          "page": "02-evidence-and-fact-checking.md",
+          "title": "02 · 证据与事实核查",
+          "path": [
+            "原则"
+          ]
+        },
+        {
+          "page": "02-evidence-and-fact-checking.md",
+          "title": "02 · 证据与事实核查",
+          "path": [
+            "高风险边界"
+          ]
+        },
+        {
+          "page": "04-natural-expression.md",
+          "title": "04 · 自然表达",
+          "path": [
+            "去掉 AI 味之后，还要有表达"
+          ]
+        },
+        {
+          "page": "04-natural-expression.md",
+          "title": "04 · 自然表达",
+          "path": [
+            "改写方法"
+          ]
+        },
+        {
+          "page": "11-quality-gates.md",
+          "title": "11 · 质量闸门",
+          "path": [
+            "Gate 1 · 任务与范围"
+          ]
+        },
+        {
+          "page": "11-quality-gates.md",
+          "title": "11 · 质量闸门",
+          "path": [
+            "Gate 2 · 事实与证据"
+          ]
+        },
+        {
+          "page": "11-quality-gates.md",
+          "title": "11 · 质量闸门",
+          "path": [
+            "Gate 7 · 渠道"
+          ]
+        },
+        {
+          "page": "17-ai-pattern-catalog.md",
+          "title": "17 · AI 痕迹模式目录",
+          "path": [
+            "三、中文词汇"
+          ]
+        },
+        {
+          "page": "17-ai-pattern-catalog.md",
+          "title": "17 · AI 痕迹模式目录",
+          "path": [
+            "四、中文句式与结构",
+            "话术壳"
+          ]
+        },
+        {
+          "page": "17-ai-pattern-catalog.md",
+          "title": "17 · AI 痕迹模式目录",
+          "path": [
+            "八、残留物（任何语言都直接删）"
+          ]
+        }
+      ],
+      "tools": [
+        "先列事实：产品参数、可验证证据、授权评价、价格与条件；材料里没有的不写，用户点名必须写时用 `[待核实：…]` 占位",
+        "字数、结构、标签与 CTA 按 10 对应渠道小节；要几条给几条，不加“方向一”这类角度标签",
+        "要交付 HTML 成品时：`python -X utf8 scripts/03-session.py new --topic \"主题\" --card marketing-copy`，正文写进 raw/04-draft.txt，填好“采用的规则”和“本次沉淀”后 `python -X utf8 scripts/02-article_builder.py --title \"标题\" --session \"<会话>\"`",
+        "海报、活动主视觉与版式交给 Luz-Design：先运行 `py -X utf8 D:\\Codes\\Luz-Design\\scripts\\context.py poster`；本技能只写文案"
+      ],
+      "checks": [
+        "06 › 三问式自检（清晰、具体、可信）与 06 › 合规：价格、退款、隐私、取消条件真实",
+        "Gate 7：标题、首段与 CTA 一致，字数在硬限制内，平台格式实际实现，社媒帖不残留 Markdown",
+        "17 › 三、中文词汇 与 › 话术壳：空话和宣传词回到具体事实",
+        "回复只有用户要的文案（或成品路径）：无建议、改动说明、评分、备选或客套（15 › 自检）"
+      ]
+    },
+    "opinion-explainer": {
+      "title": "观点与科普",
+      "summary": "评论、观点文章、解释文、科普与知识内容",
+      "keywords": [
+        "观点",
+        "评论",
+        "科普",
+        "解释",
+        "知识",
+        "原理",
+        "为什么",
+        "深度",
+        "解读"
+      ],
+      "sections": [
+        {
+          "page": "07-opinion-and-explainers.md",
+          "title": "07 · 观点与科普",
+          "path": [
+            "07 · 观点与科普"
+          ],
+          "label": "07 · 观点与科普（全文）"
+        },
+        {
+          "page": "03-strategy-and-structure.md",
+          "title": "03 · 选题策略与结构",
+          "path": [
+            "结构选择"
+          ]
+        },
+        {
+          "page": "03-strategy-and-structure.md",
+          "title": "03 · 选题策略与结构",
+          "path": [
+            "段落功能"
+          ]
+        },
+        {
+          "page": "03-strategy-and-structure.md",
+          "title": "03 · 选题策略与结构",
+          "path": [
+            "反向提纲"
+          ]
+        },
+        {
+          "page": "03-strategy-and-structure.md",
+          "title": "03 · 选题策略与结构",
+          "path": [
+            "论证结构"
+          ]
+        },
+        {
+          "page": "03-strategy-and-structure.md",
+          "title": "03 · 选题策略与结构",
+          "path": [
+            "标题与摘要"
+          ]
+        },
+        {
+          "page": "02-evidence-and-fact-checking.md",
+          "title": "02 · 证据与事实核查",
+          "path": [
+            "原则"
+          ]
+        },
+        {
+          "page": "02-evidence-and-fact-checking.md",
+          "title": "02 · 证据与事实核查",
+          "path": [
+            "从来源到句子"
+          ]
+        },
+        {
+          "page": "02-evidence-and-fact-checking.md",
+          "title": "02 · 证据与事实核查",
+          "path": [
+            "证据冲突"
+          ]
+        },
+        {
+          "page": "04-natural-expression.md",
+          "title": "04 · 自然表达",
+          "path": [
+            "去掉 AI 味之后，还要有表达"
+          ]
+        },
+        {
+          "page": "04-natural-expression.md",
+          "title": "04 · 自然表达",
+          "path": [
+            "常见伪深刻结构"
+          ]
+        },
+        {
+          "page": "04-natural-expression.md",
+          "title": "04 · 自然表达",
+          "path": [
+            "改写方法"
+          ]
+        },
+        {
+          "page": "04-natural-expression.md",
+          "title": "04 · 自然表达",
+          "path": [
+            "保留人的痕迹"
+          ]
+        },
+        {
+          "page": "11-quality-gates.md",
+          "title": "11 · 质量闸门",
+          "path": [
+            "Gate 4 · 结构与逻辑"
+          ]
+        },
+        {
+          "page": "11-quality-gates.md",
+          "title": "11 · 质量闸门",
+          "path": [
+            "Gate 5 · 自然表达"
+          ]
+        },
+        {
+          "page": "17-ai-pattern-catalog.md",
+          "title": "17 · AI 痕迹模式目录",
+          "path": [
+            "四、中文句式与结构"
+          ]
+        },
+        {
+          "page": "17-ai-pattern-catalog.md",
+          "title": "17 · AI 痕迹模式目录",
+          "path": [
+            "九、自检顺序"
+          ]
+        },
+        {
+          "page": "10-channels-and-formats.md",
+          "title": "10 · 渠道与格式",
+          "path": [
+            "微信公众号"
+          ]
+        }
+      ],
+      "tools": [
+        "先写一句话主轴：观点是“主张 X，因为 Y，边界是 Z”；科普是“先让读者看见 A，再解释 B，并明确 C 仍未知”",
+        "需要事实时用 Luz-Crawl 读原文，声明与来源写进 raw/02-claims.md",
+        "要交付 HTML 成品时：`python -X utf8 scripts/03-session.py new --topic \"主题\" --card opinion-explainer`，正文写进 raw/04-draft.txt，填好“采用的规则”和“本次沉淀”后 `python -X utf8 scripts/02-article_builder.py --title \"标题\" --session \"<会话>\"`"
+      ],
+      "checks": [
+        "07 › 质量检查",
+        "Gate 4 反向提纲：每段一句主旨，删掉哪段会丢信息，相邻段的关系说得出",
+        "Gate 5 与表达检查：每个话题有画面或类比、一句真实态度，没有伪深刻句式和翻案腔",
+        "有成品 HTML 时：article builder 的 check_document 零 ERROR，`python -X utf8 scripts/03-session.py check \"<会话>\"` 通过",
+        "回复只有成品路径和用户要的文案（15 › 自检）"
+      ]
+    },
+    "narrative-fiction": {
+      "title": "叙事与小说",
+      "summary": "短篇、长篇与连载、场景与对话、网文、非虚构叙事",
+      "keywords": [
+        "小说",
+        "故事",
+        "叙事",
+        "场景",
+        "对话",
+        "人物",
+        "网文",
+        "连载",
+        "剧本",
+        "非虚构"
+      ],
+      "sections": [
+        {
+          "page": "08-narrative-and-fiction.md",
+          "title": "08 · 叙事与小说",
+          "path": [
+            "08 · 叙事与小说"
+          ],
+          "label": "08 · 叙事与小说（全文）"
+        },
+        {
+          "page": "07-opinion-and-explainers.md",
+          "title": "07 · 观点与科普",
+          "path": [
+            "观点与故事的选择"
+          ]
+        },
+        {
+          "page": "12-voice-profile-and-learning.md",
+          "title": "12 · 声音档案与持续学习",
+          "path": [
+            "从样本中读出什么"
+          ]
+        },
+        {
+          "page": "12-voice-profile-and-learning.md",
+          "title": "12 · 声音档案与持续学习",
+          "path": [
+            "五个可调维度"
+          ]
+        },
+        {
+          "page": "12-voice-profile-and-learning.md",
+          "title": "12 · 声音档案与持续学习",
+          "path": [
+            "改写时如何落声"
+          ]
+        },
+        {
+          "page": "04-natural-expression.md",
+          "title": "04 · 自然表达",
+          "path": [
+            "保留人的痕迹"
+          ]
+        },
+        {
+          "page": "04-natural-expression.md",
+          "title": "04 · 自然表达",
+          "path": [
+            "中文处理"
+          ]
+        },
+        {
+          "page": "11-quality-gates.md",
+          "title": "11 · 质量闸门",
+          "path": [
+            "Gate 4 · 结构与逻辑"
+          ]
+        },
+        {
+          "page": "11-quality-gates.md",
+          "title": "11 · 质量闸门",
+          "path": [
+            "Gate 6 · 声音"
+          ]
+        },
+        {
+          "page": "17-ai-pattern-catalog.md",
+          "title": "17 · AI 痕迹模式目录",
+          "path": [
+            "二、防止矫枉过正"
+          ]
+        },
+        {
+          "page": "17-ai-pattern-catalog.md",
+          "title": "17 · AI 痕迹模式目录",
+          "path": [
+            "三、中文词汇",
+            "抒情与文艺腔（非虚构稿尤其注意）"
+          ]
+        },
+        {
+          "page": "17-ai-pattern-catalog.md",
+          "title": "17 · AI 痕迹模式目录",
+          "path": [
+            "四、中文句式与结构",
+            "叙事类"
+          ]
+        },
+        {
+          "page": "17-ai-pattern-catalog.md",
+          "title": "17 · AI 痕迹模式目录",
+          "path": [
+            "四、中文句式与结构",
+            "结尾"
+          ]
+        }
+      ],
+      "tools": [
+        "先写故事主轴：角色想要 W，受阻于 O，必须作出选择 C，并承担结果 R",
+        "有声音样本或连载前文时，先按 12 读出句长、人称、语气词、标点和开场方式，再落声；样本优先于默认风格",
+        "要交付 HTML 成品时：`python -X utf8 scripts/03-session.py new --topic \"主题\" --card narrative-fiction`，正文写进 raw/04-draft.txt，填好“采用的规则”和“本次沉淀”后 `python -X utf8 scripts/02-article_builder.py --title \"标题\" --session \"<会话>\"`"
+      ],
+      "checks": [
+        "08 › 去 AI 味的三层检查",
+        "Gate 4 因果、视角、场景变化、人物动机与连续性；Gate 6 声音与样本一致",
+        "非虚构叙事不虚构细节、经历、对话或情绪",
+        "回复只有用户要的文本（或成品路径）（15 › 自检）"
+      ]
+    },
+    "academic-professional": {
+      "title": "学术与专业文档",
+      "summary": "论文、研究笔记、评审回复、说明文档、制度与用户协议等结构化文档的文字",
+      "keywords": [
+        "论文",
+        "学术",
+        "研究",
+        "文献",
+        "评审",
+        "文档",
+        "说明",
+        "手册",
+        "制度",
+        "协议",
+        "隐私",
+        "政策",
+        "README",
+        "方案",
+        "报告"
+      ],
+      "sections": [
+        {
+          "page": "09-academic-and-professional.md",
+          "title": "09 · 学术与专业写作",
+          "path": [
+            "09 · 学术与专业写作"
+          ],
+          "label": "09 · 学术与专业写作（全文）"
+        },
+        {
+          "page": "02-evidence-and-fact-checking.md",
+          "title": "02 · 证据与事实核查",
+          "path": [
+            "02 · 证据与事实核查"
+          ],
+          "label": "02 · 证据与事实核查（全文）"
+        },
+        {
+          "page": "03-strategy-and-structure.md",
+          "title": "03 · 选题策略与结构",
+          "path": [
+            "结构选择"
+          ]
+        },
+        {
+          "page": "03-strategy-and-structure.md",
+          "title": "03 · 选题策略与结构",
+          "path": [
+            "反向提纲"
+          ]
+        },
+        {
+          "page": "03-strategy-and-structure.md",
+          "title": "03 · 选题策略与结构",
+          "path": [
+            "论证结构"
+          ]
+        },
+        {
+          "page": "11-quality-gates.md",
+          "title": "11 · 质量闸门",
+          "path": [
+            "Gate 2 · 事实与证据"
+          ]
+        },
+        {
+          "page": "11-quality-gates.md",
+          "title": "11 · 质量闸门",
+          "path": [
+            "Gate 3 · 原意与保真"
+          ]
+        },
+        {
+          "page": "11-quality-gates.md",
+          "title": "11 · 质量闸门",
+          "path": [
+            "Gate 4 · 结构与逻辑"
+          ]
+        },
+        {
+          "page": "17-ai-pattern-catalog.md",
+          "title": "17 · AI 痕迹模式目录",
+          "path": [
+            "六、翻译腔"
+          ]
+        },
+        {
+          "page": "17-ai-pattern-catalog.md",
+          "title": "17 · AI 痕迹模式目录",
+          "path": [
+            "七、英文痕迹"
+          ]
+        }
+      ],
+      "tools": [
+        "先写主轴：论文是“问题 Q 存在，现有研究缺少 G，本文用 M 提供 E，贡献 C，限制 L”；文档是读者要做的决定或操作，以及条件、步骤、结果和例外",
+        "引用逐条对应原文，claim-evidence 写进 raw/02-claims.md；法律、协议与制度原文、条款编号、标识符和精确界面文字逐字保留，改写也不偷换否定、条件与责任主体",
+        "Word、PDF 等文件版式交给 Luz-Design：先运行 `py -X utf8 D:\\Codes\\Luz-Design\\scripts\\context.py docx`；本技能只负责文字",
+        "要交付阅读型 HTML 时：`python -X utf8 scripts/03-session.py new --topic \"主题\" --card academic-professional`，再用 02-article_builder.py --session 打包"
+      ],
+      "checks": [
+        "09 › 学术审校（论文）或 09 › 读者测试（结构化文档）",
+        "Gate 2 事实与证据、Gate 3 原意与保真：否定、条件、范围、责任主体与引用没有被改动",
+        "17 › 六、翻译腔 与 › 七、英文痕迹",
+        "回复只有用户要的文本（或成品路径）（15 › 自检）"
+      ]
+    },
+    "channel-adaptation": {
+      "title": "渠道适配：标题、摘要与平台格式",
+      "summary": "公众号、小红书、短视频、朋友圈、邮件、海外社区与 SEO 的标题、字数、结构、标签和 CTA",
+      "keywords": [
+        "公众号",
+        "小红书",
+        "抖音",
+        "视频号",
+        "短视频",
+        "朋友圈",
+        "标题",
+        "摘要",
+        "标签",
+        "SEO",
+        "LinkedIn",
+        "Twitter",
+        "Reddit",
+        "Hacker News",
+        "适配"
+      ],
+      "sections": [
+        {
+          "page": "10-channels-and-formats.md",
+          "title": "10 · 渠道与格式",
+          "path": [
+            "10 · 渠道与格式"
+          ],
+          "label": "10 · 渠道与格式（全文）"
+        },
+        {
+          "page": "03-strategy-and-structure.md",
+          "title": "03 · 选题策略与结构",
+          "path": [
+            "标题与摘要"
+          ]
+        },
+        {
+          "page": "03-strategy-and-structure.md",
+          "title": "03 · 选题策略与结构",
+          "path": [
+            "分篇与序列"
+          ]
+        },
+        {
+          "page": "03-strategy-and-structure.md",
+          "title": "03 · 选题策略与结构",
+          "path": [
+            "分布与复用"
+          ]
+        },
+        {
+          "page": "05-technology-news.md",
+          "title": "05 · 科技与 AI 资讯",
+          "path": [
+            "标题与摘要"
+          ]
+        },
+        {
+          "page": "06-marketing-copy.md",
+          "title": "06 · 营销文案",
+          "path": [
+            "标题与钩子"
+          ]
+        },
+        {
+          "page": "06-marketing-copy.md",
+          "title": "06 · 营销文案",
+          "path": [
+            "CTA"
+          ]
+        },
+        {
+          "page": "11-quality-gates.md",
+          "title": "11 · 质量闸门",
+          "path": [
+            "Gate 3 · 原意与保真"
+          ]
+        },
+        {
+          "page": "11-quality-gates.md",
+          "title": "11 · 质量闸门",
+          "path": [
+            "Gate 7 · 渠道"
+          ]
+        },
+        {
+          "page": "16-output-paths-and-tools.md",
+          "title": "16 · 输出路径、采集与排版",
+          "path": [
+            "成品 HTML 排版"
+          ]
+        }
+      ],
+      "tools": [
+        "按 10 对应平台小节定字数、结构、标签与 CTA；同一内容多渠道复用按 03 › 分布与复用",
+        "标题、摘要给正好 N 个，不推荐、不打分、不加角度标签",
+        "要交付 HTML 成品时：`python -X utf8 scripts/03-session.py new --topic \"主题\" --card channel-adaptation`，正文写进 raw/04-draft.txt，填好“采用的规则”和“本次沉淀”后 `python -X utf8 scripts/02-article_builder.py --title \"标题\" --session \"<会话>\"`；公众号摘要、标签、封面说明写进 raw/01-brief.md，不进成品可见区"
+      ],
+      "checks": [
+        "Gate 7：标题、摘要、首段与 CTA 一致，字数在硬限制内，平台格式实际实现，社媒帖不残留 Markdown",
+        "Gate 3：适配不改事实、数字、条件与归因",
+        "回复只有用户要的文案（或成品路径）（15 › 自检）"
+      ]
+    },
+    "polish-review": {
+      "title": "润色、去 AI 味与审稿",
+      "summary": "改写、润色、定点修改、去机器腔、审稿与诊断",
+      "keywords": [
+        "润色",
+        "改写",
+        "去 AI 味",
+        "AI 味",
+        "机器腔",
+        "太像",
+        "审稿",
+        "诊断",
+        "挑问题",
+        "定点",
+        "精简",
+        "口语",
+        "自然"
+      ],
+      "sections": [
+        {
+          "page": "04-natural-expression.md",
+          "title": "04 · 自然表达",
+          "path": [
+            "04 · 自然表达"
+          ],
+          "label": "04 · 自然表达（全文）"
+        },
+        {
+          "page": "17-ai-pattern-catalog.md",
+          "title": "17 · AI 痕迹模式目录",
+          "path": [
+            "17 · AI 痕迹模式目录"
+          ],
+          "label": "17 · AI 痕迹模式目录（全文）"
+        },
+        {
+          "page": "11-quality-gates.md",
+          "title": "11 · 质量闸门",
+          "path": [
+            "先按任务选检查"
+          ]
+        },
+        {
+          "page": "11-quality-gates.md",
+          "title": "11 · 质量闸门",
+          "path": [
+            "Gate 1 · 任务与范围"
+          ]
+        },
+        {
+          "page": "11-quality-gates.md",
+          "title": "11 · 质量闸门",
+          "path": [
+            "Gate 3 · 原意与保真"
+          ]
+        },
+        {
+          "page": "11-quality-gates.md",
+          "title": "11 · 质量闸门",
+          "path": [
+            "Gate 8 · 审稿报告格式"
+          ]
+        },
+        {
+          "page": "12-voice-profile-and-learning.md",
+          "title": "12 · 声音档案与持续学习",
+          "path": [
+            "改写时如何落声"
+          ]
+        }
+      ],
+      "tools": [
+        "先判情形：A 空白或通用稿可按事实重建论证；B 有真实声音或论点只修结构和不清楚处；C 定点修改只改指定部分",
+        "改前守住 17 › 一、改之前先守住的规则：未标记的句子逐字保留，干净文本原样返回，只做一轮，不新增事实和长度",
+        "有声音样本或用户反复纠正时按 12 › 改写时如何落声；审稿只在用户要求时交，格式见 11 › Gate 8"
+      ],
+      "checks": [
+        "Gate 1 范围：审稿没扩成改写，改写没附审稿意见，定点修改没碰范围外文本",
+        "Gate 3 原意与保真：前后对照事实、数字、否定、条件、责任和受保护文本",
+        "17 › 二、防止矫枉过正：改后没有变长、没有新增事实、没有统一成假口语",
+        "回复只有改后文本（或用户要的问题清单）：无改动说明、前后对照、自评（15 › 自检）"
+      ]
+    },
+    "fact-check": {
+      "title": "事实核查与调研",
+      "summary": "核查数字、引语、日期、名称与归因；调研近期事实和来源冲突",
+      "keywords": [
+        "核查",
+        "核实",
+        "事实",
+        "来源",
+        "引语",
+        "数据",
+        "调研",
+        "出处",
+        "真假",
+        "辟谣"
+      ],
+      "sections": [
+        {
+          "page": "02-evidence-and-fact-checking.md",
+          "title": "02 · 证据与事实核查",
+          "path": [
+            "02 · 证据与事实核查"
+          ],
+          "label": "02 · 证据与事实核查（全文）"
+        },
+        {
+          "page": "05-technology-news.md",
+          "title": "05 · 科技与 AI 资讯",
+          "path": [
+            "事实门"
+          ]
+        },
+        {
+          "page": "05-technology-news.md",
+          "title": "05 · 科技与 AI 资讯",
+          "path": [
+            "归因写得像人话"
+          ]
+        },
+        {
+          "page": "16-output-paths-and-tools.md",
+          "title": "16 · 输出路径、采集与排版",
+          "path": [
+            "会话结构"
+          ]
+        },
+        {
+          "page": "16-output-paths-and-tools.md",
+          "title": "16 · 输出路径、采集与排版",
+          "path": [
+            "调用 Luz-Crawl"
+          ]
+        },
+        {
+          "page": "11-quality-gates.md",
+          "title": "11 · 质量闸门",
+          "path": [
+            "Gate 2 · 事实与证据"
+          ]
+        },
+        {
+          "page": "11-quality-gates.md",
+          "title": "11 · 质量闸门",
+          "path": [
+            "Gate 3 · 原意与保真"
+          ]
+        },
+        {
+          "page": "11-quality-gates.md",
+          "title": "11 · 质量闸门",
+          "path": [
+            "Gate 8 · 审稿报告格式"
+          ]
+        }
+      ],
+      "tools": [
+        "用 Luz-Crawl 打开原文读到目标正文（先读 `D:\\Codes\\Luz-Crawl\\SKILL.md`）；搜索摘要和内容农场只算线索",
+        "每条声明写进 raw/02-claims.md：声明、来源与定位、事件日期、访问日期、状态（已验证 / 部分支持 / 未决 / 相反）、限制",
+        "要留存核查过程时：`python -X utf8 scripts/03-session.py new --topic \"主题\" --card fact-check`，合集用 `03-session.py import-crawl` 复制进 raw/05-crawl/"
+      ],
+      "checks": [
+        "Gate 2：来源支持的是当前断言本身，事件日期与页面日期分开，反证没有被隐藏，厂商自报保持归因",
+        "交付核实结果与状态；用户没要求时不附接下来该查什么或写作建议（15 › 交付什么）"
+      ]
+    },
+    "visual-production": {
+      "title": "封面、插图与视觉排版",
+      "summary": "文章封面与插图、风格菜单（含 3D 潮玩与软陶质感）、Imagegen 生成、交给 Luz-Design 的海报与版式",
+      "keywords": [
+        "封面",
+        "配图",
+        "插图",
+        "海报",
+        "Imagegen",
+        "生图",
+        "风格",
+        "潮玩",
+        "软陶",
+        "视觉",
+        "排版"
+      ],
+      "sections": [
+        {
+          "page": "14-visual-production.md",
+          "title": "14 · 视觉素材与设计排版",
+          "path": [
+            "14 · 视觉素材与设计排版"
+          ],
+          "label": "14 · 视觉素材与设计排版（全文，含封面与插图风格菜单）"
+        },
+        {
+          "page": "05-technology-news.md",
+          "title": "05 · 科技与 AI 资讯",
+          "path": [
+            "可选视觉包装"
+          ]
+        },
+        {
+          "page": "10-channels-and-formats.md",
+          "title": "10 · 渠道与格式",
+          "path": [
+            "海报与活动"
+          ]
+        },
+        {
+          "page": "10-channels-and-formats.md",
+          "title": "10 · 渠道与格式",
+          "path": [
+            "文章 HTML 交付"
+          ]
+        },
+        {
+          "page": "16-output-paths-and-tools.md",
+          "title": "16 · 输出路径、采集与排版",
+          "path": [
+            "成品 HTML 排版"
+          ]
+        },
+        {
+          "page": "11-quality-gates.md",
+          "title": "11 · 质量闸门",
+          "path": [
+            "Gate 9 · 文件交付"
+          ]
+        },
+        {
+          "page": "11-quality-gates.md",
+          "title": "11 · 质量闸门",
+          "path": [
+            "Gate 10 · 视觉素材与版式"
+          ]
+        }
+      ],
+      "tools": [
+        "视觉简报用 `assets/03-visual-production-brief.md`（骨架），存进 raw/06-images/",
+        "Imagegen：`D:\\Codes\\Imagegen\\src\\imagegen.py` 先 `--dry-run`，用户要了才真正生成，一次超时不自动重提；参考图编辑用 `imagegen_edit.py`；不读密钥文件",
+        "风格按 14 › 封面与插图风格菜单选一种，用户没点名时科技资讯默认 3D 潮玩或软陶质感；产品界面不套用这份菜单",
+        "海报、封面族与长页版式先运行 Luz-Design 规则卡：`py -X utf8 D:\\Codes\\Luz-Design\\scripts\\context.py poster`（阅读型页面用 reading-html）",
+        "图片用 `[img] 路径` 接入 raw/04-draft.txt，填好“采用的规则”和“本次沉淀”后用 `python -X utf8 scripts/02-article_builder.py --title \"标题\" --session \"<会话>\"` 打包"
+      ],
+      "checks": [
+        "Gate 10：每张图有阅读任务，无乱码文字、水印、Logo，实际尺寸与格式已核实并记进 raw/manifest.json",
+        "14 › 六、放置与验收 逐项通过；失败按 14 › 七、失败与回退 如实说明",
+        "article builder 的 check_document 零 ERROR；`python -X utf8 scripts/03-session.py check \"<会话>\"` 通过"
+      ]
+    },
+    "general": {
+      "title": "通用写作与结构",
+      "summary": "未归类的起草与改写、选题、提纲、策划、结构化说明；拿不准选哪张卡时用它",
+      "keywords": [
+        "选题",
+        "提纲",
+        "大纲",
+        "结构",
+        "策划",
+        "写作"
+      ],
+      "sections": [
+        {
+          "page": "01-workflow-and-brief.md",
+          "title": "01 · 工作流与写作简报",
+          "path": [
+            "写作的五段推进"
+          ]
+        },
+        {
+          "page": "01-workflow-and-brief.md",
+          "title": "01 · 工作流与写作简报",
+          "path": [
+            "工作文件"
+          ]
+        },
+        {
+          "page": "03-strategy-and-structure.md",
+          "title": "03 · 选题策略与结构",
+          "path": [
+            "03 · 选题策略与结构"
+          ],
+          "label": "03 · 选题策略与结构（全文）"
+        },
+        {
+          "page": "02-evidence-and-fact-checking.md",
+          "title": "02 · 证据与事实核查",
+          "path": [
+            "原则"
+          ]
+        },
+        {
+          "page": "02-evidence-and-fact-checking.md",
+          "title": "02 · 证据与事实核查",
+          "path": [
+            "从来源到句子"
+          ]
+        },
+        {
+          "page": "04-natural-expression.md",
+          "title": "04 · 自然表达",
+          "path": [
+            "去掉 AI 味之后，还要有表达"
+          ]
+        },
+        {
+          "page": "04-natural-expression.md",
+          "title": "04 · 自然表达",
+          "path": [
+            "改写方法"
+          ]
+        },
+        {
+          "page": "04-natural-expression.md",
+          "title": "04 · 自然表达",
+          "path": [
+            "快速自检"
+          ]
+        },
+        {
+          "page": "11-quality-gates.md",
+          "title": "11 · 质量闸门",
+          "path": [
+            "先按任务选检查"
+          ]
+        },
+        {
+          "page": "11-quality-gates.md",
+          "title": "11 · 质量闸门",
+          "path": [
+            "Gate 1 · 任务与范围"
+          ]
+        },
+        {
+          "page": "11-quality-gates.md",
+          "title": "11 · 质量闸门",
+          "path": [
+            "Gate 4 · 结构与逻辑"
+          ]
+        },
+        {
+          "page": "11-quality-gates.md",
+          "title": "11 · 质量闸门",
+          "path": [
+            "交付前快速提问"
+          ]
+        },
+        {
+          "page": "16-output-paths-and-tools.md",
+          "title": "16 · 输出路径、采集与排版",
+          "path": [
+            "会话结构"
+          ]
+        },
+        {
+          "page": "16-output-paths-and-tools.md",
+          "title": "16 · 输出路径、采集与排版",
+          "path": [
+            "命令顺序"
+          ]
+        },
+        {
+          "page": "16-output-paths-and-tools.md",
+          "title": "16 · 输出路径、采集与排版",
+          "path": [
+            "成品 HTML 排版"
+          ]
+        }
+      ],
+      "tools": [
+        "先锁定交付对象，写出一句话主轴；结构从论证来，不套模板（03 › 结构选择）。任务其实属于某个专门类型时，改用那张卡（`python -X utf8 scripts/06-context.py list`）",
+        "要交付 HTML 成品时：`python -X utf8 scripts/03-session.py new --topic \"主题\" --card general`，正文写进 raw/04-draft.txt，填好“采用的规则”和“本次沉淀”后 `python -X utf8 scripts/02-article_builder.py --title \"标题\" --session \"<会话>\"`"
+      ],
+      "checks": [
+        "Gate 1 任务与范围、Gate 4 结构与逻辑；11 › 交付前快速提问",
+        "有成品 HTML 时：article builder 的 check_document 零 ERROR，`python -X utf8 scripts/03-session.py check \"<会话>\"` 通过",
+        "回复只有用户要的文本（或成品路径）（15 › 自检）"
+      ]
+    }
+  }
+}
