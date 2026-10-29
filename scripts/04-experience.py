@@ -23,7 +23,9 @@ from datetime import date
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-STORE = ROOT / "experience" / "notes.json"
+SKILL_STORE = ROOT / "experience" / "notes.json"
+# LUZ_EXPERIENCE_STORE names another notes file for tests and rehearsals; the skill's own notes and catalog stay untouched.
+STORE = Path(os.environ.get("LUZ_EXPERIENCE_STORE") or SKILL_STORE)
 
 
 # ---------------------------------------------------------------- notes store (identical in Luz-System, Luz-Design, Luz-Dev, Luz-Writing)
@@ -255,7 +257,7 @@ def render(doc: dict, path: Path) -> None:
 
 
 def catalog_for(store: Path) -> Path | None:
-    return store.parent / "catalog.md" if store.resolve() == STORE.resolve() else None
+    return store.parent / "catalog.md" if store.resolve() == SKILL_STORE.resolve() else None
 
 
 def show(notes: list[dict]) -> None:

@@ -21,6 +21,7 @@ import argparse
 import hashlib
 import importlib.util
 import json
+import os
 import re
 import shutil
 import sys
@@ -29,7 +30,8 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 # 经验库（04-experience.py 写入）；模块级变量，测试可替换成临时文件。同目录 git 忽略的 *.local.json 也算。
-NOTES_FILE = HERE.parent / "experience" / "notes.json"
+# LUZ_EXPERIENCE_STORE names another notes file for tests and rehearsals; the skill's own notes and catalog stay untouched.
+NOTES_FILE = Path(os.environ.get("LUZ_EXPERIENCE_STORE") or HERE.parent / "experience" / "notes.json")
 OUTPUT_ROOT = Path(r"D:\Codes\skill输出\Luz-Writing")
 CRAWL_ROOT = Path(r"D:\Codes\skill输出\Luz-Crawl")
 SESSION_NAME = re.compile(r"^(\d{3})-.+$")
@@ -149,6 +151,8 @@ def adopted_rules(brief_text: str) -> list[tuple[str, str]] | None:
 
 def experience_notes() -> dict[str, dict]:
     """经验库里的全部条目（notes.json 加同目录 git 忽略的 *.local.json），按 key 索引。"""
+    if os.environ.get("LUZ_EXPERIENCE_STORE"):
+        print(f"注意：LUZ_EXPERIENCE_STORE 已设置，本次沉淀按 {NOTES_FILE} 核对，经验不会进入技能（只用于测试和演练，正式交付不要设置）", file=sys.stderr)
     notes: dict[str, dict] = {}
     for store in [NOTES_FILE, *sorted(NOTES_FILE.parent.glob("*.local.json"))]:
         try:
