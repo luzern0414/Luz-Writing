@@ -3,8 +3,8 @@
 """把正文文本和图片打包成单文件阅读型网页，排版遵循 Luz-Design 阅读型网页规范。
 
 用法：
-  python -X utf8 02-article_builder.py --title "标题" --body body.txt --session "D:\\Codes\\skill输出\\Luz-Writing\\001-主题"
-  python -X utf8 02-article_builder.py --title "标题" --body body.txt --out 测试.html   # 仅用于测试
+  py -X utf8 02-article_builder.py --title "标题" --body body.txt --session "D:\\Codes\\skill输出\\Luz-Writing\\001-主题"
+  py -X utf8 02-article_builder.py --title "标题" --body body.txt --out 测试.html   # 仅用于测试
 
 --session 时输出固定为 <会话>/<会话名>.html，正文源默认取 <会话>/raw/04-draft.txt，
 生成后自动调用 D:\\Codes\\Luz-Design\\scripts\\check_document.py 和 03-session.py 的会话检查，报错即失败。
@@ -14,19 +14,22 @@ raw/00-rules/ 有当前规则卡（写作指南改过就要重新生成）、raw
 “本次沉淀”的 key 已用 04-experience.py note 写入或确认（不早于会话创建日）；任何一项不满足就拒绝，
 并写明要运行的命令。--out 只用于测试，不能写进 Luz-Writing 输出根目录。
 
-body.txt 的格式：
+body.txt 的格式（references/16 › 正文格式 是同一份说明）：
   - 空行分段，一段一个 <p>
   - 行首 "## " 二级标题，"### " 三级标题
-  - 单独一行 "[img] 图片路径" 插入一张图；相对路径相对正文文件解析
+  - 单独一行 "[img] 图片路径 | 替代文本 | 图注" 插入一张图；替代文本与图注可省略（省略替代文本会警告），
+    相对路径相对正文文件解析
   - 行首 "> " 是逐字引用（第三方原话），不用于作者自己的提示或建议
+  - 连续以 "|" 开头的行是表格：第一行表头，"| --- |" 分隔线可有可无；用于文案键表等整句表格
   - 段内 **文字** 加粗，==文字== 高亮；其余原样输出（会做 HTML 转义）
 
 图片默认转成 JPEG（质量 85，最长边 1600px）再 base64 内嵌；--keep-original 则原样内嵌。
 --copy-button 只在用户明确要求“一键复制到公众号”时使用。
---icon 选浏览器标签页图标；默认 auto 按标题和正文关键词挑选，颜色取模板的 --accent / --tint。
 --theme 选主色：默认 auto 按标题和正文关键词匹配 Luz-Design themes.json 的行业主题（健身、咖啡、宠物……），
 取主题的 action / actionTint 作 --accent / --tint，引用线、高亮和标签页图标一起换色；没有匹配的行业时用
 template（模板自带的 --accent / --tint）。也可以直接写主题 key，例如 --theme fitness-gym。
+--icon 选浏览器标签页图标；默认 auto 先跟随选中的主题（ai-agent 用芯片、fitness-gym 用哑铃、餐饮类用碗），
+主题没有对应图案时再按标题和正文关键词挑选。
 """
 
 import argparse
@@ -50,19 +53,30 @@ SESSION_NAME = re.compile(r"^\d{3}-.+$")
 # 模板顶部“模板只是骨架”的注释只写给动笔的人看，成品里去掉。
 TEMPLATE_NOTE = re.compile(r"<!--\s*模板只是骨架.*?-->[ \t]*\r?\n?", re.S)
 CARD_HINT = ("规则卡：模板和本脚本只是骨架，内容、结构、声音与检查以规则卡为准；动笔前运行 "
-             "`python -X utf8 scripts/06-context.py <类型>`（list 看类型）读完整张卡。")
+             "`py -X utf8 scripts/06-context.py <类型>`（list 看类型）读完整张卡。")
 
-# 公众号编辑器会剥掉 class，所以正文样式都写成内联；字阶取 Luz-Design 阅读型 14/16/20/24/32
+# 公众号编辑器会剥掉 class，所以正文样式都写成内联。字号、字重、行高与间距按 Luz-Design file-design.html
+# “阅读型网页 › 排版参数”：主标题 32/700、二级标题 24/700、三级标题 20/600、正文 16/400、图注与数字表格 14。
 P_STYLE = "font-size:16px;line-height:1.75;color:#202124;margin:0 0 16px;"
-H2_STYLE = "font-size:24px;line-height:1.35;font-weight:600;color:#202124;margin:40px 0 16px;"
+H2_STYLE = "font-size:24px;line-height:1.3;font-weight:700;color:#202124;margin:48px 0 16px;"
 H3_STYLE = "font-size:20px;line-height:1.4;font-weight:600;color:#202124;margin:28px 0 12px;"
+# 阅读型产出圆角全篇统一一个值（visual-design.html：4–12 像素之间），图片、高亮与复制按钮共用。
+RADIUS = "8px"
 # 引用线和高亮底随主题换色：{accent} / {tint} 在生成时填入。
 QUOTE_STYLE = ("font-size:16px;line-height:1.75;color:#5f6368;margin:0 0 16px;"
                "padding:2px 0 2px 14px;border-left:3px solid {accent};")
 STRONG_STYLE = "font-weight:600;color:#202124;"
-HL_STYLE = "background:{tint};padding:0 4px;border-radius:4px;"
-IMG_STYLE = "display:block;width:100%;height:auto;border-radius:12px;"
-IMG_WRAP = "margin:24px 0;"
+HL_STYLE = f"background:{{tint}};padding:0 4px;border-radius:{RADIUS};"
+IMG_STYLE = f"display:block;width:100%;height:auto;border-radius:{RADIUS};"
+FIGURE_STYLE = "margin:24px 0;"
+CAPTION_STYLE = "font-size:14px;line-height:1.5;color:#5f6368;margin:8px 0 0;text-align:center;"
+# 表格：表头浅底 600、居中；只有横向细线；长文字左对齐，短值居中，金额右对齐（等宽数字）。
+TABLE_STYLE = "width:100%;border-collapse:collapse;margin:24px 0;font-size:16px;line-height:1.5;"
+TH_STYLE = ("background:{tint};font-weight:600;color:#202124;text-align:center;padding:10px 12px;"
+            "border-top:1px solid #dadce0;border-bottom:1px solid #dadce0;")
+TD_STYLE = "padding:10px 12px;border-bottom:1px solid #dadce0;color:#202124;text-align:{align};vertical-align:top;"
+SHORT_CELL = 8          # 不超过这么多字的列算短值，居中
+MONEY = re.compile(r"^[-+]?\s*[¥￥$]\s*[\d,.]+|^[-+]?[\d,.]+\s*元$")
 
 # 标签页图标：32×32 圆角浅色底 + 一笔主色线稿，最多 3 个图形、无文字，16px 下可辨认。
 # 只放在 <head>，不进入 #copy-area，不影响复制到公众号。
@@ -74,6 +88,12 @@ ICONS = {
     "finance": ("M7 6.5v18.5h18.5", "M11 19.5l4.5-5 3.5 3 6-7"),  # 折线
     "education": ("M16 10c-3-2-6.5-2.3-10-1.3v15c3.5-1 7-.7 10 1.3 3-2 6.5-2.3 10-1.3v-15c-3.5-1-7-.7-10 1.3z", "M16 10v15"),  # 书本
     "article": ("M8.5 5.5h15v21h-15z", "M12.5 11h7M12.5 15.5h7M12.5 20h4"),  # 文章
+}
+# 图标先跟随选中的主题，主色与图案出自同一个判断；主题没有对应图案（或用模板颜色）时才按关键词挑。
+THEME_ICONS = {
+    "ai-agent": "tech", "fitness-gym": "fitness",
+    **{key: "food" for key in ("xiangcai", "sichuan-hotpot", "cantonese-cafe", "japanese-sushi", "bbq-snack", "coffee",
+                               "milk-tea", "bakery-dessert", "fast-noodle", "western-light")},
 }
 # 关键词按顺序匹配，先命中的类别优先；都不命中用 article
 ICON_KEYWORDS = (
@@ -133,8 +153,11 @@ def apply_theme(template: str, accent: str, tint: str) -> str:
     return re.sub(r"(--tint:\s*)#[0-9A-Fa-f]{6}", lambda m: m.group(1) + tint, template, count=1)
 
 
-def pick_icon(title: str, body: str) -> str:
-    """标题命中优先（按类别顺序），其次看正文前 2000 字里出现次数最多的类别。大小写敏感，避免 AI 误配 said。"""
+def pick_icon(title: str, body: str, theme_key: str = "template") -> str:
+    """先跟随主题（THEME_ICONS）；否则标题命中优先（按类别顺序），其次看正文前 2000 字里出现次数最多的类别。
+    大小写敏感，避免 AI 误配 said。"""
+    if theme_key in THEME_ICONS:
+        return THEME_ICONS[theme_key]
     for kind, words in ICON_KEYWORDS:
         if any(w in title for w in words):
             return kind
@@ -166,7 +189,7 @@ def icon_link(kind: str, color: str, tint: str) -> str:
 
 COPY_CSS = """#copy-btn { position: fixed; right: 16px; bottom: calc(20px + env(safe-area-inset-bottom, 0px));
     font: inherit; font-size: 14px; font-weight: 600; color: #ffffff; background: var(--accent);
-    border: 0; border-radius: 999px; padding: 12px 20px; cursor: pointer; }"""
+    border: 0; border-radius: """ + RADIUS + """; padding: 12px 20px; cursor: pointer; }"""
 COPY_HTML = """<button id="copy-btn" type="button">复制正文</button>
 <script>
 (function () {
@@ -227,24 +250,50 @@ def encode_image(path: Path, keep_original: bool, max_side: int = 1600, quality:
     return "data:image/jpeg;base64," + base64.b64encode(buf.getvalue()).decode("ascii")
 
 
+TABLE_SEPARATOR = re.compile(r"^\|(\s*:?-{2,}:?\s*\|)+\s*$")
+
+
+def table_cells(line: str) -> list[str]:
+    return [c.strip() for c in line.strip().strip("|").split("|")]
+
+
+def parse_image(value: str) -> tuple[str, str, str]:
+    """"路径 | 替代文本 | 图注"：Windows 路径里不会有 |，所以按 | 切分安全。"""
+    parts = [p.strip() for p in value.split("|")]
+    parts += ["", ""]
+    return parts[0], parts[1], parts[2]
+
+
 def parse_body(text: str):
-    """返回 [("p"|"h2"|"h3"|"quote"|"img", 值)] 的列表。"""
+    """返回 [("p"|"h2"|"h3"|"quote"|"img"|"table", 值)] 的列表；img 的值是 (路径, 替代文本, 图注)，table 的值是行列表。"""
     blocks = []
     buf = []
+    rows: list[list[str]] = []
 
     def flush():
         if buf:
             blocks.append(("p", "".join(buf)))
             buf.clear()
 
+    def flush_table():
+        if rows:
+            blocks.append(("table", [r[:] for r in rows]))
+            rows.clear()
+
     for raw in text.splitlines():
         line = raw.strip()
+        if line.startswith("|"):
+            flush()
+            if not TABLE_SEPARATOR.match(line):
+                rows.append(table_cells(line))
+            continue
+        flush_table()
         if not line:
             flush()
             continue
         if line.lower().startswith("[img]"):
             flush()
-            blocks.append(("img", line[5:].strip()))
+            blocks.append(("img", parse_image(line[5:].strip())))
             continue
         if line.startswith("### "):
             flush()
@@ -260,7 +309,39 @@ def parse_body(text: str):
             continue
         buf.append(line)
     flush()
+    flush_table()
     return blocks
+
+
+def column_aligns(rows: list[list[str]]) -> list[str]:
+    """每列一个对齐：金额右对齐，短值（不超过 SHORT_CELL 字）居中，长文字左对齐。表头另外居中。"""
+    width = max(len(r) for r in rows)
+    body = rows[1:] or rows
+    aligns = []
+    for i in range(width):
+        cells = [r[i] for r in body if i < len(r) and r[i]]
+        if cells and all(MONEY.match(c) for c in cells):
+            aligns.append("right")
+        elif cells and all(len(c) <= SHORT_CELL for c in cells):
+            aligns.append("center")
+        else:
+            aligns.append("left")
+    return aligns
+
+
+def render_table(rows: list[list[str]], accent: str, tint: str) -> str:
+    width = max(len(r) for r in rows)
+    rows = [r + [""] * (width - len(r)) for r in rows]
+    aligns = column_aligns(rows)
+    head = "".join(f'<th style="{TH_STYLE.format(tint=tint)}">{inline(c, accent, tint)}</th>' for c in rows[0])
+    lines = [f'    <table style="{TABLE_STYLE}">', f"      <thead><tr>{head}</tr></thead>", "      <tbody>"]
+    for row in rows[1:]:
+        cells = "".join(
+            f'<td style="{TD_STYLE.format(align=a)}{"font-variant-numeric:tabular-nums;" if a == "right" else ""}">'
+            f"{inline(c, accent, tint)}</td>" for c, a in zip(row, aligns))
+        lines.append(f"        <tr>{cells}</tr>")
+    lines += ["      </tbody>", "    </table>"]
+    return "\n".join(lines)
 
 
 def render(blocks, body_dir: Path, keep_original: bool, accent: str = "#2b5f73", tint: str = "#e9f2f5"):
@@ -269,14 +350,21 @@ def render(blocks, body_dir: Path, keep_original: bool, accent: str = "#2b5f73",
     n_p = 0
     for kind, value in blocks:
         if kind == "img":
-            img_path = Path(value)
+            path, alt, caption = value
+            img_path = Path(path)
             if not img_path.is_absolute():
                 img_path = (body_dir / img_path).resolve()
             if not img_path.exists():
                 sys.exit(f"找不到图片：{img_path}")
             src = encode_image(img_path, keep_original)
             n_img += 1
-            parts.append(f'    <div style="{IMG_WRAP}"><img src="{src}" alt="插图{n_img}" style="{IMG_STYLE}"></div>')
+            if not alt:
+                print(f"警告：第 {n_img} 张图没有替代文本，用“[img] 路径 | 替代文本 | 图注”补上（11 › Gate 10）", file=sys.stderr)
+            alt_text = html.escape(alt or f"插图{n_img}", quote=True)
+            figcaption = f'<figcaption style="{CAPTION_STYLE}">{inline(caption, accent, tint)}</figcaption>' if caption else ""
+            parts.append(f'    <figure style="{FIGURE_STYLE}"><img src="{src}" alt="{alt_text}" style="{IMG_STYLE}">{figcaption}</figure>')
+        elif kind == "table":
+            parts.append(render_table(value, accent, tint))
         elif kind == "h2":
             parts.append(f'    <h2 style="{H2_STYLE}">{inline(value, accent, tint)}</h2>')
         elif kind == "h3":
@@ -346,7 +434,7 @@ def main(argv: list[str] | None = None):
     ap.add_argument("--copy-button", action="store_true", help="用户明确要求时才加复制按钮")
     ap.add_argument("--icon", default="auto", choices=["auto", *ICONS],
                     help="标签页图标：tech 芯片 / fitness 哑铃 / food 碗 / travel 纸飞机 / finance 折线 / "
-                         "education 书本 / article 文章；默认 auto 按标题和正文关键词挑选")
+                         "education 书本 / article 文章；默认 auto 先跟随主题，主题没有对应图案时按关键词挑选")
     ap.add_argument("--theme", default="auto",
                     help="主色：默认 auto 按标题和正文关键词匹配 Luz-Design 行业主题；template 用模板自带颜色；"
                          "或直接写主题 key，例如 fitness-gym")
@@ -393,7 +481,7 @@ def main(argv: list[str] | None = None):
 
     if "{{ICON}}" not in template:
         sys.exit("模板缺少 {{ICON}} 占位符：每个成品网页都必须有标签页图标")
-    icon_kind = pick_icon(args.title, text) if args.icon == "auto" else args.icon
+    icon_kind = pick_icon(args.title, text, theme_key) if args.icon == "auto" else args.icon
     page = (
         template
         .replace("{{ICON}}", icon_link(icon_kind, accent, tint))

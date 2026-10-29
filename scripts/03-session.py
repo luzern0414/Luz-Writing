@@ -2,15 +2,16 @@
 # -*- coding: utf-8 -*-
 """管理 Luz Writing 的输出会话：D:\\Codes\\skill输出\\Luz-Writing\\NNN-主题\\{NNN-主题.html, raw\\}
 
-  python -X utf8 03-session.py new --topic "主题" [--card <类型> …]
-  python -X utf8 03-session.py import-crawl "<会话目录>" "D:\\Codes\\skill输出\\Luz-Crawl\\NNN_主题"
-  python -X utf8 03-session.py check "<会话目录>" [--strict]
+  py -X utf8 03-session.py new --topic "主题" [--card <类型> …]
+  py -X utf8 03-session.py import-crawl "<会话目录>" "<Luz-Crawl begin 返回的任务目录>"
+  py -X utf8 03-session.py check "<会话目录>" [--strict]
 
 new 打印新会话的绝对路径，并把规则卡（06-context.py）存进 raw/00-rules/<类型>.md：--card 可重复，
 不写时按主题关键词推断，推断不出用 general。读完规则卡再写，并在 raw/01-brief.md 的“采用的规则”逐行
 写出本次落实的写作指南小节或偏好 key；结束前用 04-experience.py note 写入或确认至少一条经验，把 key 填进
 “本次沉淀”。02-article_builder.py 打包前两栏都会检查。
-import-crawl 把 Luz-Crawl 合集整份复制到 raw/05-crawl/ 并登记到 raw/manifest.json。
+import-crawl 把 Luz-Crawl 的任务目录（begin "主题" --new 返回的 folder，内有 luz-task.json）整份复制到
+raw/05-crawl/ 并登记到 raw/manifest.json；旧版合集（Luz-Crawl 输出根下一层的 NNN_主题 目录）也接受。
 check 确认会话根目录只有一个同名 HTML 和 raw/，且有规则卡；已交付成品时“采用的规则”不为空、“本次沉淀”
 的 key 都在 experience/notes.json 且确认日期不早于会话创建日（建卡之前的旧会话豁免）；--strict 时
 不论是否交付都查这两栏，规则卡过期（写作指南改过）也报错。
@@ -35,7 +36,9 @@ NOTES_FILE = Path(os.environ.get("LUZ_EXPERIENCE_STORE") or HERE.parent / "exper
 OUTPUT_ROOT = Path(r"D:\Codes\skill输出\Luz-Writing")
 CRAWL_ROOT = Path(r"D:\Codes\skill输出\Luz-Crawl")
 SESSION_NAME = re.compile(r"^(\d{3})-.+$")
-CRAWL_NAME = re.compile(r"^\d+_.+$")
+CRAWL_NAME = re.compile(r"^\d+_.+$")  # 旧版合集：Luz-Crawl 输出根下一层的 NNN_主题
+CRAWL_TASK_FILE = "luz-task.json"     # begin 建的任务目录都有它（kind: task_archive）
+CRAWL_SUMMARY = "爬取总结.html"        # 任务目录 raw/ 下的汇总页
 FORBIDDEN = re.compile(r'[<>:"/\\|?*\x00-\x1f]')
 
 # 规则卡（scripts/06-context.py，定义在 references/cards.json）：不写 --card 且主题推断不出时用 general。
@@ -44,8 +47,8 @@ RULES_DIR = "00-rules"
 BRIEF = "01-brief.md"
 RULES_HEADING = "## 采用的规则"
 SEDIMENT_HEADING = "## 本次沉淀"
-CONTEXT_COMMAND = 'python -X utf8 scripts/06-context.py {kind} --session "<会话目录>"'
-NOTE_COMMAND = 'python -X utf8 scripts/04-experience.py note --kind preference|lesson|fact --key {key} --text "<一句话原则>"'
+CONTEXT_COMMAND = 'py -X utf8 scripts/06-context.py {kind} --session "<会话目录>"'
+NOTE_COMMAND = 'py -X utf8 scripts/04-experience.py note --kind preference|lesson|fact --key {key} --text "<一句话原则>"'
 
 RAW_FILES = {
     BRIEF: (
@@ -55,12 +58,15 @@ RAW_FILES = {
         "打包成品前至少一行，02-article_builder.py 会检查。 -->\n\n"
         "| 规则（写作指南 › 小节 或 偏好 key） | 本次怎么落实 |\n| --- | --- |\n\n"
         f"{SEDIMENT_HEADING}\n\n"
-        "<!-- 结束前用 python -X utf8 scripts/04-experience.py note 写入或确认经验（同 key 再写即确认），每条一行："
+        "<!-- 结束前用 py -X utf8 scripts/04-experience.py note 写入或确认经验（同 key 再写即确认），每条一行："
         "用户新偏好、规则纠正、有效的写法与结构、调研来源与范围、生成参数。至少一行；02-article_builder.py 会核对 key "
         "存在于 experience/notes.json 且确认日期不早于本会话创建日。 -->\n\n"
         "| 经验 key | 类型 | 一句话 |\n| --- | --- | --- |\n"
     ),
-    "02-claims.md": "# 声明与来源\n\n| 声明 | 来源与定位 | 事件日期 | 访问日期 | 状态 | 限制 |\n| --- | --- | --- | --- | --- | --- |\n",
+    # 列与 references/02 的 Claim log 一致；支持状态只用 02 › 声明分级 的五个词。
+    "02-claims.md": ("# 声明与来源\n\n<!-- 支持状态：已核验 / 有边界支持 / 尚未解决 / 已反驳 / 不真实（见 references/02 › 声明分级） -->\n\n"
+                     "| 声明 | 来源与定位 | 事件日期 | 访问日期 | 支持状态 | 限制与冲突 | 正文口径 |\n"
+                     "| --- | --- | --- | --- | --- | --- | --- |\n"),
     "03-outline.md": "# 提纲\n",
     "04-draft.txt": "",
 }
@@ -199,7 +205,7 @@ def rule_card_errors(raw: Path, *, require_adopted: bool, check_current: bool) -
     errors: list[str] = []
     if not cards:
         errors.append(f"缺少规则卡 raw/{RULES_DIR}/：先运行 `{CONTEXT_COMMAND.format(kind='<类型>')}`"
-                      "（类型见 `python -X utf8 scripts/06-context.py list`），读完再写")
+                      "（类型见 `py -X utf8 scripts/06-context.py list`），读完再写")
     elif check_current:
         for card in cards:
             if not context.card_is_current(card):
@@ -287,31 +293,52 @@ def sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+def crawl_task(folder: Path) -> dict | None:
+    """Luz-Crawl 任务目录（begin 返回的 folder）的 luz-task.json；不是任务目录时返回 None。"""
+    try:
+        task = json.loads((folder / CRAWL_TASK_FILE).read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+    return task if isinstance(task, dict) and task.get("kind") == "task_archive" else None
+
+
+def crawl_source_errors(folder: Path, allow_any: bool = False) -> list[str]:
+    """能导入的来源：Luz-Crawl 任务目录（有 luz-task.json，位置不限），或输出根下一层的旧版 NNN_主题 合集。"""
+    if not folder.is_dir():
+        return [f"不是目录：{folder}"]
+    if crawl_task(folder) is not None or allow_any:
+        return []
+    if CRAWL_NAME.match(folder.name) and folder.parent == CRAWL_ROOT.resolve():
+        return []  # 旧版合集
+    return [f"不是 Luz-Crawl 任务目录（缺 {CRAWL_TASK_FILE}）：{folder}。传入 Luz-Crawl `begin \"主题\" --new` 返回的 folder"]
+
+
+def crawl_summary(folder: Path) -> Path | None:
+    """任务目录的 raw/爬取总结.html；旧版合集是同名 HTML。"""
+    for candidate in (folder / "raw" / CRAWL_SUMMARY, folder / f"{folder.name}.html"):
+        if candidate.is_file():
+            return candidate
+    return None
+
+
 def cmd_import_crawl(args) -> None:
     session = require_session(args.session)
-    if args.latest:
-        candidates = [d for d in CRAWL_ROOT.iterdir() if d.is_dir() and CRAWL_NAME.match(d.name)]
-        if not candidates:
-            sys.exit(f"{CRAWL_ROOT} 下没有合集")
-        collection = max(candidates, key=lambda d: int(d.name.split("_", 1)[0])).resolve()
-    elif args.collection:
-        collection = Path(args.collection).resolve()
-    else:
-        sys.exit("需要合集目录或 --latest")
-    if not collection.is_dir() or not CRAWL_NAME.match(collection.name):
-        sys.exit(f"不是 Luz-Crawl 合集目录（NNN_主题）：{collection}")
-    if collection.parent != CRAWL_ROOT.resolve() and not args.allow_any:
-        sys.exit(f"合集不在 Luz-Crawl 固定根目录 {CRAWL_ROOT} 下")
+    collection = Path(args.collection).resolve()
+    errors = crawl_source_errors(collection, args.allow_any)
+    if errors:
+        sys.exit(errors[0])
     target = session / "raw" / "05-crawl" / collection.name
     if target.exists():
         sys.exit(f"已导入过：{target}")
-    shutil.copytree(collection, target, ignore=shutil.ignore_patterns(".collection.lock"))
-    summary = target / f"{collection.name}.html"
+    shutil.copytree(collection, target, ignore=shutil.ignore_patterns(".collection.lock", "*.lock"))
+    summary = crawl_summary(target)
     manifest = load_manifest(session)
     manifest.setdefault("crawl_imports", []).append({
         "collection": str(collection),
+        "kind": "task" if crawl_task(collection) is not None else "legacy",
         "copied_to": str(target.relative_to(session)),
-        "summary_sha256": sha256(summary) if summary.is_file() else None,
+        "summary": str(summary.relative_to(session)) if summary else None,
+        "summary_sha256": sha256(summary) if summary else None,
         "imported": now(),
     })
     save_manifest(session, manifest)
@@ -341,11 +368,10 @@ def main() -> None:
     p_new.add_argument("--root", help="测试用输出根目录")
     p_new.set_defaults(func=cmd_new)
 
-    p_imp = sub.add_parser("import-crawl", help="把 Luz-Crawl 合集复制到 raw/05-crawl/")
+    p_imp = sub.add_parser("import-crawl", help="把 Luz-Crawl 任务目录复制到 raw/05-crawl/")
     p_imp.add_argument("session")
-    p_imp.add_argument("collection", nargs="?", help="Luz-Crawl 返回的 NNN_主题 合集目录")
-    p_imp.add_argument("--latest", action="store_true", help="取 Luz-Crawl 根目录下编号最大的合集")
-    p_imp.add_argument("--allow-any", action="store_true", help="测试用，允许固定根目录之外的合集")
+    p_imp.add_argument("collection", help="Luz-Crawl `begin \"主题\" --new` 返回的任务目录（folder）；旧版 NNN_主题 合集也可")
+    p_imp.add_argument("--allow-any", action="store_true", help="测试用，允许任意目录")
     p_imp.set_defaults(func=cmd_import_crawl)
 
     p_chk = sub.add_parser("check", help="检查会话根目录结构、规则卡与“采用的规则”")

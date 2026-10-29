@@ -16,28 +16,19 @@
       "last_confirmed": "2026-10-29"
     },
     {
+      "key": "copy-key-table",
+      "kind": "preference",
+      "text": "小程序、App 与 H5 的前台文字以文案键表交付：键（页面.位置）、页面与位置、文案、字数上限、变量、后台可见；先定字数上限再写，供后台维护与开发种子使用",
+      "why": "用户 2026-10-29 要求前台文字由后端按文案键下发、后台实时维护",
+      "uses": 1,
+      "first_seen": "2026-10-29",
+      "last_confirmed": "2026-10-29"
+    },
+    {
       "key": "html-tab-icon-required",
       "kind": "preference",
       "text": "每个 HTML 成品都必须有贴合主题、好看的标签页图标，不能空白：内联 <link rel=\"icon\"> SVG，32×32 圆角浅色底 + 主色单线稿（线宽 2.5–3、最多 3 个图形、无文字、16px 可辨认），由 article builder 按主题自动选择，颜色取文章主色。",
       "why": "用户要求：所有 HTML 交付物的浏览器标签页都要有主题图标",
-      "uses": 1,
-      "first_seen": "2026-10-28",
-      "last_confirmed": "2026-10-28"
-    },
-    {
-      "key": "不写空话",
-      "kind": "preference",
-      "text": "删掉赋能、一站式、全方位这类空泛词和铺垫，每句话要落到具体事实、动作或结论",
-      "why": "references/06、17",
-      "uses": 1,
-      "first_seen": "2026-10-28",
-      "last_confirmed": "2026-10-28"
-    },
-    {
-      "key": "只交付所要",
-      "kind": "preference",
-      "text": "只交付用户要的文案，不附建议、评分、改动说明、备选版本或客套",
-      "why": "references/15，优先级高于其他交付习惯",
       "uses": 1,
       "first_seen": "2026-10-28",
       "last_confirmed": "2026-10-28"
@@ -61,24 +52,6 @@
       "last_confirmed": "2026-10-28"
     },
     {
-      "key": "输出结构",
-      "kind": "preference",
-      "text": "每个会话只交付一个 NNN-主题.html，旁边一个 raw/ 放简报、来源、草稿、采集和图片",
-      "why": "references/16",
-      "uses": 1,
-      "first_seen": "2026-10-28",
-      "last_confirmed": "2026-10-28"
-    },
-    {
-      "key": "阅读版式",
-      "kind": "preference",
-      "text": "成品 HTML 的阅读版式遵循 Luz-Design 阅读规范与模板",
-      "why": "references/16、assets/01-article-template.html",
-      "uses": 1,
-      "first_seen": "2026-10-28",
-      "last_confirmed": "2026-10-28"
-    },
-    {
       "key": "article-accent-by-industry",
       "kind": "lesson",
       "text": "阅读型成品的主色按行业取：02-article_builder 默认 --theme auto 按标题和正文关键词匹配 Luz-Design themes.json 的行业主题，主题 action 作主色、actionTint 作浅底，引用线、高亮、标签页图标一起换色；匹配错时 --theme <key> 指定，没有对应行业时落到模板自带的中性色",
@@ -92,6 +65,15 @@
       }
     },
     {
+      "key": "crawl-task-folder-import",
+      "kind": "lesson",
+      "text": "Luz-Crawl 的产物以 begin 返回的任务目录为单位（内有 luz-task.json，位于输出根或分类目录的 raw/ 下），import-crawl 收这个目录，不再到输出根下一层找 NNN_ 合集；写调用 Luz-Crawl 的步骤时只写一句调用顺序并指向它的 SKILL.md",
+      "why": "2026-10-29 规范审计：旧写法禁止 --out、用 --latest，与 Luz-Crawl 现行调用协议冲突",
+      "uses": 1,
+      "first_seen": "2026-10-29",
+      "last_confirmed": "2026-10-29"
+    },
+    {
       "key": "readme-verified-vs-unverified",
       "kind": "lesson",
       "text": "项目 README 的验证范围用表格分 已测试、真实联调、未验证、未完成 四类，每条写清条件与日期，失败后修复的过程也照实写",
@@ -103,11 +85,15 @@
     {
       "key": "reference-code-fence-headings",
       "kind": "lesson",
-      "text": "写作指南 Markdown 的代码块里不要放以 # 开头的注释行：规则卡按标题切小节时会把它当成标题，把小节截断；命令清单写成编号列表加行内代码",
-      "why": "16 命令顺序原先只切出 52 字节，建规则卡时发现（2026-10-29）",
-      "uses": 1,
+      "text": "规则卡按 Markdown 标题切小节，代码块里的 # 行已被跳过；给写作指南新增或改名小节后，同步改 cards.json 的 path，再跑 06-context.py check 和 07 测试，确认卡里切出的原文完整、每张卡的规则原文在 8–35 KB",
+      "why": "旧教训说代码块里的 # 会截断小节，06-context.py 的 markdown_marks 已修复（2026-10-29 审计）",
+      "uses": 2,
       "first_seen": "2026-10-29",
-      "last_confirmed": "2026-10-29"
+      "last_confirmed": "2026-10-29",
+      "previous": {
+        "text": "写作指南 Markdown 的代码块里不要放以 # 开头的注释行：规则卡按标题切小节时会把它当成标题，把小节截断；命令清单写成编号列表加行内代码",
+        "replaced_at": "2026-10-29"
+      }
     },
     {
       "key": "safety-explainer-checklist",

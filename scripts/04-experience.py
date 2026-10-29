@@ -3,11 +3,11 @@
 """Luz Writing 经验库 experience/notes.json：偏好、教训、有效信息，按 key 更新替换。
 
 文件、字段与命令在 Luz-System、Luz-Design、Luz-Dev、Luz-Writing 四个技能中完全一致：
-  python -X utf8 scripts/04-experience.py note --kind preference|lesson|fact --key K --text "…" [--why "…"]
-  python -X utf8 scripts/04-experience.py list [--kind K]
-  python -X utf8 scripts/04-experience.py search <关键词> [--kind K]
-  python -X utf8 scripts/04-experience.py prune
-  python -X utf8 scripts/04-experience.py check
+  py -X utf8 scripts/04-experience.py note --kind preference|lesson|fact --key K --text "…" [--why "…"]
+  py -X utf8 scripts/04-experience.py list [--kind K]
+  py -X utf8 scripts/04-experience.py search <关键词> [--kind K]
+  py -X utf8 scripts/04-experience.py prune
+  py -X utf8 scripts/04-experience.py check
 本仓库另有 render（重新生成 experience/catalog.md）和 --store（个人数据只写进被 git 忽略的 *.local.json）。
 """
 
@@ -248,7 +248,8 @@ def render(doc: dict, path: Path) -> None:
         if not rows:
             lines += ["暂无。", ""]
             continue
-        lines += ["| key | 内容 | 依据 | 最近确认 | 次数 |", "| :---: | :---: | :---: | :---: | :---: |"]
+        # 长文字（内容、依据）左对齐，短值（key、日期、次数）居中。
+        lines += ["| key | 内容 | 依据 | 最近确认 | 次数 |", "| :---: | :--- | :--- | :---: | :---: |"]
         for n in rows:
             cells = [n["key"], n["text"], n.get("why", "") or "—", n["last_confirmed"], str(n.get("uses", 1))]
             lines.append("| " + " | ".join(c.replace("|", "／").replace("\n", " ") for c in cells) + " |")

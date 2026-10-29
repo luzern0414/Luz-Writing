@@ -1,10 +1,10 @@
 {
   "schema_version": "1.0",
   "skill": "luz-writing",
-  "note_command": "python -X utf8 scripts/04-experience.py note --kind preference|lesson|fact --key <主题> --text \"<一句话原则>\" [--why \"<依据>\"]",
+  "note_command": "py -X utf8 scripts/04-experience.py note --kind preference|lesson|fact --key <主题> --text \"<一句话原则>\" [--why \"<依据>\"]",
   "closing": [
     "- 采用的规则：有会话时在 raw/01-brief.md 的“采用的规则”逐行写出落实了上面哪些规则（参考文件 › 小节或偏好 key → 怎么落实）。交付给用户的文案里不提规则卡和规则（按 15 只交付所要）。",
-    "- 本次沉淀：每次调用至少写入或确认一条经验，命令 python -X utf8 scripts/04-experience.py note --kind preference|lesson|fact --key <主题> --text \"<一句话原则>\" [--why \"<依据>\"]；有会话时写进 raw/01-brief.md 的“本次沉淀”（key、类型、一句话），打包会检查；没有会话的对话回复也要在结束前运行这条命令，不在回复里提它。要记的包括但不限于：",
+    "- 本次沉淀：每次调用至少写入或确认一条经验，命令 py -X utf8 scripts/04-experience.py note --kind preference|lesson|fact --key <主题> --text \"<一句话原则>\" [--why \"<依据>\"]；有会话时写进 raw/01-brief.md 的“本次沉淀”（key、类型、一句话），打包会检查；没有会话的对话回复也要在结束前运行这条命令，不在回复里提它。要记的包括但不限于：",
     "  - preference：用户这次新说或纠正的要求（语气、长度、标题习惯、封面风格、渠道格式）；",
     "  - lesson：被用户改掉的写法、事实核查踩的坑、规则纠正与正确做法；",
     "  - fact：有效的选题角度与标题写法、调研来源与范围（可靠与无效的来源、Luz-Crawl 用过的站点与关键词）、Imagegen 风格参数；",
@@ -39,13 +39,6 @@
       "title": "01 · 工作流与写作简报",
       "path": [
         "起草前的一句话"
-      ]
-    },
-    {
-      "page": "01-workflow-and-brief.md",
-      "title": "01 · 工作流与写作简报",
-      "path": [
-        "输出契约"
       ]
     },
     {
@@ -183,23 +176,23 @@
         }
       ],
       "tools": [
-        "建会话：`python -X utf8 scripts/03-session.py new --topic \"主题\" --card tech-news`；规则卡存进 raw/00-rules/，简报 raw/01-brief.md 带“采用的规则”和“本次沉淀”表",
-        "找料用 Luz-Crawl 读原文（科技资讯常用 github、hackernews、x、google、bing），合集用 `python -X utf8 scripts/03-session.py import-crawl \"<会话>\" \"<合集目录>\"` 复制进 raw/05-crawl/；每条事实写进 raw/02-claims.md（事件日期与访问日期分开）",
-        "声音样本：`assets/02-example-body.txt` 的正文文字（比喻开场、口语旁白、对厂商数字保持怀疑、结尾落到日常场景）；它是声音与格式示例，不是结构模板",
-        "正文写进 raw/04-draft.txt，填好“采用的规则”和“本次沉淀”后 `python -X utf8 scripts/02-article_builder.py --title \"标题\" --session \"<会话>\"`；缺当前规则卡或两张表有一张为空都会被拒绝",
+        "建会话：`py -X utf8 scripts/03-session.py new --topic \"主题\" --card tech-news`；规则卡存进 raw/00-rules/，简报 raw/01-brief.md 带“采用的规则”和“本次沉淀”表",
+        "找料用 Luz-Crawl 读原文：调用顺序以 Luz-Crawl SKILL.md 调用协议为准（doctor → begin \"主题\" --new 得到 folder → experience --query → 每条命令带 --out <folder>），见 16 › 调用 Luz-Crawl；任务目录用 `py -X utf8 scripts/03-session.py import-crawl \"<会话>\" \"<任务目录>\"` 复制进 raw/05-crawl/（科技资讯常看 GitHub、Hacker News、X 和搜索引擎）；每条事实按 02 › Claim log 写进 raw/02-claims.md（事件日期与访问日期分开）",
+        "声音样本：`assets/02-example-body.txt` 的文字（比喻开场、口语旁白、对厂商数字保持怀疑、结尾落到日常场景）；它是声音与格式示例，不是结构模板",
+        "正文写进 raw/04-draft.txt，填好“采用的规则”和“本次沉淀”后 `py -X utf8 scripts/02-article_builder.py --title \"标题\" --session \"<会话>\"`；缺当前规则卡或两张表有一张为空都会被拒绝",
         "需要封面时按 14 › 封面与插图风格菜单，用户没点名时默认 3D 潮玩或软陶质感；Imagegen 先 `--dry-run`，用户要了才真正生成（先读 visual-production 卡）"
       ],
       "checks": [
         "Gate 2：每条事实对应 raw/02-claims.md 的来源、事件日期与访问日期、口径和冲突；厂商自报保持归因",
-        "数字预算：每个话题一到两个数字，同段不超过两个，不复述排行榜；每个话题至少一个画面或类比、一句有态度的短评",
+        "数字预算：每个话题一到两个数字，同段不超过两个，不复述排行榜（事件日期、版本号不计）；每个话题至少一个画面或类比、一句有态度的短评",
         "按 17 › 九、自检顺序过一遍：改后没有变长、没有新增事实、没有统一成假口语",
-        "article builder 自动运行 `D:\\Codes\\Luz-Design\\scripts\\check_document.py` 零 ERROR；`python -X utf8 scripts/03-session.py check \"<会话>\"` 通过",
+        "article builder 自动运行 `D:\\Codes\\Luz-Design\\scripts\\check_document.py` 零 ERROR；`py -X utf8 scripts/03-session.py check \"<会话>\"` 通过",
         "回复只有成品路径和用户要的文案：无建议、改动说明、评分、备选或客套（15 › 自检）"
       ]
     },
     "marketing-copy": {
       "title": "营销文案",
-      "summary": "产品页、落地页、广告、邮件、社媒帖、Slogan、电商详情、活动文案",
+      "summary": "产品页、落地页、广告、邮件、社媒帖、Slogan、电商详情、活动文案；小程序与 App 的交易与运营文案（弹窗、公告、券规则、价格说明、续费说明，以文案键表交付）",
       "keywords": [
         "营销",
         "文案",
@@ -214,7 +207,19 @@
         "卖点",
         "CTA",
         "促销",
-        "邮件"
+        "邮件",
+        "公告",
+        "弹窗",
+        "优惠券",
+        "券",
+        "停业",
+        "营业",
+        "活动规则",
+        "价格说明",
+        "划线价",
+        "续费",
+        "会员",
+        "文案键"
       ],
       "sections": [
         {
@@ -349,11 +354,13 @@
       "tools": [
         "先列事实：产品参数、可验证证据、授权评价、价格与条件；材料里没有的不写，用户点名必须写时用 `[待核实：…]` 占位",
         "字数、结构、标签与 CTA 按 10 对应渠道小节；要几条给几条，不加“方向一”这类角度标签",
-        "要交付 HTML 成品时：`python -X utf8 scripts/03-session.py new --topic \"主题\" --card marketing-copy`，正文写进 raw/04-draft.txt，填好“采用的规则”和“本次沉淀”后 `python -X utf8 scripts/02-article_builder.py --title \"标题\" --session \"<会话>\"`",
+        "小程序、App 与 H5 的前台文字以文案键表交付（键、页面与位置、文案、字数上限、变量、后台可见），按字数上限写，见 06 › 前台文字以文案键表交付；有会话时同一份另存 raw/07-copy-keys.csv；界面放在哪里、什么时候弹见 Luz-System commerce-design.html",
+        "要交付 HTML 成品时：`py -X utf8 scripts/03-session.py new --topic \"主题\" --card marketing-copy`，正文写进 raw/04-draft.txt，填好“采用的规则”和“本次沉淀”后 `py -X utf8 scripts/02-article_builder.py --title \"标题\" --session \"<会话>\"`",
         "海报、活动主视觉与版式交给 Luz-Design：先运行 `py -X utf8 D:\\Codes\\Luz-Design\\scripts\\context.py poster`；本技能只写文案"
       ],
       "checks": [
         "06 › 三问式自检（清晰、具体、可信）与 06 › 合规：价格、退款、隐私、取消条件真实",
+        "交易与运营文案：数量与到期时刻具体（相对时间只用于 24 小时内），划线价标明类型，预估价可展开且提示可能与实付不同；文案键表每条不超过字数上限，只用登记的变量",
         "Gate 7：标题、首段与 CTA 一致，字数在硬限制内，平台格式实际实现，社媒帖不残留 Markdown",
         "17 › 三、中文词汇 与 › 话术壳：空话和宣传词回到具体事实",
         "回复只有用户要的文案（或成品路径）：无建议、改动说明、评分、备选或客套（15 › 自检）"
@@ -505,13 +512,13 @@
       "tools": [
         "先写一句话主轴：观点是“主张 X，因为 Y，边界是 Z”；科普是“先让读者看见 A，再解释 B，并明确 C 仍未知”",
         "需要事实时用 Luz-Crawl 读原文，声明与来源写进 raw/02-claims.md",
-        "要交付 HTML 成品时：`python -X utf8 scripts/03-session.py new --topic \"主题\" --card opinion-explainer`，正文写进 raw/04-draft.txt，填好“采用的规则”和“本次沉淀”后 `python -X utf8 scripts/02-article_builder.py --title \"标题\" --session \"<会话>\"`"
+        "要交付 HTML 成品时：`py -X utf8 scripts/03-session.py new --topic \"主题\" --card opinion-explainer`，正文写进 raw/04-draft.txt，填好“采用的规则”和“本次沉淀”后 `py -X utf8 scripts/02-article_builder.py --title \"标题\" --session \"<会话>\"`"
       ],
       "checks": [
         "07 › 质量检查",
         "Gate 4 反向提纲：每段一句主旨，删掉哪段会丢信息，相邻段的关系说得出",
         "Gate 5 与表达检查：每个话题有画面或类比、一句真实态度，没有伪深刻句式和翻案腔",
-        "有成品 HTML 时：article builder 的 check_document 零 ERROR，`python -X utf8 scripts/03-session.py check \"<会话>\"` 通过",
+        "有成品 HTML 时：article builder 的 check_document 零 ERROR，`py -X utf8 scripts/03-session.py check \"<会话>\"` 通过",
         "回复只有成品路径和用户要的文案（15 › 自检）"
       ]
     },
@@ -630,7 +637,7 @@
       "tools": [
         "先写故事主轴：角色想要 W，受阻于 O，必须作出选择 C，并承担结果 R",
         "有声音样本或连载前文时，先按 12 读出句长、人称、语气词、标点和开场方式，再落声；样本优先于默认风格",
-        "要交付 HTML 成品时：`python -X utf8 scripts/03-session.py new --topic \"主题\" --card narrative-fiction`，正文写进 raw/04-draft.txt，填好“采用的规则”和“本次沉淀”后 `python -X utf8 scripts/02-article_builder.py --title \"标题\" --session \"<会话>\"`"
+        "要交付 HTML 成品时：`py -X utf8 scripts/03-session.py new --topic \"主题\" --card narrative-fiction`，正文写进 raw/04-draft.txt，填好“采用的规则”和“本次沉淀”后 `py -X utf8 scripts/02-article_builder.py --title \"标题\" --session \"<会话>\"`"
       ],
       "checks": [
         "08 › 去 AI 味的三层检查",
@@ -641,7 +648,7 @@
     },
     "academic-professional": {
       "title": "学术与专业文档",
-      "summary": "论文、研究笔记、评审回复、说明文档、制度与用户协议等结构化文档的文字",
+      "summary": "论文、研究笔记、评审回复、说明文档、制度，以及用户协议、隐私政策、单独同意书、储值卡协议等协议与政策文本",
       "keywords": [
         "论文",
         "学术",
@@ -736,11 +743,13 @@
       "tools": [
         "先写主轴：论文是“问题 Q 存在，现有研究缺少 G，本文用 M 提供 E，贡献 C，限制 L”；文档是读者要做的决定或操作，以及条件、步骤、结果和例外",
         "引用逐条对应原文，claim-evidence 写进 raw/02-claims.md；法律、协议与制度原文、条款编号、标识符和精确界面文字逐字保留，改写也不偷换否定、条件与责任主体",
+        "协议与政策：按 09 › 协议与政策文本起草，从 `D:\\Codes\\Luz-Dev\\assets\\legal\\` 的模板开始；需要哪些文档、展示位置、版本与同意记录由 Luz-Dev 实现（`D:\\Codes\\Luz-Dev\\references\\legal-documents.md`）；缺的事实用 `[待核实：…]` 占位，商户确认、建议律师审核",
         "Word、PDF 等文件版式交给 Luz-Design：先运行 `py -X utf8 D:\\Codes\\Luz-Design\\scripts\\context.py docx`；本技能只负责文字",
-        "要交付阅读型 HTML 时：`python -X utf8 scripts/03-session.py new --topic \"主题\" --card academic-professional`，再用 02-article_builder.py --session 打包"
+        "要交付阅读型 HTML 时：`py -X utf8 scripts/03-session.py new --topic \"主题\" --card academic-professional`，再用 02-article_builder.py --session 打包"
       ],
       "checks": [
         "09 › 学术审校（论文）或 09 › 读者测试（结构化文档）",
+        "协议：隐私政策写到的字段与系统实际收集的一致，生效日期与版本号齐全，对用户不利的条款写在显眼处，没有“最终解释权”",
         "Gate 2 事实与证据、Gate 3 原意与保真：否定、条件、范围、责任主体与引用没有被改动",
         "17 › 六、翻译腔 与 › 七、英文痕迹",
         "回复只有用户要的文本（或成品路径）（15 › 自检）"
@@ -842,7 +851,7 @@
       "tools": [
         "按 10 对应平台小节定字数、结构、标签与 CTA；同一内容多渠道复用按 03 › 分布与复用",
         "标题、摘要给正好 N 个，不推荐、不打分、不加角度标签",
-        "要交付 HTML 成品时：`python -X utf8 scripts/03-session.py new --topic \"主题\" --card channel-adaptation`，正文写进 raw/04-draft.txt，填好“采用的规则”和“本次沉淀”后 `python -X utf8 scripts/02-article_builder.py --title \"标题\" --session \"<会话>\"`；公众号摘要、标签、封面说明写进 raw/01-brief.md，不进成品可见区"
+        "要交付 HTML 成品时：`py -X utf8 scripts/03-session.py new --topic \"主题\" --card channel-adaptation`，正文写进 raw/04-draft.txt，填好“采用的规则”和“本次沉淀”后 `py -X utf8 scripts/02-article_builder.py --title \"标题\" --session \"<会话>\"`；公众号摘要、标签、封面说明写进 raw/01-brief.md，不进成品可见区"
       ],
       "checks": [
         "Gate 7：标题、摘要、首段与 CTA 一致，字数在硬限制内，平台格式实际实现，社媒帖不残留 Markdown",
@@ -922,7 +931,7 @@
         }
       ],
       "tools": [
-        "先判情形：A 空白或通用稿可按事实重建论证；B 有真实声音或论点只修结构和不清楚处；C 定点修改只改指定部分",
+        "先按 04 › 改稿边界 判情形：A · 重建（空白或通用稿，按事实重建论证）；B · 保声改写（有真实声音或论点，只修结构和说不清处）；C · 定点编辑（只改点名的部分）",
         "改前守住 17 › 一、改之前先守住的规则：未标记的句子逐字保留，干净文本原样返回，只做一轮，不新增事实和长度",
         "有声音样本或用户反复纠正时按 12 › 改写时如何落声；审稿只在用户要求时交，格式见 11 › Gate 8"
       ],
@@ -1008,9 +1017,9 @@
         }
       ],
       "tools": [
-        "用 Luz-Crawl 打开原文读到目标正文（先读 `D:\\Codes\\Luz-Crawl\\SKILL.md`）；搜索摘要和内容农场只算线索",
-        "每条声明写进 raw/02-claims.md：声明、来源与定位、事件日期、访问日期、状态（已验证 / 部分支持 / 未决 / 相反）、限制",
-        "要留存核查过程时：`python -X utf8 scripts/03-session.py new --topic \"主题\" --card fact-check`，合集用 `03-session.py import-crawl` 复制进 raw/05-crawl/"
+        "找料用 Luz-Crawl 读原文：调用顺序以 Luz-Crawl SKILL.md 调用协议为准（doctor → begin \"主题\" --new 得到 folder → experience --query → 每条命令带 --out <folder>），见 16 › 调用 Luz-Crawl；任务目录用 `py -X utf8 scripts/03-session.py import-crawl \"<会话>\" \"<任务目录>\"` 复制进 raw/05-crawl/；搜索摘要和内容农场只算线索",
+        "每条声明按 02 › Claim log 写进 raw/02-claims.md：声明、来源与定位、事件日期、访问日期、支持状态（已核验 / 有边界支持 / 尚未解决 / 已反驳 / 不真实）、限制与冲突、正文口径",
+        "要留存核查过程时：`py -X utf8 scripts/03-session.py new --topic \"主题\" --card fact-check`"
       ],
       "checks": [
         "Gate 2：来源支持的是当前断言本身，事件日期与页面日期分开，反证没有被隐藏，厂商自报保持归因",
@@ -1057,10 +1066,10 @@
           ]
         },
         {
-          "page": "10-channels-and-formats.md",
-          "title": "10 · 渠道与格式",
+          "page": "16-output-paths-and-tools.md",
+          "title": "16 · 输出路径、采集与排版",
           "path": [
-            "文章 HTML 交付"
+            "正文格式"
           ]
         },
         {
@@ -1090,12 +1099,12 @@
         "Imagegen：`D:\\Codes\\Imagegen\\src\\imagegen.py` 先 `--dry-run`，用户要了才真正生成，一次超时不自动重提；参考图编辑用 `imagegen_edit.py`；不读密钥文件",
         "风格按 14 › 封面与插图风格菜单选一种，用户没点名时科技资讯默认 3D 潮玩或软陶质感；产品界面不套用这份菜单",
         "海报、封面族与长页版式先运行 Luz-Design 规则卡：`py -X utf8 D:\\Codes\\Luz-Design\\scripts\\context.py poster`（阅读型页面用 reading-html）",
-        "图片用 `[img] 路径` 接入 raw/04-draft.txt，填好“采用的规则”和“本次沉淀”后用 `python -X utf8 scripts/02-article_builder.py --title \"标题\" --session \"<会话>\"` 打包"
+        "图片用 `[img] 路径 | 替代文本 | 图注` 接入 raw/04-draft.txt，填好“采用的规则”和“本次沉淀”后用 `py -X utf8 scripts/02-article_builder.py --title \"标题\" --session \"<会话>\"` 打包"
       ],
       "checks": [
         "Gate 10：每张图有阅读任务，无乱码文字、水印、Logo，实际尺寸与格式已核实并记进 raw/manifest.json",
-        "14 › 六、放置与验收 逐项通过；失败按 14 › 七、失败与回退 如实说明",
-        "article builder 的 check_document 零 ERROR；`python -X utf8 scripts/03-session.py check \"<会话>\"` 通过"
+        "14 › 八、放置与验收 逐项通过；失败按 14 › 九、失败与回退 如实说明",
+        "article builder 的 check_document 零 ERROR；`py -X utf8 scripts/03-session.py check \"<会话>\"` 通过"
       ]
     },
     "general": {
@@ -1114,7 +1123,7 @@
           "page": "01-workflow-and-brief.md",
           "title": "01 · 工作流与写作简报",
           "path": [
-            "写作的五段推进"
+            "写作流程"
           ]
         },
         {
@@ -1218,12 +1227,12 @@
         }
       ],
       "tools": [
-        "先锁定交付对象，写出一句话主轴；结构从论证来，不套模板（03 › 结构选择）。任务其实属于某个专门类型时，改用那张卡（`python -X utf8 scripts/06-context.py list`）",
-        "要交付 HTML 成品时：`python -X utf8 scripts/03-session.py new --topic \"主题\" --card general`，正文写进 raw/04-draft.txt，填好“采用的规则”和“本次沉淀”后 `python -X utf8 scripts/02-article_builder.py --title \"标题\" --session \"<会话>\"`"
+        "先锁定交付对象，写出一句话主轴；结构从论证来，不套模板（03 › 结构选择）。任务其实属于某个专门类型时，改用那张卡（`py -X utf8 scripts/06-context.py list`）",
+        "要交付 HTML 成品时：`py -X utf8 scripts/03-session.py new --topic \"主题\" --card general`，正文写进 raw/04-draft.txt，填好“采用的规则”和“本次沉淀”后 `py -X utf8 scripts/02-article_builder.py --title \"标题\" --session \"<会话>\"`"
       ],
       "checks": [
         "Gate 1 任务与范围、Gate 4 结构与逻辑；11 › 交付前快速提问",
-        "有成品 HTML 时：article builder 的 check_document 零 ERROR，`python -X utf8 scripts/03-session.py check \"<会话>\"` 通过",
+        "有成品 HTML 时：article builder 的 check_document 零 ERROR，`py -X utf8 scripts/03-session.py check \"<会话>\"` 通过",
         "回复只有用户要的文本（或成品路径）（15 › 自检）"
       ]
     }
