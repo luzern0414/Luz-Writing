@@ -34,6 +34,24 @@
       "last_confirmed": "2026-10-28"
     },
     {
+      "key": "purchase-rule-copy",
+      "kind": "preference",
+      "text": "购买规则的提示写在数量旁：先规则后剩余（每日限购 2 件，今日还可买 1 件）；不符合时写原因加一步出路；每个原因代码一个文案键",
+      "why": "用户 2026-10-30 要求补充限购只能购买一次等业务逻辑并认真补充系统设计",
+      "uses": 1,
+      "first_seen": "2026-10-30",
+      "last_confirmed": "2026-10-30"
+    },
+    {
+      "key": "training-speech-per-slide",
+      "kind": "preference",
+      "text": "PPT 配套演讲稿按页分节（第 X 页 + 标题），每页写成可直接念、直接授课的口语稿，平均每页约 1 分钟（200–230 字），讲页面背后的含义和衔接，不逐字复读页面；互动与计时提示用全角圆括号写在段内",
+      "why": "用户要求区分每一页、写清这页怎么讲、可直接读直接授课，并要求每页控制在 1 分钟",
+      "uses": 1,
+      "first_seen": "2026-10-30",
+      "last_confirmed": "2026-10-30"
+    },
+    {
       "key": "封面风格",
       "kind": "preference",
       "text": "保留 3D 潮玩和软陶质感两种封面风格，按题材再从风格菜单补选其他风格",
@@ -72,6 +90,15 @@
       "uses": 1,
       "first_seen": "2026-10-29",
       "last_confirmed": "2026-10-29"
+    },
+    {
+      "key": "docx-check-cue-brackets",
+      "kind": "lesson",
+      "text": "Word 成品里的舞台提示不用【】（check_document 把 12 字内的【…】判为占位符），改用（停顿）（计时 10 分钟）；正文避开“数据来源”“我们来看”“以下是”“如有问题”等会被判为元信息或套话的说法，引用提问模板时转述而不照抄【XX】",
+      "why": "Luz-Design check_document 的占位符与元信息规则会拦下讲稿常用写法",
+      "uses": 1,
+      "first_seen": "2026-10-30",
+      "last_confirmed": "2026-10-30"
     },
     {
       "key": "readme-verified-vs-unverified",
