@@ -335,12 +335,16 @@ def make_card(kind: str, topic: list[str], full: bool = False) -> tuple[str, str
             body = body[:limit].rsplit("\n", 1)[0] + f"\n…（已截断，全文见 {page.name} › {' › '.join(spec['path'])}；加 --full 显示全部）"
         rule_parts.append(f"### {label}\n\n{body}")
     rules = "\n\n".join(rule_parts)
+    rules += "\n\n前置检索：D:/Codes/Luz-Crawl/references/preflight.md"
     digest = hashlib.sha256(rules.encode("utf-8")).hexdigest()[:12]
     notes = load_json(NOTES_FILE, {"notes": []}).get("notes", [])
     words = [*card.get("keywords", []), *topic]
     # Preferences are the user's standing instructions: all of them apply unless a card narrows them by keywords.
     narrow = card.get("preference_keywords")
-    prefs = [n for n in notes if n.get("kind") == "preference" and (not narrow or note_matches(n, narrow + topic))]
+    # Preferences about how things look moved to Luz-Design (references/ui-ownership.md); the keys stay valid for older sessions
+    # but this skill's cards no longer print them.
+    moved = set(cards.get("moved_preferences", []))
+    prefs = [n for n in notes if n.get("kind") == "preference" and n.get("key") not in moved and (not narrow or note_matches(n, narrow + topic))]
     others = [n for n in notes if n.get("kind") in ("lesson", "fact") and note_matches(n, words)][:12]
     out = [
         f"# 规则卡：{card['title']}（{skill} · 规则 {digest}）",
@@ -363,10 +367,12 @@ def make_card(kind: str, topic: list[str], full: bool = False) -> tuple[str, str
         "## 4 用什么做",
         "",
         *[f"- {t}" for t in card.get("tools", [])],
+        "- 前置检索：crawl_preflight.py run --caller " + skill + " --session <会话> --topic <任务>；阅读正文后 conclude --file <补充信息.json>。已有任务加 --task，项目加 --stage。查询不得含密钥或真实用户数据。",
         "",
         "## 5 交付前必须通过",
         "",
         *[f"- {c}" for c in card.get("checks", [])],
+        "- crawl_preflight.py check --caller " + skill + " --session <会话或项目根> [--stage <项目阶段>] 必须通过；项目中的专属更严格检查仍然有效。",
         "",
         "## 6 收尾（必做，发布与交付会检查）",
         "",

@@ -20,6 +20,8 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
+sys.path.append(str(ROOT.parent / "Luz-Crawl/scripts"))
+from test_crawl_preflight import complete_fixture
 
 
 def load(name: str, filename: str):
@@ -170,6 +172,45 @@ class RuleCardTests(unittest.TestCase):
         academic, _ = context.make_card("academic-professional", [])
         self.assertIn("协议与政策文本", academic)
 
+    def test_client_files_have_their_own_card_and_the_old_routes_still_carry_the_core(self) -> None:
+        # Luz-Project still routes the proposal to general and the manual to academic-professional; both keep the shared core.
+        for topic in ("方案说明书", "给客户的使用说明", "业务逻辑确认表", "建设方案"):
+            self.assertEqual(session_mod.guess_cards(topic), ["client-document"], topic)
+        self.assertEqual(session_mod.guess_cards("营销方案"), ["marketing-copy"])
+        self.assertEqual(session_mod.guess_cards("用户服务协议"), ["academic-professional"])
+        card, _ = context.make_card("client-document", [])
+        for phrase in ("先分析", "不提及其他文件", "不写价格", "09-text_check.py", "proposal.json", "业务逻辑确认表", "使用说明"):
+            self.assertIn(phrase, card, phrase)
+        for kind, phrases in {"general": ("不提及其他文件", "项目背景与需求分析"), "academic-professional": ("不提及其他文件", "入口")}.items():
+            text, _ = context.make_card(kind, [])
+            for phrase in phrases:
+                self.assertIn(phrase, text, f"{kind}: {phrase}")
+
+    def test_chinese_text_checklist_is_on_the_cards_that_write_chinese(self) -> None:
+        for kind in ("client-document", "general", "academic-professional", "marketing-copy", "opinion-explainer",
+                     "narrative-fiction", "channel-adaptation"):
+            text, _ = context.make_card(kind, [])
+            self.assertIn("GB/T 15834", text, kind)
+            self.assertTrue("GB/T 15835" in text or "数值范围" in text, kind)
+
+    def test_no_reference_presents_gb_t_7714_2015_as_current(self) -> None:
+        # GB/T 7714—2025 replaced the 2015 edition on 2026-07-01 (openstd.samr.gov.cn).
+        pages = [*(ROOT / "references").glob("*.md"), ROOT / "SKILL.md", ROOT / "README.md"]
+        for page in pages:
+            for line in page.read_text(encoding="utf-8").splitlines():
+                if re.search(r"7714\s*[—-]\s*2015", line):
+                    self.assertTrue(re.search(r"代替|废止|2015 版", line), f"{page.name}: {line[:60]}")
+
+    def test_client_file_rules_agree_with_each_other(self) -> None:
+        # 18 is the one home of the client-file rules: no price in the proposal, no pointer to other files, no placeholders.
+        text = (ROOT / "references" / "18-client-documents.md").read_text(encoding="utf-8")
+        for phrase in ("不提及其他文件", "不写价格", "先分析客户的需求，再给方案", "标题不手打序号", "第三方费用由客户承担"):
+            self.assertIn(phrase, text)
+        for stale in ("客户信息收集表", "信息收集表"):
+            self.assertNotIn(stale, text)
+        structure = (ROOT / "references" / "09-academic-and-professional.md").read_text(encoding="utf-8")
+        self.assertIn("客户方案不用这条结构", structure)
+
     def test_one_status_vocabulary_and_one_gap_marker(self) -> None:
         # 02 › 声明分级 is the only set of claim states; [待核实：…] the only visible gap.
         texts = [p.read_text(encoding="utf-8") for p in (ROOT / "references").glob("*.md")]
@@ -251,7 +292,7 @@ class GateTests(unittest.TestCase):
             (session / "raw" / "manifest.json").write_text(json.dumps({"session": session.name, "created": "2026-10-01T09:00:00+08:00"}), encoding="utf-8")
             (session / "raw" / "01-brief.md").write_text("# 简报\n", encoding="utf-8")
             (session / f"{session.name}.html").write_text("<!doctype html>", encoding="utf-8")
-            self.assertEqual(session_mod.session_errors(session), [])
+            self.assertTrue(any("Crawl" in e for e in session_mod.session_errors(session)))
             errors = session_mod.packaging_errors(session)
             self.assertTrue(any("00-rules" in e for e in errors))
             self.assertTrue(any("本次沉淀" in e for e in errors))
@@ -295,11 +336,23 @@ class GateTests(unittest.TestCase):
                        "--key", "test-session-note", "--text", "测试会话写入的经验")
             self.assertEqual(proc.returncode, 0, proc.stderr)
             fill_brief(raw, note_key="test-session-note")
+            # A real task also needs the separately completed research contract.
+            self.assertTrue(any("Crawl" in e for e in session_mod.packaging_errors(session)))
+            complete_fixture(session, "luz-writing")
             code, out = build(argv)
             self.assertEqual(code, 0, out)
             page = (session / f"{session.name}.html").read_text(encoding="utf-8")
             self.assertNotIn("06-context.py", page)  # the template's skeleton note stays out of the deliverable
             self.assertEqual(session_mod.session_errors(session, strict=True), [])
+
+            invalid_template = root / "invalid-template.html"
+            template = builder.TEMPLATE.read_text(encoding="utf-8")
+            invalid_template.write_text(template.replace("</head>", "<style>h1 {font-size:10px}</style></head>"), encoding="utf-8")
+            code, out = build([*argv, "--template", str(invalid_template)])
+            self.assertNotEqual(code, 0, "--no-check must not bypass final-session document checks")
+            self.assertTrue(any("font size below" in e for e in session_mod.session_errors(session, strict=True)))
+            code, out = build(argv)
+            self.assertEqual(code, 0, out)
 
             # A rule page edited after the card was saved makes the card stale: packaging is refused again.
             card = raw / "00-rules" / "fact-check.md"
@@ -311,7 +364,7 @@ class GateTests(unittest.TestCase):
 
 
 class CrawlImportTests(unittest.TestCase):
-    """import-crawl takes the task folder that Luz-Crawl `begin "主题" --new` returns (it holds luz-task.json)."""
+    """import-crawl takes the task folder that Luz-Crawl `begin "主题" --new` returns (it holds raw/luz-task.json; older tasks luz-task.json)."""
 
     def new_session(self, root: Path) -> Path:
         proc = run(str(HERE / "03-session.py"), "new", "--topic", "导入测试", "--root", str(root / "out"), "--card", "general")
@@ -322,7 +375,31 @@ class CrawlImportTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
             session = self.new_session(root)
-            task = root / "Luz-Crawl" / "raw" / "031_AI 资讯"  # <output root>/<category>/raw/NNN_需求, as Luz-Crawl lays it out
+            task = root / "Luz-Crawl" / "085_AI 资讯"  # <output root>/NNN_主题: raw/ holds everything crawled, the summary html sits beside it
+            (task / "raw" / "0001_页面").mkdir(parents=True)
+            (task / "raw" / "luz-task.json").write_text(json.dumps({"schema_version": 1, "kind": "task_archive",
+                                                                    "delivery_layout": "task_folder_v2", "title": "AI 资讯"}), encoding="utf-8")
+            (task / "085_AI 资讯.html").write_text("<!doctype html><title>汇总</title>", encoding="utf-8")
+            (task / "raw" / "search-1.json").write_text("{}", encoding="utf-8")
+            (task / "raw" / "0001_页面" / "content.json").write_text("{}", encoding="utf-8")
+            proc = run(str(HERE / "03-session.py"), "import-crawl", str(session), str(task))
+            self.assertEqual(proc.returncode, 0, proc.stderr)
+            copied = session / "raw" / "05-crawl" / task.name
+            self.assertTrue((copied / "085_AI 资讯.html").is_file())
+            self.assertTrue((copied / "raw" / "0001_页面" / "content.json").is_file())
+            entry = json.loads((session / "raw" / "manifest.json").read_text(encoding="utf-8"))["crawl_imports"][0]
+            self.assertEqual(entry["kind"], "task")
+            self.assertTrue(entry["summary"].endswith("085_AI 资讯.html"))
+            self.assertRegex(entry["summary_sha256"], r"^[0-9a-f]{64}$")
+            again = run(str(HERE / "03-session.py"), "import-crawl", str(session), str(task))
+            self.assertNotEqual(again.returncode, 0)
+            self.assertIn("已导入过", again.stderr)
+
+    def test_older_task_folder_is_still_imported_with_its_summary(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            session = self.new_session(root)
+            task = root / "Luz-Crawl" / "raw" / "031_AI 资讯"  # <output root>/<category>/raw/NNN_需求, as Luz-Crawl once laid it out
             (task / "raw").mkdir(parents=True)
             (task / "luz-task.json").write_text(json.dumps({"schema_version": 1, "kind": "task_archive",
                                                             "delivery_layout": "sibling_raw_v1", "title": "AI 资讯"}), encoding="utf-8")
@@ -391,10 +468,46 @@ class BuilderLayoutTests(unittest.TestCase):
 
     def test_one_radius_and_heavy_titles_follow_luz_design(self) -> None:
         page, _ = self.build_page("随笔", "## 小标题\n\n**加粗** 与 ==高亮==。\n")
-        radii = set(re.findall(r"border-radius:\s*(\d+px)", page))
+        # The Markdown type block is a verbatim copy of Luz-Design's master and carries its own code radius; the article has no code.
+        outside = re.sub(r"/\* luz-md-type:start.*?/\* luz-md-type:end \*/", "", page, flags=re.S)
+        radii = set(re.findall(r"border-radius:\s*(\d+px)", outside))
         self.assertEqual(radii, {builder.RADIUS})
-        self.assertIn("font-size:24px;line-height:1.3;font-weight:700", page)
         self.assertRegex(page, r"h1 \{[^}]*font-weight: 700")
+        self.assertRegex(page, r"h2 \{[^}]*font-size: var\(--md-h2\)[^}]*font-weight: 700")
+
+    def test_page_text_sizes_come_from_the_markdown_block_not_from_inline_styles(self) -> None:
+        body = "## 小标题\n\n正文一段。\n\n### 三级\n\n> 引用的原话。\n\n| 键 | 文案 |\n| --- | --- |\n| a | 一句话 |\n"
+        page, _ = self.build_page("随笔", body)
+        template = builder.TEMPLATE.read_text(encoding="utf-8")
+        block = re.search(r"/\* luz-md-type:start.*?/\* luz-md-type:end \*/", page, flags=re.S)
+        self.assertIsNotNone(block)
+        self.assertEqual(block.group(0), re.search(r"/\* luz-md-type:start.*?/\* luz-md-type:end \*/", template, flags=re.S).group(0))
+        self.assertIn("--md-body: 16px", block.group(0))
+        self.assertIn("--md-body: 18px", block.group(0))
+        # Phone first, desktop from 768: the page breakpoint is the block's, so a 768 px window gets the desktop set.
+        self.assertIn("@media (max-width: 767px)", page)
+        outside = page.replace(block.group(0), "")
+        self.assertNotRegex(outside, r"font-size:\s*\d+px;\s*line-height", "the template sets no body size of its own")
+        self.assertNotRegex(outside, r"(?m)^\s*(h1|h2|h3)\s*\{")
+        for tag in ("p", "h2", "h3", "blockquote"):
+            self.assertRegex(page, rf"<{tag}>")
+        self.assertNotRegex(page, r"<(p|h2|h3|blockquote|figcaption|table)\b[^>]*font-size")
+        self.assertIn("#copy-area blockquote { border-left-color: var(--accent); }", page)
+
+    def test_copy_button_pastes_the_phone_set_inline_and_leaves_the_page_alone(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            body = Path(tmp) / "body.txt"
+            body.write_text("## 小标题\n\n正文。\n\n> 引用。\n", encoding="utf-8")
+            out = Path(tmp) / "page.html"
+            with redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
+                builder.main(["--title", "随笔", "--body", str(body), "--out", str(out), "--no-check", "--copy-button"])
+            page = out.read_text(encoding="utf-8")
+        script = page.split("<script>", 1)[1]
+        for expected in ("font-size:16px;line-height:1.75", "font-size:24px;line-height:1.3;font-weight:700", "font-size:20px;line-height:1.4;font-weight:600", "font-size:14px;line-height:1.5"):
+            self.assertIn(expected, script)
+        self.assertIn("pasteHTML()", script)
+        self.assertNotIn("__PASTE_STYLES__", page)
+        self.assertNotRegex(page.split("<script>", 1)[0], r"<(p|h2|h3|blockquote)\b[^>]*font-size")
 
     def test_icon_follows_the_theme(self) -> None:
         self.assertEqual(builder.pick_icon("一套提示词模板火了", "", "ai-agent"), "tech")
@@ -429,7 +542,7 @@ class ThemeTests(unittest.TestCase):
                 builder.main(["--title", "健身新手第一周", "--body", str(body), "--out", str(out)])
             page = out.read_text(encoding="utf-8")
         self.assertIn(f"--accent: {theme['action']}", page)
-        self.assertIn(f"border-left:3px solid {theme['action']}", page)
+        self.assertIn("#copy-area blockquote { border-left-color: var(--accent); }", page)
         self.assertIn(f"background:{theme['actionTint']}", page)
         self.assertNotIn("#2b5f73", page.lower())
         self.assertNotIn("#e9f2f5", page.lower())

@@ -18,29 +18,83 @@
     --tint: #e9f2f5;
   }
   * { box-sizing: border-box; }
-  html { -webkit-text-size-adjust: 100%; }
   body {
     margin: 0;
     background: var(--canvas);
     color: var(--ink);
     font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
-    font-size: 16px;
-    line-height: 1.75;
   }
+/* luz-md-type:start
+   阅读型网页的 Markdown 层级（母本：Luz-Design/references/md-type.css）。其他技能的样式文件里夹着同一段，
+   改这里之后运行 py -X utf8 scripts/sync_md_type.py --write 同步，不要在别处手改（不带参数运行只报告 SAME 或 DIFF）。
+   规则见 file-design.html 网页文件 › 排版参数（逐级数值表）与 visual-design.html 一 › 字体与字号 › 字阶表的阅读型网页一行：手机（小于 768）与桌面（768 及以上）各一套字号，
+   桌面正文 18，手机 16；每一级的字号、字重、行高、上下留白固定，页面只取这些级别，不另造样式。
+   只管文字层级，不管容器宽度、颜色主题与组件：颜色取页面已有的变量，缺省用下面的回退值。 */
+:root {
+  --md-body: 16px;  --md-body-lh: 1.75;
+  --md-h1: 28px;  --md-h2: 24px;  --md-h3: 20px;  --md-h4: 16px;  --md-h5: 14px;  --md-h6: 14px;
+  --md-table: 14px;  --md-aux: 14px;  --md-code: 14px;
+  --md-measure: 42em;
+}
+@media (min-width: 768px) {
+  :root {
+    --md-body: 18px;  --md-body-lh: 1.8;
+    --md-h1: 36px;  --md-h2: 28px;  --md-h3: 22px;  --md-h4: 18px;  --md-h5: 16px;  --md-h6: 14px;
+    --md-table: 16px;  --md-aux: 14px;  --md-code: 16px;
+  }
+}
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+body { font-size: var(--md-body); line-height: var(--md-body-lh); font-weight: 400; font-kerning: normal; text-rendering: optimizeLegibility; overflow-wrap: break-word; }
+h1, h2, h3, h4, h5, h6 { font-family: inherit; font-style: normal; letter-spacing: 0; text-wrap: balance; }
+h1 { margin: 0 0 24px; font-size: var(--md-h1); line-height: 1.25; font-weight: 700; }
+h2 { margin: 56px 0 16px; padding-bottom: 12px; border-bottom: 1px solid var(--line, #d7e0e8); font-size: var(--md-h2); line-height: 1.3; font-weight: 700; }
+h3 { margin: 40px 0 12px; font-size: var(--md-h3); line-height: 1.4; font-weight: 600; }
+h4 { margin: 28px 0 8px; font-size: var(--md-h4); line-height: 1.5; font-weight: 600; }
+h5 { margin: 24px 0 8px; font-size: var(--md-h5); line-height: 1.5; font-weight: 600; color: var(--muted, var(--ink-2, #526071)); }
+h6 { margin: 20px 0 8px; font-size: var(--md-h6); line-height: 1.5; font-weight: 600; color: var(--muted, var(--ink-2, #526071)); }
+p { margin: 0 0 16px; }
+p, ul, ol, dl, blockquote { max-width: var(--md-measure); }
+ul, ol { margin: 0 0 16px; padding-left: 1.6em; }
+li { margin: 0; }
+li + li { margin-top: 6px; }
+li > ul, li > ol { margin: 6px 0 0; }
+ul { list-style: disc; }
+ul ul { list-style: circle; }
+ul ul ul { list-style: square; }
+li::marker { color: var(--muted, var(--ink-2, #526071)); }
+dt { font-weight: 600; }
+dd { margin: 2px 0 12px; padding-left: 1em; }
+strong, b { font-weight: 600; }
+em, i, cite, address { font-style: normal; font-weight: 600; }
+blockquote { margin: 0 0 16px; padding: 4px 0 4px 16px; border-left: 4px solid var(--line, #d7e0e8); color: var(--muted, var(--ink-2, #526071)); }
+blockquote > :last-child { margin-bottom: 0; }
+hr { margin: 40px 0; border: 0; border-top: 1px solid var(--line, #d7e0e8); }
+small, figcaption, caption, time, .aux, .src { font-size: var(--md-aux); line-height: 1.6; }
+caption, figcaption { margin: 0; padding: 0 0 10px; color: var(--muted, var(--ink-2, #526071)); text-align: center; }
+caption { caption-side: top; }
+table { font-size: var(--md-table); line-height: 1.65; font-variant-numeric: tabular-nums; }
+th { font-weight: 600; }
+td > :last-child, th > :last-child { margin-bottom: 0; }
+code, kbd, samp, pre { font-family: "Cascadia Mono", "Consolas", "Microsoft YaHei", monospace; font-size: var(--md-code); line-height: 1.6; }
+code, kbd, samp { padding: 2px 6px; border-radius: 8px; background: var(--surface-soft, var(--surface-2, #edf3f7)); overflow-wrap: anywhere; }
+pre { margin: 0 0 16px; padding: 16px 20px; overflow: auto; border: 1px solid var(--line, #d7e0e8); border-radius: 8px; background: var(--surface, #f7f9fc); }
+pre code { padding: 0; border-radius: 0; background: none; font-size: inherit; }
+@media print {
+  :root { --md-body: 11pt; --md-body-lh: 1.7; --md-h1: 22pt; --md-h2: 17pt; --md-h3: 14pt; --md-h4: 12pt; --md-h5: 11pt; --md-h6: 10.5pt; --md-table: 10.5pt; --md-aux: 10.5pt; --md-code: 10.5pt; }
+}
+/* luz-md-type:end */
   main {
     width: min(760px, calc(100% - 32px));
     margin: 24px auto;
     padding: 48px 56px;
     background: var(--paper);
   }
-  h1 { margin: 0 0 32px; font-size: 32px; line-height: 1.25; font-weight: 700; }
-  h2 { margin: 48px 0 16px; font-size: 24px; line-height: 1.3; font-weight: 700; }
-  h3 { margin: 28px 0 12px; font-size: 20px; line-height: 1.4; font-weight: 600; }
-  strong, b { font-weight: 600; }
+  #copy-area blockquote { border-left-color: var(--accent); }
+  #copy-area figcaption { padding: 8px 0 0; }
   #copy-area img { display: block; width: 100%; height: auto; border-radius: 8px; }
   #copy-area figure { margin: 24px 0; }
   {{EXTRA_CSS}}
-  @media (max-width: 768px) {
+  @media (max-width: 767px) {
     main { width: 100%; margin: 0; padding: 32px 16px; }
   }
   @media print {

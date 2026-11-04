@@ -105,6 +105,13 @@
           ]
         },
         {
+          "page": "02-evidence-and-fact-checking.md",
+          "title": "02 · 证据与事实核查",
+          "path": [
+            "引语与转述"
+          ]
+        },
+        {
           "page": "04-natural-expression.md",
           "title": "04 · 自然表达",
           "path": [
@@ -349,12 +356,19 @@
           "path": [
             "八、残留物（任何语言都直接删）"
           ]
+        },
+        {
+          "page": "19-chinese-text-standards.md",
+          "title": "19 · 中文文字规范",
+          "path": [
+            "速查"
+          ]
         }
       ],
       "tools": [
         "先列事实：产品参数、可验证证据、授权评价、价格与条件；材料里没有的不写，用户点名必须写时用 `[待核实：…]` 占位",
         "字数、结构、标签与 CTA 按 10 对应渠道小节；要几条给几条，不加“方向一”这类角度标签",
-        "小程序、App 与 H5 的前台文字以文案键表交付（键、页面与位置、文案、字数上限、变量、后台可见），按字数上限写，见 06 › 前台文字以文案键表交付；有会话时同一份另存 raw/07-copy-keys.csv；界面放在哪里、什么时候弹见 Luz-System commerce-design.html",
+        "小程序、App 与 H5 的前台文字以文案键表交付（键、页面与位置、文案、字数上限、变量、后台可见），按字数上限写，见 06 › 前台文字以文案键表交付；有会话时同一份另存 raw/07-copy-keys.csv；界面放在哪里、什么时候弹归 Luz-System",
         "要交付 HTML 成品时：`py -X utf8 scripts/03-session.py new --topic \"主题\" --card marketing-copy`，正文写进 raw/04-draft.txt，填好“采用的规则”和“本次沉淀”后 `py -X utf8 scripts/02-article_builder.py --title \"标题\" --session \"<会话>\"`",
         "海报、活动主视觉与版式交给 Luz-Design：先运行 `py -X utf8 D:\\Codes\\Luz-Design\\scripts\\context.py poster`；本技能只写文案"
       ],
@@ -363,7 +377,8 @@
         "交易与运营文案：数量与到期时刻具体（相对时间只用于 24 小时内），划线价标明类型，预估价可展开且提示可能与实付不同；文案键表每条不超过字数上限，只用登记的变量",
         "Gate 7：标题、首段与 CTA 一致，字数在硬限制内，平台格式实际实现，社媒帖不残留 Markdown",
         "17 › 三、中文词汇 与 › 话术壳：空话和宣传词回到具体事实",
-        "回复只有用户要的文案（或成品路径）：无建议、改动说明、评分、备选或客套（15 › 自检）"
+        "回复只有用户要的文案（或成品路径）：无建议、改动说明、评分、备选或客套（15 › 自检）",
+        "合规：绝对化用语、划线价、自动续费、AI 生成内容标识按 06 › 合规 的依据逐条对过；渠道硬性限制（公众号标题 32 个字等）按 10 › 平台规则要点"
       ]
     },
     "opinion-explainer": {
@@ -502,6 +517,13 @@
           ]
         },
         {
+          "page": "19-chinese-text-standards.md",
+          "title": "19 · 中文文字规范",
+          "path": [
+            "速查"
+          ]
+        },
+        {
           "page": "10-channels-and-formats.md",
           "title": "10 · 渠道与格式",
           "path": [
@@ -632,6 +654,13 @@
             "四、中文句式与结构",
             "结尾"
           ]
+        },
+        {
+          "page": "19-chinese-text-standards.md",
+          "title": "19 · 中文文字规范",
+          "path": [
+            "速查"
+          ]
         }
       ],
       "tools": [
@@ -646,9 +675,153 @@
         "回复只有用户要的文本（或成品路径）（15 › 自检）"
       ]
     },
+    "client-document": {
+      "title": "客户正式文档：方案说明书、使用说明与业务逻辑确认表",
+      "summary": "交给客户的方案说明书（先分析需求再给方案）、使用说明、业务逻辑确认表的文字；项目模式下写进 proposal.json、manual.json",
+      "keywords": [
+        "方案说明书",
+        "方案书",
+        "建设方案",
+        "项目方案",
+        "解决方案",
+        "方案",
+        "使用说明",
+        "用户手册",
+        "操作手册",
+        "业务逻辑",
+        "确认表",
+        "需求分析",
+        "客户文档",
+        "客户文件",
+        "给客户",
+        "proposal",
+        "manual"
+      ],
+      "sections": [
+        {
+          "page": "18-client-documents.md",
+          "title": "18 · 客户文件的写法",
+          "path": [
+            "共同写法"
+          ]
+        },
+        {
+          "page": "18-client-documents.md",
+          "title": "18 · 客户文件的写法",
+          "path": [
+            "方案说明书"
+          ]
+        },
+        {
+          "page": "18-client-documents.md",
+          "title": "18 · 客户文件的写法",
+          "path": [
+            "业务逻辑确认表"
+          ]
+        },
+        {
+          "page": "18-client-documents.md",
+          "title": "18 · 客户文件的写法",
+          "path": [
+            "使用说明"
+          ]
+        },
+        {
+          "page": "18-client-documents.md",
+          "title": "18 · 客户文件的写法",
+          "path": [
+            "写进数据文件时"
+          ]
+        },
+        {
+          "page": "18-client-documents.md",
+          "title": "18 · 客户文件的写法",
+          "path": [
+            "交付前自查"
+          ]
+        },
+        {
+          "page": "19-chinese-text-standards.md",
+          "title": "19 · 中文文字规范",
+          "path": [
+            "速查"
+          ]
+        },
+        {
+          "page": "19-chinese-text-standards.md",
+          "title": "19 · 中文文字规范",
+          "path": [
+            "标点"
+          ]
+        },
+        {
+          "page": "19-chinese-text-standards.md",
+          "title": "19 · 中文文字规范",
+          "path": [
+            "数字与日期"
+          ]
+        },
+        {
+          "page": "02-evidence-and-fact-checking.md",
+          "title": "02 · 证据与事实核查",
+          "path": [
+            "从来源到句子"
+          ]
+        },
+        {
+          "page": "04-natural-expression.md",
+          "title": "04 · 自然表达",
+          "path": [
+            "中文处理"
+          ]
+        },
+        {
+          "page": "17-ai-pattern-catalog.md",
+          "title": "17 · AI 痕迹模式目录",
+          "path": [
+            "三、中文词汇"
+          ]
+        },
+        {
+          "page": "11-quality-gates.md",
+          "title": "11 · 质量闸门",
+          "path": [
+            "Gate 2 · 事实与证据"
+          ]
+        },
+        {
+          "page": "11-quality-gates.md",
+          "title": "11 · 质量闸门",
+          "path": [
+            "Gate 3 · 原意与保真"
+          ]
+        },
+        {
+          "page": "11-quality-gates.md",
+          "title": "11 · 质量闸门",
+          "path": [
+            "Gate 4 · 结构与逻辑"
+          ]
+        }
+      ],
+      "tools": [
+        "客户文件的写法以 18 为准（卡里已带 18 的共同写法、方案说明书、业务逻辑确认表、使用说明与交付前自查）；项目模式用 `py -X utf8 D:\\Codes\\Luz-Project\\scripts\\project.py context \"<项目>\" <阶段> --skill luz-writing` 取 features.json、intake.json、变更台账和调研结论，文字写进 data/client/proposal.json（方案阶段）和 manual.json（交付阶段），不手改成品",
+        "素材只用客户原始资料（raw/uploads/）、客户确认过的规则和 Luz-Crawl 前置检索结论（同类方案的结构、行业规则、平台前置条件）；调研来源网址不进客户文件。需要补调研时按 SKILL.md 调用协议先做前置检索",
+        "写完先自查：`py -X utf8 scripts/09-text_check.py <proposal.json 或 manual.json 或草稿> --doc proposal|manual|confirmation [--final]`，ERROR 清零；它只查标点、数字、占位、他文件指引、价格、技术词、标题括号和表题，依据与读者能否看懂仍要逐条人读（18 › 交付前自查）",
+        "版式和导出交给 Luz-Design：先运行 `py -X utf8 D:\\Codes\\Luz-Design\\scripts\\context.py docx`；客户拿到的是 Word 导出的 PDF（确认表是 Excel，用 xlsx 规则卡），不做阅读型网页。没有项目上下文时，会话成品是给自己人评审的阅读型 HTML（`03-session.py new --topic \"主题\" --card client-document`，正文写进 raw/04-draft.txt，填好“采用的规则”和“本次沉淀”后 `02-article_builder.py`）",
+        "功能清单、报价和工时不在本技能范围：方案里不写价格；功能内容来自 Luz-System 的 function-list 与 data/client/features.json，缺功能先走变更台账"
+      ],
+      "checks": [
+        "18 › 交付前自查逐条通过：背景先写现状、痛点和各使用方核心需求；每个数字说得出依据；全文没有“详见”“配套文件”、书名号、价格、技术词、占位词；每张表有表题、每个标题没有括号",
+        "09-text_check.py 在 --final 下零 ERROR；WARN 逐条看过，保留的有理由",
+        "Gate 2、3、4：数字前后一致，用词是客户的词，章节顺序服务于客户的决定",
+        "客户新增需求或改规则时，变更台账已先登记，只改了受影响的章节",
+        "回复只有成品路径和用户要的文字：无建议、改动说明、评分、备选或客套（15 › 自检）"
+      ]
+    },
     "academic-professional": {
       "title": "学术与专业文档",
-      "summary": "论文、研究笔记、评审回复、说明文档、制度，以及用户协议、隐私政策、单独同意书、储值卡协议等协议与政策文本",
+      "summary": "论文、研究笔记、评审回复、内部说明文档、制度，以及用户协议、隐私政策、单独同意书、储值卡协议等协议与政策文本。交给客户的方案说明书、使用说明用 client-document 卡",
       "keywords": [
         "论文",
         "学术",
@@ -657,13 +830,11 @@
         "评审",
         "文档",
         "说明",
-        "手册",
         "制度",
         "协议",
         "隐私",
         "政策",
         "README",
-        "方案",
         "报告"
       ],
       "sections": [
@@ -679,9 +850,22 @@
           "page": "02-evidence-and-fact-checking.md",
           "title": "02 · 证据与事实核查",
           "path": [
-            "02 · 证据与事实核查"
-          ],
-          "label": "02 · 证据与事实核查（全文）"
+            "原则"
+          ]
+        },
+        {
+          "page": "02-evidence-and-fact-checking.md",
+          "title": "02 · 证据与事实核查",
+          "path": [
+            "声明分级"
+          ]
+        },
+        {
+          "page": "02-evidence-and-fact-checking.md",
+          "title": "02 · 证据与事实核查",
+          "path": [
+            "从来源到句子"
+          ]
         },
         {
           "page": "03-strategy-and-structure.md",
@@ -733,26 +917,50 @@
           ]
         },
         {
-          "page": "17-ai-pattern-catalog.md",
-          "title": "17 · AI 痕迹模式目录",
+          "page": "18-client-documents.md",
+          "title": "18 · 客户文件的写法",
           "path": [
-            "七、英文痕迹"
+            "共同写法"
+          ]
+        },
+        {
+          "page": "18-client-documents.md",
+          "title": "18 · 客户文件的写法",
+          "path": [
+            "使用说明"
+          ]
+        },
+        {
+          "page": "19-chinese-text-standards.md",
+          "title": "19 · 中文文字规范",
+          "path": [
+            "速查"
+          ]
+        },
+        {
+          "page": "19-chinese-text-standards.md",
+          "title": "19 · 中文文字规范",
+          "path": [
+            "参考文献"
           ]
         }
       ],
       "tools": [
+        "交给客户的使用说明、方案说明书、业务逻辑确认表属于专门类型，改用 `py -X utf8 scripts/06-context.py client-document`；本卡保留 18 的共同写法和使用说明两节，是因为 Luz-Project 的交付阶段仍指向这张卡",
         "先写主轴：论文是“问题 Q 存在，现有研究缺少 G，本文用 M 提供 E，贡献 C，限制 L”；文档是读者要做的决定或操作，以及条件、步骤、结果和例外",
         "引用逐条对应原文，claim-evidence 写进 raw/02-claims.md；法律、协议与制度原文、条款编号、标识符和精确界面文字逐字保留，改写也不偷换否定、条件与责任主体",
-        "协议与政策：按 09 › 协议与政策文本起草，从 `D:\\Codes\\Luz-Dev\\assets\\legal\\` 的模板开始；需要哪些文档、展示位置、版本与同意记录由 Luz-Dev 实现（`D:\\Codes\\Luz-Dev\\references\\legal-documents.md`）；缺的事实用 `[待核实：…]` 占位，商户确认、建议律师审核",
+        "协议与政策：按 09 › 协议与政策文本起草，从 Luz-Dev 的协议模板开始；需要哪些文档、展示位置、版本与同意记录由 Luz-Dev 实现；缺的事实用 `[待核实：…]` 占位，商户确认、建议律师审核",
         "Word、PDF 等文件版式交给 Luz-Design：先运行 `py -X utf8 D:\\Codes\\Luz-Design\\scripts\\context.py docx`；本技能只负责文字",
-        "要交付阅读型 HTML 时：`py -X utf8 scripts/03-session.py new --topic \"主题\" --card academic-professional`，再用 02-article_builder.py --session 打包"
+        "要交付阅读型 HTML 时：`py -X utf8 scripts/03-session.py new --topic \"主题\" --card academic-professional`，再用 02-article_builder.py --session 打包",
+        "英文稿的英文痕迹（17 › 七、英文痕迹）不在本卡：润色英文论文或文档时另读 `py -X utf8 scripts/06-context.py polish-review`"
       ],
       "checks": [
         "09 › 学术审校（论文）或 09 › 读者测试（结构化文档）",
         "协议：隐私政策写到的字段与系统实际收集的一致，生效日期与版本号齐全，对用户不利的条款写在显眼处，没有“最终解释权”",
         "Gate 2 事实与证据、Gate 3 原意与保真：否定、条件、范围、责任主体与引用没有被改动",
         "17 › 六、翻译腔 与 › 七、英文痕迹",
-        "回复只有用户要的文本（或成品路径）（15 › 自检）"
+        "回复只有用户要的文本（或成品路径）（15 › 自检）",
+        "使用说明：每个功能入口、步骤、规则、状态都写全，界面文字与界面一字不差，不留占位（18 › 使用说明）"
       ]
     },
     "channel-adaptation": {
@@ -831,6 +1039,13 @@
           "title": "11 · 质量闸门",
           "path": [
             "Gate 3 · 原意与保真"
+          ]
+        },
+        {
+          "page": "19-chinese-text-standards.md",
+          "title": "19 · 中文文字规范",
+          "path": [
+            "速查"
           ]
         },
         {
@@ -928,6 +1143,13 @@
           "path": [
             "改写时如何落声"
           ]
+        },
+        {
+          "page": "06-marketing-copy.md",
+          "title": "06 · 营销文案",
+          "path": [
+            "服务目录与功能表逐项定制"
+          ]
         }
       ],
       "tools": [
@@ -1023,7 +1245,8 @@
       ],
       "checks": [
         "Gate 2：来源支持的是当前断言本身，事件日期与页面日期分开，反证没有被隐藏，厂商自报保持归因",
-        "交付核实结果与状态；用户没要求时不附接下来该查什么或写作建议（15 › 交付什么）"
+        "交付核实结果与状态；用户没要求时不附接下来该查什么或写作建议（15 › 交付什么）",
+        "引语逐字照录，来源是 AI 摘要或聊天回答的一律回到原文（02 › 引语与转述）"
       ]
     },
     "visual-production": {
@@ -1104,12 +1327,13 @@
       "checks": [
         "Gate 10：每张图有阅读任务，无乱码文字、水印、Logo，实际尺寸与格式已核实并记进 raw/manifest.json",
         "14 › 八、放置与验收 逐项通过；失败按 14 › 九、失败与回退 如实说明",
-        "article builder 的 check_document 零 ERROR；`py -X utf8 scripts/03-session.py check \"<会话>\"` 通过"
+        "article builder 的 check_document 零 ERROR；`py -X utf8 scripts/03-session.py check \"<会话>\"` 通过",
+        "AI 生成的封面与插图按渠道要求标明，不删改生成服务加的标识（14 › 八、放置与验收）"
       ]
     },
     "general": {
       "title": "通用写作与结构",
-      "summary": "未归类的起草与改写、选题、提纲、策划、结构化说明；拿不准选哪张卡时用它",
+      "summary": "未归类的起草与改写、选题、提纲、策划、结构化说明；拿不准选哪张卡时用它。交给客户的方案说明书、使用说明、业务逻辑确认表用 client-document 卡",
       "keywords": [
         "选题",
         "提纲",
@@ -1131,6 +1355,27 @@
           "title": "01 · 工作流与写作简报",
           "path": [
             "工作文件"
+          ]
+        },
+        {
+          "page": "18-client-documents.md",
+          "title": "18 · 客户文件的写法",
+          "path": [
+            "共同写法"
+          ]
+        },
+        {
+          "page": "18-client-documents.md",
+          "title": "18 · 客户文件的写法",
+          "path": [
+            "方案说明书"
+          ]
+        },
+        {
+          "page": "19-chinese-text-standards.md",
+          "title": "19 · 中文文字规范",
+          "path": [
+            "速查"
           ]
         },
         {
@@ -1228,10 +1473,12 @@
       ],
       "tools": [
         "先锁定交付对象，写出一句话主轴；结构从论证来，不套模板（03 › 结构选择）。任务其实属于某个专门类型时，改用那张卡（`py -X utf8 scripts/06-context.py list`）",
+        "交给客户的方案说明书、使用说明、业务逻辑确认表属于专门类型，改用 `py -X utf8 scripts/06-context.py client-document`；本卡保留它的共同写法和方案说明书两节，是因为 Luz-Project 的方案阶段仍指向这张卡",
         "要交付 HTML 成品时：`py -X utf8 scripts/03-session.py new --topic \"主题\" --card general`，正文写进 raw/04-draft.txt，填好“采用的规则”和“本次沉淀”后 `py -X utf8 scripts/02-article_builder.py --title \"标题\" --session \"<会话>\"`"
       ],
       "checks": [
         "Gate 1 任务与范围、Gate 4 结构与逻辑；11 › 交付前快速提问",
+        "写客户方案时：先分析需求再给方案，不写价格，不提及其他文件，不留占位（18 › 共同写法、交付前自查）",
         "有成品 HTML 时：article builder 的 check_document 零 ERROR，`py -X utf8 scripts/03-session.py check \"<会话>\"` 通过",
         "回复只有用户要的文本（或成品路径）（15 › 自检）"
       ]

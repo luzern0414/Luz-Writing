@@ -25,6 +25,10 @@ body.txt 的格式（references/16 › 正文格式 是同一份说明）：
 
 图片默认转成 JPEG（质量 85，最长边 1600px）再 base64 内嵌；--keep-original 则原样内嵌。
 --copy-button 只在用户明确要求“一键复制到公众号”时使用。
+成品是独立打开的阅读页：字号、字重、行高和标题、段落、引用、表格、图注的间距来自模板里夹在 luz-md-type 标记之间的
+Markdown 层级块（母本 Luz-Design/references/md-type.css，桌面正文 18、手机 16），正文元素不写内联字号，桌面才能放大。
+只有 --copy-button 的“复制正文”需要内联样式（公众号等平台会剥掉 class 和 <style>，平台文章以手机阅读为主，沿用手机一套：
+正文 16、二级标题 24、三级标题 20、图注 14），这些样式在点复制的那一刻才写进剪贴板里的元素，页面上看到的仍是 md 块。
 --theme 选主色：默认 auto 按标题和正文关键词匹配 Luz-Design themes.json 的行业主题（健身、咖啡、宠物……），
 取主题的 action / actionTint 作 --accent / --tint，引用线、高亮和标签页图标一起换色；没有匹配的行业时用
 template（模板自带的 --accent / --tint）。也可以直接写主题 key，例如 --theme fitness-gym。
@@ -55,14 +59,17 @@ TEMPLATE_NOTE = re.compile(r"<!--\s*模板只是骨架.*?-->[ \t]*\r?\n?", re.S)
 CARD_HINT = ("规则卡：模板和本脚本只是骨架，内容、结构、声音与检查以规则卡为准；动笔前运行 "
              "`py -X utf8 scripts/06-context.py <类型>`（list 看类型）读完整张卡。")
 
-# 公众号编辑器会剥掉 class，所以正文样式都写成内联。字号、字重、行高与间距按 Luz-Design file-design.html
-# “阅读型网页 › 排版参数”：主标题 32/700、二级标题 24/700、三级标题 20/600、正文 16/400、图注与数字表格 14。
+# 页面上的段落、标题、引用、图注不写内联字号：它们由模板里的 Markdown 层级块决定（桌面正文 18、手机 16）。
+# 下面这套是“复制正文”粘贴到公众号等平台用的内联样式（平台会剥掉 class，平台文章按手机阅读，沿用手机一套），
+# 数值按 Luz-Design file-design.html“阅读型网页 › 排版参数”的手机列：二级标题 24/700、三级标题 20/600、正文 16/400、图注 14。
+# 只在点复制时写进剪贴板里的元素，不进页面本身。
 P_STYLE = "font-size:16px;line-height:1.75;color:#202124;margin:0 0 16px;"
 H2_STYLE = "font-size:24px;line-height:1.3;font-weight:700;color:#202124;margin:48px 0 16px;"
 H3_STYLE = "font-size:20px;line-height:1.4;font-weight:600;color:#202124;margin:28px 0 12px;"
 # 阅读型产出圆角全篇统一一个值（visual-design.html：4–12 像素之间），图片、高亮与复制按钮共用。
 RADIUS = "8px"
-# 引用线和高亮底随主题换色：{accent} / {tint} 在生成时填入。
+# 引用线和高亮底随主题换色：{accent} / {tint} 在生成时填入。页面上的引用线颜色在模板里取 var(--accent)，
+# 这里的 QUOTE_STYLE 只给“复制正文”。
 QUOTE_STYLE = ("font-size:16px;line-height:1.75;color:#5f6368;margin:0 0 16px;"
                "padding:2px 0 2px 14px;border-left:3px solid {accent};")
 STRONG_STYLE = "font-weight:600;color:#202124;"
@@ -71,7 +78,9 @@ IMG_STYLE = f"display:block;width:100%;height:auto;border-radius:{RADIUS};"
 FIGURE_STYLE = "margin:24px 0;"
 CAPTION_STYLE = "font-size:14px;line-height:1.5;color:#5f6368;margin:8px 0 0;text-align:center;"
 # 表格：表头浅底 600、居中；只有横向细线；长文字左对齐，短值居中，金额右对齐（等宽数字）。
-TABLE_STYLE = "width:100%;border-collapse:collapse;margin:24px 0;font-size:16px;line-height:1.5;"
+# 表格字号和行高来自 md 块（桌面 16、手机 14）；粘贴到平台时才加 TABLE_PASTE_STYLE。
+TABLE_STYLE = "width:100%;border-collapse:collapse;margin:24px 0;"
+TABLE_PASTE_STYLE = "font-size:16px;line-height:1.5;"
 TH_STYLE = ("background:{tint};font-weight:600;color:#202124;text-align:center;padding:10px 12px;"
             "border-top:1px solid #dadce0;border-bottom:1px solid #dadce0;")
 TD_STYLE = "padding:10px 12px;border-bottom:1px solid #dadce0;color:#202124;text-align:{align};vertical-align:top;"
@@ -92,6 +101,7 @@ ICONS = {
 # 图标先跟随选中的主题，主色与图案出自同一个判断；主题没有对应图案（或用模板颜色）时才按关键词挑。
 THEME_ICONS = {
     "ai-agent": "tech", "fitness-gym": "fitness",
+    "enterprise-navy": "finance", "antique-gold": "finance", "travel-azure": "travel", "violet-academy": "education",
     **{key: "food" for key in ("xiangcai", "sichuan-hotpot", "cantonese-cafe", "japanese-sushi", "bbq-snack", "coffee",
                                "milk-tea", "bakery-dessert", "fast-noodle", "western-light")},
 }
@@ -189,23 +199,46 @@ def icon_link(kind: str, color: str, tint: str) -> str:
 
 COPY_CSS = """#copy-btn { position: fixed; right: 16px; bottom: calc(20px + env(safe-area-inset-bottom, 0px));
     font: inherit; font-size: 14px; font-weight: 600; color: #ffffff; background: var(--accent);
-    border: 0; border-radius: """ + RADIUS + """; padding: 12px 20px; cursor: pointer; }"""
+    border: 0; border-radius: """ + RADIUS + """; padding: 12px 20px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+#copy-btn:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }"""
+# 点“复制正文”时，按标签把手机一套内联样式写进剪贴板里的副本；页面上的元素不动。
 COPY_HTML = """<button id="copy-btn" type="button">复制正文</button>
 <script>
 (function () {
   var area = document.getElementById('copy-area');
   var btn = document.getElementById('copy-btn');
+  var paste = __PASTE_STYLES__;
   function flash(text) { var old = btn.textContent; btn.textContent = text; setTimeout(function () { btn.textContent = old; }, 2200); }
+  function pasteHTML() {
+    var copy = area.cloneNode(true);
+    Object.keys(paste).forEach(function (tag) {
+      Array.prototype.forEach.call(copy.querySelectorAll(tag), function (el) {
+        el.setAttribute('style', paste[tag] + (el.getAttribute('style') || ''));
+      });
+    });
+    return '<div>' + copy.innerHTML + '</div>';
+  }
   btn.addEventListener('click', function () {
     if (!navigator.clipboard || !window.ClipboardItem) { flash('请用 Chrome 或 Edge 打开'); return; }
     var item = new ClipboardItem({
-      'text/html': new Blob(['<div>' + area.innerHTML + '</div>'], { type: 'text/html' }),
+      'text/html': new Blob([pasteHTML()], { type: 'text/html' }),
       'text/plain': new Blob([area.innerText], { type: 'text/plain' })
     });
     navigator.clipboard.write([item]).then(function () { flash('已复制'); }).catch(function () { flash('复制失败'); });
   });
 })();
 </script>"""
+
+
+def paste_styles(accent: str) -> dict[str, str]:
+    """标签 -> 复制到平台时加在元素前面的内联样式（手机一套）。"""
+    return {"p": P_STYLE, "h2": H2_STYLE, "h3": H3_STYLE, "blockquote": QUOTE_STYLE.format(accent=accent),
+            "figcaption": CAPTION_STYLE, "table": TABLE_PASTE_STYLE}
+
+
+def copy_html(accent: str) -> str:
+    return COPY_HTML.replace("__PASTE_STYLES__", json.dumps(paste_styles(accent), ensure_ascii=False))
+
 
 SIZE_WARN_MB = 15
 
@@ -361,19 +394,19 @@ def render(blocks, body_dir: Path, keep_original: bool, accent: str = "#2b5f73",
             if not alt:
                 print(f"警告：第 {n_img} 张图没有替代文本，用“[img] 路径 | 替代文本 | 图注”补上（11 › Gate 10）", file=sys.stderr)
             alt_text = html.escape(alt or f"插图{n_img}", quote=True)
-            figcaption = f'<figcaption style="{CAPTION_STYLE}">{inline(caption, accent, tint)}</figcaption>' if caption else ""
+            figcaption = f"<figcaption>{inline(caption, accent, tint)}</figcaption>" if caption else ""
             parts.append(f'    <figure style="{FIGURE_STYLE}"><img src="{src}" alt="{alt_text}" style="{IMG_STYLE}">{figcaption}</figure>')
         elif kind == "table":
             parts.append(render_table(value, accent, tint))
         elif kind == "h2":
-            parts.append(f'    <h2 style="{H2_STYLE}">{inline(value, accent, tint)}</h2>')
+            parts.append(f"    <h2>{inline(value, accent, tint)}</h2>")
         elif kind == "h3":
-            parts.append(f'    <h3 style="{H3_STYLE}">{inline(value, accent, tint)}</h3>')
+            parts.append(f"    <h3>{inline(value, accent, tint)}</h3>")
         elif kind == "quote":
-            parts.append(f'    <blockquote style="{QUOTE_STYLE.format(accent=accent)}">{inline(value, accent, tint)}</blockquote>')
+            parts.append(f"    <blockquote>{inline(value, accent, tint)}</blockquote>")
             n_p += 1
         else:
-            parts.append(f'    <p style="{P_STYLE}">{inline(value, accent, tint)}</p>')
+            parts.append(f"    <p>{inline(value, accent, tint)}</p>")
             n_p += 1
     return "\n".join(parts), n_p, n_img
 
@@ -438,7 +471,7 @@ def main(argv: list[str] | None = None):
     ap.add_argument("--theme", default="auto",
                     help="主色：默认 auto 按标题和正文关键词匹配 Luz-Design 行业主题；template 用模板自带颜色；"
                          "或直接写主题 key，例如 fitness-gym")
-    ap.add_argument("--no-check", action="store_true", help="跳过 Luz-Design 文档检查（仅测试）")
+    ap.add_argument("--no-check", action="store_true", help="仅 --out 测试可跳过文档检查；--session 成品始终检查")
     args = ap.parse_args(argv)
 
     print(CARD_HINT, file=sys.stderr)
@@ -488,7 +521,7 @@ def main(argv: list[str] | None = None):
         .replace("{{TITLE}}", html.escape(args.title, quote=False))
         .replace("{{BODY}}", body_html)
         .replace("{{EXTRA_CSS}}", COPY_CSS if args.copy_button else "")
-        .replace("{{EXTRA_HTML}}", COPY_HTML if args.copy_button else "")
+        .replace("{{EXTRA_HTML}}", copy_html(accent) if args.copy_button else "")
     )
     if "{{" in page:
         sys.exit("模板里还有没替换的占位符，检查模板文件")
@@ -501,7 +534,7 @@ def main(argv: list[str] | None = None):
     print(f"段落 {n_p} 个，图片 {n_img} 张，标签页图标 {icon_kind}，主题 {theme_key}（{accent}），大小 {size_mb:.2f} MB")
     if size_mb > SIZE_WARN_MB:
         print(f"警告：超过 {SIZE_WARN_MB} MB，减少图片或降低质量", file=sys.stderr)
-    if not args.no_check:
+    if not args.no_check and session_module is None:
         run_document_check(out)
     if session_module is not None:
         errors = session_module.session_errors(session)

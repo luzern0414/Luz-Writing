@@ -18,7 +18,8 @@ ROOT = Path(__file__).resolve().parent.parent
 SKILL = ROOT / "SKILL.md"
 REQUIRED_DIRS = ["references", "assets", "scripts", "evals", "experience"]
 REQUIRED_ROOT_FILES = ["SKILL.md", "README.md", "NOTICE.md"]
-REQUIRED_FILES = ["scripts/06-context.py", "scripts/07-test_context.py", "references/cards.json"]
+REQUIRED_FILES = ["scripts/06-context.py", "scripts/07-test_context.py", "scripts/08-crawl_gate.py", "scripts/09-text_check.py",
+                  "scripts/10-test_text_check.py", "references/cards.json"]
 # Templates are skeletons; each says so in its first lines and points to the rule card.
 SKELETON_TEMPLATES = ["assets/01-article-template.html", "assets/03-visual-production-brief.md"]
 # The shared rule-card core is identical in every Luz skill; Luz-Design holds the reference copy.
@@ -27,7 +28,7 @@ CORE_START = b"# ---- shared rule-card core"
 CORE_END = b"# ---- end of shared rule-card core"
 # .git is version-control metadata of the repository, not packaged content.
 FORBIDDEN_ROOT_ENTRIES = [".research", "__pycache__", "working", "raw", "outputs"]
-REQUIRED_REFERENCES = [f"{i:02d}-" for i in range(1, 18)]
+REQUIRED_REFERENCES = [f"{i:02d}-" for i in range(1, 20)]
 SKIP_LINK_PREFIXES = ("http://", "https://", "mailto:", "#")
 
 
@@ -157,6 +158,10 @@ def smoke_builder() -> None:
         builder_module = load_script("luz_writing_builder_smoke", "02-article_builder.py")
         session_module = builder_module.load_session_module()
         session_module.NOTES_FILE = store
+        # Offline gate fixture only; validators do not browse or claim live research.
+        sys.path.append(str(ROOT.parent / "Luz-Crawl/scripts"))
+        from test_crawl_preflight import complete_fixture
+        complete_fixture(session, "luz-writing")
         out, err = io.StringIO(), io.StringIO()
         try:
             with redirect_stdout(out), redirect_stderr(err):
@@ -192,6 +197,8 @@ def check_rule_cards(text: str) -> None:
         fail("rule cards: " + "; ".join(errors))
     if "general" not in context.card_kinds():
         fail("references/cards.json needs the card general (the session default)")
+    if "client-document" not in context.card_kinds():
+        fail("references/cards.json needs the card client-document (proposal, manual, confirmation table)")
     mine = (ROOT / "scripts" / "06-context.py").read_bytes()
     if CORE_START not in mine or CORE_END not in mine:
         fail("scripts/06-context.py lost the shared rule-card core markers")
@@ -238,6 +245,9 @@ def check_rule_cards(text: str) -> None:
     proc = run([str(ROOT / "scripts" / "07-test_context.py")])
     if proc.returncode != 0:
         fail(f"rule card tests failed: {proc.stderr or proc.stdout}")
+    proc = run([str(ROOT / "scripts" / "10-test_text_check.py")])
+    if proc.returncode != 0:
+        fail(f"text check tests failed: {proc.stderr or proc.stdout}")
 
 
 def check_experience() -> None:

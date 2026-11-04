@@ -10,7 +10,8 @@ new 打印新会话的绝对路径，并把规则卡（06-context.py）存进 ra
 不写时按主题关键词推断，推断不出用 general。读完规则卡再写，并在 raw/01-brief.md 的“采用的规则”逐行
 写出本次落实的写作指南小节或偏好 key；结束前用 04-experience.py note 写入或确认至少一条经验，把 key 填进
 “本次沉淀”。02-article_builder.py 打包前两栏都会检查。
-import-crawl 把 Luz-Crawl 的任务目录（begin "主题" --new 返回的 folder，内有 luz-task.json）整份复制到
+import-crawl 把 Luz-Crawl 的任务目录（begin "主题" --new 返回的 folder：<输出根>\\NNN_主题，爬取的全部内容在其下 raw\\，
+任务标记是 raw\\luz-task.json，总结 html 与 raw\\ 同级；旧任务的标记在 luz-task.json）整份复制到
 raw/05-crawl/ 并登记到 raw/manifest.json；旧版合集（Luz-Crawl 输出根下一层的 NNN_主题 目录）也接受。
 check 确认会话根目录只有一个同名 HTML 和 raw/，且有规则卡；已交付成品时“采用的规则”不为空、“本次沉淀”
 的 key 都在 experience/notes.json 且确认日期不早于会话创建日（建卡之前的旧会话豁免）；--strict 时
@@ -26,6 +27,7 @@ import os
 import re
 import shutil
 import sys
+import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -37,8 +39,8 @@ OUTPUT_ROOT = Path(r"D:\Codes\skill输出\Luz-Writing")
 CRAWL_ROOT = Path(r"D:\Codes\skill输出\Luz-Crawl")
 SESSION_NAME = re.compile(r"^(\d{3})-.+$")
 CRAWL_NAME = re.compile(r"^\d+_.+$")  # 旧版合集：Luz-Crawl 输出根下一层的 NNN_主题
-CRAWL_TASK_FILE = "luz-task.json"     # begin 建的任务目录都有它（kind: task_archive）
-CRAWL_SUMMARY = "爬取总结.html"        # 任务目录 raw/ 下的汇总页
+CRAWL_TASK_FILE = "luz-task.json"     # begin 建的任务目录都有它（kind: task_archive），在 raw/ 下；旧任务在任务目录根
+CRAWL_SUMMARY = "爬取总结.html"        # 旧任务 raw/ 下的汇总页；现在的总结 html 是与 raw/ 同级的 <任务目录名>.html
 FORBIDDEN = re.compile(r'[<>:"/\\|?*\x00-\x1f]')
 
 # 规则卡（scripts/06-context.py，定义在 references/cards.json）：不写 --card 且主题推断不出时用 general。
@@ -73,6 +75,13 @@ RAW_FILES = {
 RAW_DIRS = ["05-crawl", "06-images"]
 
 _CONTEXT = None
+
+
+def crawl_errors(session, *, caller="luz-writing"):
+    spec = importlib.util.spec_from_file_location("luz_writing_crawl_gate", HERE / "08-crawl_gate.py")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module.crawl_errors(session, caller=caller)
 
 
 def load_context():
@@ -236,6 +245,19 @@ def session_errors(session: Path, strict: bool = False) -> list[str]:
         errors.append(f"会话缺少：{', '.join(missing)}")
     raw = session / "raw"
     legacy = "rule_cards" not in load_manifest(session) and not (raw / RULES_DIR).is_dir()  # 建卡之前的旧会话
+    if strict or (session / f"{session.name}.html").is_file():
+        errors.extend(crawl_errors(session, caller="luz-writing"))
+    final = session / f"{session.name}.html"
+    if final.is_file():
+        checker = Path(r"D:\Codes\Luz-Design\scripts\check_document.py")
+        if not checker.is_file():
+            errors.append(f"文档校验器不存在: {checker}")
+        else:
+            result = subprocess.run([sys.executable, "-X", "utf8", str(checker), str(final)], capture_output=True, text=True, encoding="utf-8", errors="replace")
+            if result.returncode:
+                errors.extend(f"文档检查: {line}" for line in (result.stdout + result.stderr).splitlines() if line.startswith("ERROR"))
+                if not any(e.startswith("文档检查:") for e in errors):
+                    errors.append("文档检查未通过: " + (result.stderr or result.stdout).strip())
     if not legacy:
         delivered = (session / f"{session.name}.html").is_file()
         errors.extend(rule_card_errors(raw, require_adopted=delivered or strict, check_current=strict))
@@ -247,7 +269,7 @@ def session_errors(session: Path, strict: bool = False) -> list[str]:
 def packaging_errors(session: Path) -> list[str]:
     """打包成品前的卡口：当前规则卡、“采用的规则”不为空、“本次沉淀”的经验已写入或确认（旧会话也不豁免）。"""
     raw = session / "raw"
-    return [*rule_card_errors(raw, require_adopted=True, check_current=True), *sediment_errors(raw, created_date(session))]
+    return [*crawl_errors(session, caller="luz-writing"), *rule_card_errors(raw, require_adopted=True, check_current=True), *sediment_errors(raw, created_date(session))]
 
 
 def cmd_new(args) -> None:
@@ -294,28 +316,31 @@ def sha256(path: Path) -> str:
 
 
 def crawl_task(folder: Path) -> dict | None:
-    """Luz-Crawl 任务目录（begin 返回的 folder）的 luz-task.json；不是任务目录时返回 None。"""
-    try:
-        task = json.loads((folder / CRAWL_TASK_FILE).read_text(encoding="utf-8"))
-    except (OSError, ValueError):
-        return None
-    return task if isinstance(task, dict) and task.get("kind") == "task_archive" else None
+    """Luz-Crawl 任务目录（begin 返回的 folder）的任务标记：先认 raw/luz-task.json，没有再认旧位置 luz-task.json；不是任务目录时返回 None。"""
+    for marker in (folder / "raw" / CRAWL_TASK_FILE, folder / CRAWL_TASK_FILE):
+        try:
+            task = json.loads(marker.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            continue
+        if isinstance(task, dict) and task.get("kind") == "task_archive":
+            return task
+    return None
 
 
 def crawl_source_errors(folder: Path, allow_any: bool = False) -> list[str]:
-    """能导入的来源：Luz-Crawl 任务目录（有 luz-task.json，位置不限），或输出根下一层的旧版 NNN_主题 合集。"""
+    """能导入的来源：Luz-Crawl 任务目录（有 raw/luz-task.json，旧任务是 luz-task.json；位置不限），或输出根下一层的旧版 NNN_主题 合集。"""
     if not folder.is_dir():
         return [f"不是目录：{folder}"]
     if crawl_task(folder) is not None or allow_any:
         return []
     if CRAWL_NAME.match(folder.name) and folder.parent == CRAWL_ROOT.resolve():
         return []  # 旧版合集
-    return [f"不是 Luz-Crawl 任务目录（缺 {CRAWL_TASK_FILE}）：{folder}。传入 Luz-Crawl `begin \"主题\" --new` 返回的 folder"]
+    return [f"不是 Luz-Crawl 任务目录（缺 raw/{CRAWL_TASK_FILE}）：{folder}。传入 Luz-Crawl `begin \"主题\" --new` 返回的 folder"]
 
 
 def crawl_summary(folder: Path) -> Path | None:
-    """任务目录的 raw/爬取总结.html；旧版合集是同名 HTML。"""
-    for candidate in (folder / "raw" / CRAWL_SUMMARY, folder / f"{folder.name}.html"):
+    """任务目录的总结 html：与 raw/ 同级的 <任务目录名>.html；旧任务是 raw/爬取总结.html。"""
+    for candidate in (folder / f"{folder.name}.html", folder / "raw" / CRAWL_SUMMARY):
         if candidate.is_file():
             return candidate
     return None
@@ -363,8 +388,8 @@ def main() -> None:
     p_new.add_argument("--topic", required=True)
     p_new.add_argument("--card", action="append",
                        help="规则卡类型，可重复：tech-news、marketing-copy、opinion-explainer、narrative-fiction、"
-                            "academic-professional、channel-adaptation、polish-review、fact-check、visual-production、"
-                            "general；不写时按主题推断（06-context.py list 看说明）")
+                            "client-document、academic-professional、channel-adaptation、polish-review、fact-check、"
+                            "visual-production、general；不写时按主题推断（06-context.py list 看说明）")
     p_new.add_argument("--root", help="测试用输出根目录")
     p_new.set_defaults(func=cmd_new)
 
