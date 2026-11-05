@@ -52,6 +52,15 @@
       "last_confirmed": "2026-11-04"
     },
     {
+      "key": "output-dir-standard",
+      "kind": "preference",
+      "text": "输出目录统一（用户 2026-11-05 定）：每个会话 skill输出/Luz-Writing/NNN-主题（三位序号加短横线）；根目录只有 raw/ 和同名汇总页 NNN-主题.html，文章与文案的成品 HTML 就是汇总页，没有项目目录的非 HTML 成品放根目录并由汇总页列出；raw 存源文件和检索信息；项目任务的文字成果只写进项目目录的 docs，项目不保存任何原始文件，会话只留汇总页和 raw",
+      "why": "用户 2026-11-05 规定各技能输出目录；03-session.py check 调用 check_output_layout，旧会话只提示不报错",
+      "uses": 1,
+      "first_seen": "2026-11-05",
+      "last_confirmed": "2026-11-05"
+    },
+    {
       "key": "purchase-rule-copy",
       "kind": "preference",
       "text": "购买规则的提示写在数量旁：先规则后剩余（每日限购 2 件，今日还可买 1 件）；不符合时写原因加一步出路；每个原因代码一个文案键",
@@ -126,11 +135,15 @@
     {
       "key": "card-size-cap-trade-offs",
       "kind": "lesson",
-      "text": "给规则卡加小节后先跑 07-test_context.py：每张卡的规则原文必须在 8–35 KB。超出就从该卡删最不相关或重复的小节，不抬高上限（本次：tech-news 不放中文速查，marketing-copy 删重复的服务目录小节，academic-professional 把英文痕迹留给 polish-review）",
-      "why": "2026-11-02 新增客户文档卡与中文速查后三张卡超出上限",
-      "uses": 1,
+      "text": "给规则卡加小节后先跑 07-test_context.py：每张卡的规则原文必须在 8–35 KB。超出就从该卡删最不相关或重复的小节，不抬高上限（中文速查不放 tech-news；服务目录重复小节从 marketing-copy 删；英文痕迹留给 polish-review；会话结构加长后，tech-news 去掉与它重复的 Gate 9，marketing-copy 与 academic-professional 只留一行汇总页工具提示，只有 client-document 带完整的项目任务小节）",
+      "why": "2026-11-02 新增客户文档卡与中文速查后三张卡超出上限；2026-11-05 输出规范使会话结构变长，tech-news、marketing-copy、academic-professional 再次超限",
+      "uses": 2,
       "first_seen": "2026-11-02",
-      "last_confirmed": "2026-11-02"
+      "last_confirmed": "2026-11-05",
+      "previous": {
+        "text": "给规则卡加小节后先跑 07-test_context.py：每张卡的规则原文必须在 8–35 KB。超出就从该卡删最不相关或重复的小节，不抬高上限（本次：tech-news 不放中文速查，marketing-copy 删重复的服务目录小节，academic-professional 把英文痕迹留给 polish-review）",
+        "replaced_at": "2026-11-05"
+      }
     },
     {
       "key": "catalog-consolidation-pagination",
@@ -171,11 +184,15 @@
     {
       "key": "crawl-task-folder-import",
       "kind": "lesson",
-      "text": "Luz-Crawl 的产物以 begin 返回的任务目录为单位（内有 luz-task.json，位于输出根或分类目录的 raw/ 下），import-crawl 收这个目录，不再到输出根下一层找 NNN_ 合集；写调用 Luz-Crawl 的步骤时只写一句调用顺序并指向它的 SKILL.md",
-      "why": "与 Luz-Crawl 现行调用协议保持一致",
-      "uses": 1,
+      "text": "Luz-Crawl 的产物以 begin 返回的任务目录为单位：新任务目录是 NNN-主题（旧任务是 NNN_主题），任务标记在 raw/luz-task.json，总结页 NNN-主题.html 与 raw 同级；import-crawl 收这个目录并复制进 raw/05-crawl/，输出根下一层的 NNN-主题 或 NNN_主题 合集也认；写调用 Luz-Crawl 的步骤时只写一句调用顺序并指向它的 SKILL.md",
+      "why": "Crawl 新任务目录改用短横线，与 Luz-Crawl 现行调用协议保持一致",
+      "uses": 2,
       "first_seen": "2026-10-29",
-      "last_confirmed": "2026-10-29"
+      "last_confirmed": "2026-11-05",
+      "previous": {
+        "text": "Luz-Crawl 的产物以 begin 返回的任务目录为单位（内有 luz-task.json，位于输出根或分类目录的 raw/ 下），import-crawl 收这个目录，不再到输出根下一层找 NNN_ 合集；写调用 Luz-Crawl 的步骤时只写一句调用顺序并指向它的 SKILL.md",
+        "replaced_at": "2026-11-05"
+      }
     },
     {
       "key": "docx-check-cue-brackets",
@@ -212,6 +229,19 @@
       "uses": 2,
       "first_seen": "2026-10-29",
       "last_confirmed": "2026-10-29"
+    },
+    {
+      "key": "unsupported-peer-claims-out",
+      "kind": "lesson",
+      "text": "客户文件里“同类产品是这样做的”只写本阶段读到正文的来源能支持的句子，并在调研记录里写清每个来源读到了什么；评审页讲价格已拿掉时不写报价、单价、小计这类词；客户文件里的“是”“—”矩阵标记不用对勾符号（文字检查会当作装饰）",
+      "why": "014 返工：方案说明书业务现状里无出处的“同类企业经验”句被换成读到的纷享销客、Zoho、HubSpot 资料；矩阵里的对勾被 09-text_check 报错",
+      "uses": 2,
+      "first_seen": "2026-11-05",
+      "last_confirmed": "2026-11-05",
+      "previous": {
+        "text": "客户文件里“同类企业的经验是……”这类说法，要么在前置检索里读到正文并写明出处，要么删掉改写成用户原话或材料里有的事实；调研来源网址不进客户文件，但结论必须能回到读过的正文。",
+        "replaced_at": "2026-11-05"
+      }
     },
     {
       "key": "research-patch-workflow",
@@ -302,6 +332,19 @@
       "uses": 1,
       "first_seen": "2026-11-02",
       "last_confirmed": "2026-11-02"
+    },
+    {
+      "key": "text-check-requirements-doc",
+      "kind": "fact",
+      "text": "09-text_check.py 有 --doc requirements 用来查项目状态根下的 data/client/requirements.json：按客户文件查他文件指引、价格与工时、技术词和功能编号，并核对需求说明书七章（background、goals、scope、requirements、rules、acceptance、open）。需求清单用 auto 块时，表里的编号是连续序号，不带 FN。",
+      "why": "用 --doc proposal 查需求说明书会误报缺解决方案与交付内容两章。",
+      "uses": 2,
+      "first_seen": "2026-11-05",
+      "last_confirmed": "2026-11-05",
+      "previous": {
+        "text": "09-text_check.py 有 --doc requirements 用来查 data/client/requirements.json：按客户文件查他文件指引、价格与工时、技术词和功能编号，并核对需求说明书七章（background、goals、scope、requirements、rules、acceptance、open）。需求清单用 auto 块时，表里的编号是连续序号，不带 FN。",
+        "replaced_at": "2026-11-05"
+      }
     }
   ]
 }

@@ -27,7 +27,7 @@
 - 业务现状：现状问题表（现状问题 / 具体表现 / 带来的后果）。表现写看得见的事（“高峰期靠群消息登记，容易漏掉”），后果写客户在乎的（漏单、对不上账、顾客久等）。
 - 需求分析：按使用方分行（使用方 / 现状与痛点 / 核心需求 / 解决方式）。使用方是顾客、店员、管理者、财务这类真实角色；核心需求用客户自己的话，只写这个使用方真正要的几件事，不替客户编需求。
 - 本期需求边界：试点规模，以及本期不做什么。
-- 材料来源：客户原始资料（`raw/uploads/`）和对同类系统的调研（Luz-Crawl 前置检索结论）。调研用来写准现状和痛点，来源网址不进客户文件；没有材料支撑的现状不写。
+- 材料来源：客户原始资料（项目状态根的 `uploads/`）和对同类系统的调研（Luz-Crawl 前置检索结论）。调研用来写准现状和痛点，来源网址不进客户文件；没有材料支撑的现状不写。
 
 ### 建设目标
 
@@ -76,7 +76,7 @@
 
 ## 写进数据文件时
 
-项目模式下，文字写进 Luz-Project 的数据文件，由它的校验把关。写完先自查，再交给它：
+项目模式下，文字写进项目状态根（Luz-Project 会话的 `raw` 目录）的 `data/client/` 数据文件，由 Luz-Project 的校验把关，再由它渲染进项目目录的 `docs\01-需求对接` 或 `docs\03-验收交付`（文件名 `NN-名称`）。项目目录只放这些成果，不放简报、声明表、草稿、客户上传件或数据文件；本技能的会话只有汇总页和 `raw/`。写完先自查，再交给它：
 
 - `data/client/requirements.json`：需求说明书，`format` 为 `word`，七章必有：`background` 项目背景（业务现状和按使用方的现状问题表）、`goals` 建设目标、`scope` 范围与使用者、`requirements` 需求清单（每条需求写具体要求和业务规则，功能清单已有时用 auto 块生成）、`rules` 业务规则与约束、`acceptance` 验收标准、`open` 需要客户确认的事项。只写需求，不写解决方案、技术细节和价格；先写现状与问题，再写需求；用客户的词；不提及其他文件。客户有自己的需求文档时不写这份，在 `client_document` 里登记。
 - `data/client/proposal.json`：`format` 为 `word`；`hero.info` 写项目名称、版本、日期，不写配套文件；`toc` 为 `true`；`sections` 里 `background`、`solution`、`deliverables` 三章必有，常加 `goals`；块只用 `text`、`sub`、`bullets`、`table`、`matrix`；每张表必须有 `caption`，长文本列用 `widths`；章标题和 `sub` 标题不含括号。`client proposal-draft` 生成的草稿带“待补充”，不能构建，写完要清掉。
@@ -85,7 +85,7 @@
 
 ## 交付前自查
 
-用 `py -X utf8 scripts/09-text_check.py <文件> --doc proposal|manual|confirmation` 先扫一遍，它检查的是下面这些能机器判断的部分，剩下的靠人读：
+用 `py -X utf8 scripts/09-text_check.py <文件> --doc proposal|requirements|manual|confirmation`（需求说明书 requirements.json 用 requirements）先扫一遍，它检查的是下面这些能机器判断的部分，剩下的靠人读：
 
 - 读一遍背景：先写客户的现状、痛点和各使用方的核心需求，再写方案。
 - 随机抽三个数字，说出依据。

@@ -11,7 +11,7 @@ The skill has two mature workflows from the original Luz project: evidence-led A
 
 ## 调用协议（每次调用都按顺序做，不可跳过）
 
-**先判定模式与检索。** 若提供显式 project context / `LUZ_PROJECT_ROOT`，先按 [project-mode.md](../Luz-Project/references/project-mode.md) 读取 `project.py context <project> <stage> --skill luz-writing`；项目阶段使用项目 HTML/JSON 与审批，不套 standalone 的旧会话路径。没有项目上下文就沿用本技能编号会话，不创建完整项目目录。
+**先判定模式与检索。** 若提供显式 project context / `LUZ_PROJECT_ROOT`（指项目状态根，即 Luz-Project 会话的 `raw` 目录），先读取 `project.py context <project> <stage> --skill luz-writing`，用 `03-session.py new --project` 建会话；项目阶段的文字写进状态根的数据文件，成果由 Luz-Project 写进项目目录，本技能会话只有汇总页和 `raw/`（[16](references/16-output-paths-and-tools.md) › 项目任务）。没有项目上下文就沿用本技能编号会话，不创建完整项目目录。
 
 每次业务调用都按 [前置检索协议](../Luz-Crawl/references/preflight.md) 在方案/正式实现之前执行 `crawl_preflight.py run --caller luz-writing --session <本技能会话或项目根> --topic <任务>`，已有任务加 `--task <任务目录>`，项目加 `--stage <阶段>`；阅读正文后 `conclude --file <补充信息.json>`，再 `check`。补充信息写回所属方案，结论交付 HTML；短任务也保留编号会话与检索结论 HTML。仅 doctor、空结果、手填 URL 或只读经验不算检索完成。本要求覆盖下面旧的条件式调研或无会话例外；不会为每条内部脚本命令重新建立任务。
 
@@ -30,7 +30,7 @@ This rule outranks every other delivery habit in this package; the full rule is 
 
 ## Output location
 
-Every artifact goes to `D:\Codes\skill输出\Luz-Writing\NNN-主题\`: one final `NNN-主题.html` beside a `raw\` folder for the rule cards, brief, claims, outline, draft, Luz-Crawl copies, images and copy-key tables. Never write outputs into this skill folder. Session layout, commands, Luz-Crawl and the page rules: [16 · output paths, crawling, and layout](references/16-output-paths-and-tools.md).
+Every artifact goes to `D:\Codes\skill输出\Luz-Writing\NNN-主题\` (three-digit number, dash, topic). The session root holds only `raw\` and the summary page `NNN-主题.html`: `raw\` takes every source and process file (rule cards, brief, claims, outline, draft, Luz-Crawl copies, images, copy-key source tables); for articles and copy the final HTML is the summary page; a non-HTML deliverable (copy-key xlsx, agreement docx/pdf) with no project directory sits in the root beside it and is listed by a summary page from `03-session.py summary`. In a Luz-Project task the text results are rendered by Luz-Project into the project's `docs\01-需求对接` or `docs\03-验收交付` and the session keeps only the summary page and `raw\`. Never write outputs into this skill folder. Session layout, summary page, project tasks, commands, Luz-Crawl and the page rules: [16 · output paths, crawling, and layout](references/16-output-paths-and-tools.md).
 
 ## 每次调用后沉淀
 
@@ -98,7 +98,7 @@ Each topic has one home; this file only points to it.
 - The writing sequence from material to delivery: [01](references/01-workflow-and-brief.md) › 写作流程. Claim tables: [02](references/02-evidence-and-fact-checking.md) › Claim log. Structure and paragraphs: [03](references/03-strategy-and-structure.md). Expression beyond removing tells: [04](references/04-natural-expression.md); the Luz technology-news voice and number budget: [05](references/05-technology-news.md).
 - Client files (proposal, user manual, confirmation table) and Chinese text standards (punctuation, numbers, dates, references, official documents): [18](references/18-client-documents.md), [19](references/19-chinese-text-standards.md). Verified platform limits and rules: [10](references/10-channels-and-formats.md) › 平台规则要点.
 - Covers and images: [14](references/14-visual-production.md). Body format (`[img] 路径 | 替代文本 | 图注`, quotes, tables) and page rules: [16](references/16-output-paths-and-tools.md). Visual values (type scale, weights, colours, radius, tab icon) come from Luz-Design: `py -X utf8 D:\Codes\Luz-Design\scripts\context.py reading-html`. The page's text hierarchy is the Markdown type block in the template (desktop body 18, phone 16); only `--copy-button` writes the phone-size inline styles for platform paste.
-- Scripts: `scripts/03-session.py` (sessions, `import-crawl` of a Luz-Crawl task folder, checks), `scripts/02-article_builder.py` (packaging, with the skeleton template `assets/01-article-template.html`), `scripts/04-experience.py` (notes), `scripts/06-context.py` (rule cards), `scripts/09-text_check.py` (Chinese punctuation, numbers, dates, placeholders and the hard rules of client files, agreements and copy; ERROR fails, WARN is a hint). Body sample: `assets/02-example-body.txt`; visual brief skeleton: `assets/03-visual-production-brief.md`. Record image paths, actual dimensions, formats, warnings and crops in `raw/manifest.json`, not in the reply.
+- Scripts: `scripts/03-session.py` (sessions, `import-crawl` of a Luz-Crawl task folder, `summary` page for non-HTML deliverables, `check` through `scripts/check_output_layout.py`), `scripts/02-article_builder.py` (packaging, with the skeleton template `assets/01-article-template.html`), `scripts/04-experience.py` (notes), `scripts/06-context.py` (rule cards), `scripts/09-text_check.py` (Chinese punctuation, numbers, dates, placeholders and the hard rules of client files, agreements and copy; ERROR fails, WARN is a hint). Body sample: `assets/02-example-body.txt`; visual brief skeleton: `assets/03-visual-production-brief.md`. Record image paths, actual dimensions, formats, warnings and crops in `raw/manifest.json`, not in the reply.
 
 ## Validation before handoff
 
@@ -110,7 +110,7 @@ py -X utf8 scripts/06-context.py check
 py -X utf8 scripts/03-session.py check "<session folder>"
 py -X utf8 scripts/04-experience.py check
 py -X utf8 scripts/10-test_text_check.py
-py -X utf8 scripts/09-text_check.py "<file>" --doc proposal|manual|confirmation|agreement|copy|article   # Chinese text, client files, agreements, copy
+py -X utf8 scripts/09-text_check.py "<file>" --doc proposal|requirements|manual|confirmation|agreement|copy|article   # Chinese text, client files, agreements, copy
 ~~~
 
 Then complete the matching manual checks in [11 · quality gates](references/11-quality-gates.md). Automated checks locate symptoms; they do not prove source accuracy, taste, or publication readiness.
@@ -123,14 +123,14 @@ Then complete the matching manual checks in [11 · quality gates](references/11-
 | 方向 | 内容 |
 | --- | --- |
 | 收到 Luz-Crawl | 前置检索的结论页和任务目录（`import-crawl` 进 `raw/05-crawl/`）：同类方案的结构、行业规则、平台前置条件、事实与来源；阅读正文后写进声明表，来源网址不进客户文件 |
-| 收到 Luz-Project | 项目模式下 `project.py context <项目> <阶段> --skill luz-writing` 给出的 `data/client/features.json`、`intake.json`、变更台账、客户原始资料路径和阶段交付物路径 |
+| 收到 Luz-Project | 项目模式下 `project.py context <项目> <阶段> --skill luz-writing` 给出的状态根下的 `data/client/features.json`、`intake.json`、变更台账、客户原始资料（状态根 `uploads/`）和阶段成果在项目目录 `docs` 里的位置 |
 | 收到 Luz-System / Luz-Dev | 功能清单与模块分组、已确认的界面稿（界面用词一字不差）、系统实际收集的个人信息字段与第三方清单（协议正文以此为准） |
 | 交给 Luz-Design | 客户文件的文字（方案说明书、使用说明）：由它排成 Word 并导出 PDF，业务逻辑确认表由它排成 Excel；阅读型文章的 HTML 版式、封面族、海报 |
 | 交给 Luz-Dev | 协议与政策正文、前台文案键表（`raw/07-copy-keys.csv`）；版本、同意记录、撤回与注销由它实现 |
 
 ## Project mode handoff
 
-When `LUZ_PROJECT_ROOT` or an explicit `luz-project` context is present, read the project brief, approved stage inputs, and shared Crawl evidence (`project.py context <project> <stage> --skill luz-writing`). Write the text into the project's data files and stage docs, preserve stable IDs and source citations, register the artifact and hash with `luz-project`, and stop at its approval gate:
+When `LUZ_PROJECT_ROOT` or an explicit `luz-project` context is present, read the project brief, approved stage inputs, and shared Crawl evidence (`project.py context <project> <stage> --skill luz-writing`). `LUZ_PROJECT_ROOT` is the project state root (the `raw` directory of the Luz-Project session); `project.json` there gives `deliver_root` (the project directory; an older project has none and keeps its results in the old project root) and `crawl.evidence_index` (relative to the state root). Write the text into the state root's data files, preserve stable IDs and source citations, register the artifact and hash with `luz-project`, and stop at its approval gate. Luz-Project renders the text into the project's `docs\01-需求对接` or `docs\03-验收交付` (files named `NN-名称`); the project directory keeps no brief, claims, draft or other source file, and this skill's session holds only the summary page (location = the `docs\…` path) and `raw\`, checked with `--project-linked`:
 
 - Proposal stage: `data/client/proposal.json`. Read the `client-document` card (Luz-Project may still name `general`, which carries the core of the same rules); the content rules and the data-file fields are in [18](references/18-client-documents.md).
 - Client-intake stage: the proposed logic for each feature and the questions only the client can answer ([18](references/18-client-documents.md) › 业务逻辑确认表).
@@ -138,4 +138,4 @@ When `LUZ_PROJECT_ROOT` or an explicit `luz-project` context is present, read th
 - Run `py -X utf8 scripts/09-text_check.py <file> --doc proposal|manual --final` before handing the file to Luz-Project; its own validators remain the gate.
 - A client change request: Luz-Project's change ledger first, then rewrite only the affected chapters.
 
-Without project context, keep the existing Luz-Writing session folder, rule cards, and output contract. In a standalone session the HTML of a client document is a review copy for your own side; the client receives Luz-Design's Word/PDF.
+Without project context, keep the Luz-Writing session folder, rule cards, and output contract above. In a standalone session the HTML of a client document is a review copy for your own side; the client receives Luz-Design's Word/PDF.

@@ -9,6 +9,7 @@ import base64
 import importlib.util
 import io
 import json
+import os
 import re
 import subprocess
 import sys
@@ -41,7 +42,8 @@ TODAY = date.today().isoformat()
 
 
 def run(*args: str) -> subprocess.CompletedProcess:
-    return subprocess.run([sys.executable, "-X", "utf8", *args], cwd=ROOT, text=True, capture_output=True,
+    env = {key: value for key, value in os.environ.items() if key != "LUZ_PROJECT_ROOT"}  # these sessions are standalone tasks
+    return subprocess.run([sys.executable, "-X", "utf8", *args], cwd=ROOT, text=True, capture_output=True, env=env,
                           encoding="utf-8", errors="replace", check=False)
 
 
@@ -375,21 +377,21 @@ class CrawlImportTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
             session = self.new_session(root)
-            task = root / "Luz-Crawl" / "085_AI 资讯"  # <output root>/NNN_主题: raw/ holds everything crawled, the summary html sits beside it
+            task = root / "Luz-Crawl" / "085-AI 资讯"  # <output root>/NNN-主题: raw/ holds everything crawled, the summary html sits beside it
             (task / "raw" / "0001_页面").mkdir(parents=True)
             (task / "raw" / "luz-task.json").write_text(json.dumps({"schema_version": 1, "kind": "task_archive",
                                                                     "delivery_layout": "task_folder_v2", "title": "AI 资讯"}), encoding="utf-8")
-            (task / "085_AI 资讯.html").write_text("<!doctype html><title>汇总</title>", encoding="utf-8")
+            (task / "085-AI 资讯.html").write_text("<!doctype html><title>汇总</title>", encoding="utf-8")
             (task / "raw" / "search-1.json").write_text("{}", encoding="utf-8")
             (task / "raw" / "0001_页面" / "content.json").write_text("{}", encoding="utf-8")
             proc = run(str(HERE / "03-session.py"), "import-crawl", str(session), str(task))
             self.assertEqual(proc.returncode, 0, proc.stderr)
             copied = session / "raw" / "05-crawl" / task.name
-            self.assertTrue((copied / "085_AI 资讯.html").is_file())
+            self.assertTrue((copied / "085-AI 资讯.html").is_file())
             self.assertTrue((copied / "raw" / "0001_页面" / "content.json").is_file())
             entry = json.loads((session / "raw" / "manifest.json").read_text(encoding="utf-8"))["crawl_imports"][0]
             self.assertEqual(entry["kind"], "task")
-            self.assertTrue(entry["summary"].endswith("085_AI 资讯.html"))
+            self.assertTrue(entry["summary"].endswith("085-AI 资讯.html"))
             self.assertRegex(entry["summary_sha256"], r"^[0-9a-f]{64}$")
             again = run(str(HERE / "03-session.py"), "import-crawl", str(session), str(task))
             self.assertNotEqual(again.returncode, 0)
@@ -417,17 +419,250 @@ class CrawlImportTests(unittest.TestCase):
             self.assertNotEqual(again.returncode, 0)
             self.assertIn("已导入过", again.stderr)
 
+    def test_collection_names_accept_dash_and_underscore(self) -> None:
+        # Luz-Crawl's task folders are NNN-主题 now, NNN_主题 before; a bare collection under its output root may carry either.
+        with tempfile.TemporaryDirectory() as temp:
+            crawl_root = Path(temp) / "Luz-Crawl"
+            names = ("012-新格式合集", "013_旧格式合集")
+            for name in names:
+                (crawl_root / name).mkdir(parents=True)
+            original = session_mod.CRAWL_ROOT
+            session_mod.CRAWL_ROOT = crawl_root
+            try:
+                for name in names:
+                    self.assertEqual(session_mod.crawl_source_errors((crawl_root / name).resolve()), [], name)
+                (Path(temp) / "014-不在输出根下").mkdir()
+                self.assertTrue(session_mod.crawl_source_errors((Path(temp) / "014-不在输出根下").resolve()))
+            finally:
+                session_mod.CRAWL_ROOT = original
+
     def test_folders_that_are_not_crawl_tasks_are_refused(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
             session = self.new_session(root)
-            stray = root / "012_随便一个目录"  # an NNN_ name alone is not enough outside the Luz-Crawl output root
+            stray = root / "012-随便一个目录"  # an NNN-主题 name alone is not enough outside the Luz-Crawl output root
             stray.mkdir()
             proc = run(str(HERE / "03-session.py"), "import-crawl", str(session), str(stray))
             self.assertNotEqual(proc.returncode, 0)
             self.assertIn("luz-task.json", proc.stderr)
             proc = run(str(HERE / "03-session.py"), "import-crawl", str(session))
             self.assertNotEqual(proc.returncode, 0)  # the folder is required; --latest is gone
+
+
+summary_mod = session_mod.load_sibling("luz_writing_make_summary_test", "make_summary.py")
+
+
+class OutputLayoutTests(unittest.TestCase):
+    """The session is NNN-主题 with raw/ and a same-named summary page; old sessions get hints, never errors."""
+
+    def tearDown(self) -> None:
+        session_mod.PROJECT_OUTPUT_ROOT = PROJECT_OUTPUT_ROOT
+
+    def new_session(self, root: Path, topic: str = "门店活动文案键表", *extra: str) -> Path:
+        proc = run(str(HERE / "03-session.py"), "new", "--topic", topic, "--root", str(root), "--card", "marketing-copy", *extra)
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        return Path(proc.stdout.strip())
+
+    def test_new_session_is_numbered_with_a_dash_and_marks_the_layout(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            (root / "007_旧下划线会话").mkdir()
+            (root / "12-旧两位序号").mkdir()
+            session = self.new_session(root)
+            self.assertEqual(session.name, "013-门店活动文案键表")  # the largest number counts, old formats included; no gaps filled
+            self.assertEqual(sorted(p.name for p in session.iterdir()), ["raw"])
+            manifest = json.loads((session / "raw" / "manifest.json").read_text(encoding="utf-8"))
+            self.assertEqual(manifest["layout_version"], session_mod.LAYOUT_VERSION)
+            self.assertNotIn("project", manifest)
+            errors, notes = session_mod.layout_report(session)
+            self.assertEqual(len(errors), 1)  # only the summary page is still missing
+            self.assertIn("汇总页", errors[0])
+
+    def test_article_page_is_the_summary_page_and_passes_the_layout_check(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            session = self.new_session(Path(temp), "科技资讯")
+            body = session / "raw" / "04-draft.txt"
+            body.write_text("## 发生了什么\n\n开场事实。\n\n| 键 | 文案 |\n| --- | --- |\n| a | 一句话 |\n", encoding="utf-8")
+            page = session / f"{session.name}.html"
+            with redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
+                builder.main(["--title", "科技资讯", "--body", str(body), "--out", str(page), "--no-check"])
+            self.assertEqual(session_mod.layout_report(session), ([], []))
+            text = page.read_text(encoding="utf-8")
+            self.assertTrue(text.index("<h1>") < text.index("<h2>"))
+            self.assertRegex(text, r'<html lang="zh-CN"')
+            self.assertNotRegex(text, r"(?i)user-scalable|maximum-scale")
+            self.assertIn('rel="icon"', text)
+            proc = run(str(HERE / "check_output_layout.py"), "session", str(session))
+            self.assertEqual(proc.returncode, 0, proc.stdout)
+            # The article page and the generated summary page carry the same md-type block.
+            block = re.search(r"/\* luz-md-type:start.*?/\* luz-md-type:end \*/", text, flags=re.S).group(0)
+            self.assertEqual(block, summary_mod.MD_TYPE)
+
+    def test_non_html_deliverable_sits_in_the_root_and_the_summary_page_lists_it(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            session = self.new_session(Path(temp))
+            (session / "raw" / "07-copy-keys.csv").write_text("键,文案\na,一句话\n", encoding="utf-8")
+            sheet = session / f"{session.name}.xlsx"
+            sheet.write_bytes(b"PK")
+            errors, _ = session_mod.layout_report(session)
+            self.assertTrue(any("汇总页" in e for e in errors))  # no summary page yet
+            proc = run(str(HERE / "03-session.py"), "summary", str(session), "--deliverable", f"{sheet.name}|后台录入和开发种子")
+            self.assertEqual(proc.returncode, 0, proc.stderr + proc.stdout)
+            page = (session / f"{session.name}.html").read_text(encoding="utf-8")
+            self.assertEqual(session_mod.layout_report(session), ([], []))
+            self.assertEqual(run(str(HERE / "check_output_layout.py"), "session", str(session)).returncode, 0)
+            self.assertEqual(len(re.findall(r"<h1\b", page)), 1)
+            self.assertLess(page.index("<h1>"), page.index("<h2>"))
+            self.assertIn("<h2>成果</h2>", page)
+            self.assertIn(sheet.name, page)
+            self.assertIn("后台录入和开发种子", page)
+            self.assertIn("raw\\07-copy-keys.csv", page)  # a process file that exists is listed ...
+            self.assertNotIn("raw\\03-outline.md", page)  # ... the untouched skeletons are not
+            self.assertNotIn("<h2>依据</h2>", page)  # nothing adopted yet, so no section
+            self.assertEqual(page.count("<caption>"), page.count("<h2>"))  # every section has one captioned table
+            self.assertEqual(run(str(HERE / "03-session.py"), "summary", str(session), "--deliverable", f"{sheet.name}|x").returncode, 1)  # no silent overwrite
+            self.assertEqual(run(str(HERE / "03-session.py"), "summary", str(session), "--force", "--deliverable", f"{sheet.name}|x").returncode, 0)
+
+    def test_summary_page_refuses_unlisted_or_missing_deliverables(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            session = self.new_session(Path(temp))
+            (session / "a.pdf").write_bytes(b"%PDF")
+            (session / "b.docx").write_bytes(b"PK")
+            proc = run(str(HERE / "03-session.py"), "summary", str(session), "--deliverable", "a.pdf|协议")
+            self.assertEqual(proc.returncode, 1)
+            self.assertIn("b.docx", proc.stderr)  # every deliverable in the root is listed
+            proc = run(str(HERE / "03-session.py"), "summary", str(session), "--deliverable", "c.pdf|协议")
+            self.assertEqual(proc.returncode, 1)
+            self.assertIn("c.pdf", proc.stderr)
+            self.assertEqual(run(str(HERE / "03-session.py"), "summary", str(session)).returncode, 1)  # at least one deliverable
+            self.assertFalse((session / f"{session.name}.html").exists())
+            # An article page that leaves a root file unlisted fails the session layout check.
+            (session / f"{session.name}.html").write_text(
+                '<!doctype html><html lang="zh-CN"><head><meta name="viewport" content="width=device-width, initial-scale=1"></head>'
+                "<body><h1>标题</h1></body></html>", encoding="utf-8")
+            errors, _ = session_mod.layout_report(session)
+            self.assertTrue(any("a.pdf" in e for e in errors) and any("b.docx" in e for e in errors))
+
+    def test_page_rules_h1_first_and_zoom_not_disabled(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            session = self.new_session(Path(temp))
+            page = session / f"{session.name}.html"
+            page.write_text('<!doctype html><html lang="zh-CN"><head><meta name="viewport" content="width=device-width, user-scalable=no">'
+                            "</head><body><h2>先写了二级标题</h2><h1>标题</h1></body></html>", encoding="utf-8")
+            errors, _ = session_mod.layout_report(session)
+            self.assertTrue(any("h1" in e for e in errors))
+            self.assertTrue(any("缩放" in e for e in errors))
+
+    def test_old_sessions_only_get_hints(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            underscore = root / "012_旧会话"  # old number format, no summary page, a stray file in the root
+            (underscore / "raw").mkdir(parents=True)
+            (underscore / "notes.txt").write_text("x", encoding="utf-8")
+            two_digit = root / "05-旧会话"
+            two_digit.mkdir()
+            no_marker = root / "006-建会话时还没有布局标记"  # three digits and a dash, but created before the layout rule
+            (no_marker / "raw").mkdir(parents=True)
+            (no_marker / "raw" / "manifest.json").write_text(json.dumps({"session": no_marker.name, "created": "2026-10-30T09:00:00+08:00"}), encoding="utf-8")
+            (no_marker / "stray").mkdir()
+            for old in (underscore, two_digit, no_marker):
+                errors, notes = session_mod.session_report(old)
+                self.assertEqual(errors, [], f"{old.name}: {errors}")
+                self.assertTrue(notes, old.name)
+                proc = run(str(HERE / "03-session.py"), "check", str(old))
+                self.assertEqual(proc.returncode, 0, f"{old.name}: {proc.stderr}")
+                self.assertIn("提示", proc.stdout)
+                self.assertTrue(session_mod.old_layout(old))
+            # The same defects in a new session are errors.
+            fresh = self.new_session(root, "新会话")
+            (fresh / "stray").mkdir()
+            errors, _ = session_mod.layout_report(fresh)
+            self.assertTrue(any("stray" in e for e in errors))
+            proc = run(str(HERE / "03-session.py"), "check", str(fresh))
+            self.assertEqual(proc.returncode, 1)
+            self.assertIn("stray", proc.stderr)
+            self.assertFalse(session_mod.old_layout(fresh))
+
+    def write_project(self, base: Path, *, with_deliver_root: bool = True) -> dict[str, Path]:
+        """A project the way Luz-Project lays it out: state root = the Luz-Project session's raw/, results in the project directory."""
+        state = base / "skill输出" / "Luz-Project" / "014-示例项目" / "raw"
+        deliver = base / "014-示例项目"
+        (state / "00-crawl").mkdir(parents=True)
+        (deliver / "docs" / "01-需求对接").mkdir(parents=True)
+        (deliver / "docs" / "01-需求对接" / "01-需求说明书.pdf").write_bytes(b"%PDF")
+        project = {"name": "示例项目", "crawl": {"evidence_index": "00-crawl/evidence-index.json"}}
+        if with_deliver_root:
+            project["deliver_root"] = str(deliver)
+        (state / "project.json").write_text(json.dumps(project, ensure_ascii=False), encoding="utf-8")
+        return {"state": state, "deliver": deliver, "output": base / "skill输出" / "Luz-Project"}
+
+    def test_project_context_reads_state_root_deliver_root_and_evidence_index(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            paths = self.write_project(Path(temp))
+            context_by_state = session_mod.project_context(paths["state"])
+            self.assertEqual(context_by_state["state_root"], str(paths["state"].resolve()))
+            self.assertEqual(context_by_state["deliver_root"], str(paths["deliver"]))
+            self.assertEqual(context_by_state["evidence_index"], str(paths["state"].resolve() / "00-crawl/evidence-index.json"))
+            # A project directory resolves to the state root under the Luz-Project output root.
+            session_mod.PROJECT_OUTPUT_ROOT = paths["output"]
+            self.assertEqual(session_mod.project_context(paths["deliver"]), context_by_state)
+            self.assertIsNone(session_mod.project_context(Path(temp) / "没有这个项目"))
+
+    def test_old_project_without_deliver_root_keeps_working(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            old_root = Path(temp) / "012-旧项目"  # old layout: project.json sits in the project root, results beside it
+            old_root.mkdir()
+            (old_root / "project.json").write_text(json.dumps({"name": "旧项目"}), encoding="utf-8")
+            found = session_mod.project_context(old_root)
+            self.assertEqual(found["state_root"], str(old_root.resolve()))
+            self.assertEqual(found["deliver_root"], str(old_root.resolve()))
+            self.assertIsNone(found["evidence_index"])
+
+    def test_project_task_session_holds_only_the_summary_page_and_raw(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            paths = self.write_project(Path(temp))
+            out = Path(temp) / "out"
+            proc = run(str(HERE / "03-session.py"), "new", "--topic", "需求说明书文字", "--root", str(out), "--card", "client-document",
+                       "--project", str(paths["state"]), "--stage", "requirements")
+            self.assertEqual(proc.returncode, 0, proc.stderr)
+            session = Path(proc.stdout.strip())
+            self.assertIn("项目任务", proc.stderr)
+            manifest = json.loads((session / "raw" / "manifest.json").read_text(encoding="utf-8"))
+            self.assertEqual(manifest["project"]["deliver_root"], str(paths["deliver"]))
+            self.assertEqual(manifest["project"]["stage"], "requirements")
+            location = "docs\\01-需求对接\\01-需求说明书.pdf"
+            for bad in ("01-需求说明书.pdf", "docs\\01-需求对接\\需求说明书.pdf", "docs\\04-其他\\01-a.pdf"):
+                self.assertEqual(run(str(HERE / "03-session.py"), "summary", str(session), "--deliverable", f"{bad}|需求说明书").returncode, 1, bad)
+            missing = run(str(HERE / "03-session.py"), "summary", str(session), "--deliverable", "docs\\01-需求对接\\02-不存在.pdf|方案")
+            self.assertEqual(missing.returncode, 1)
+            self.assertIn("成果目录里没有", missing.stderr)
+            proc = run(str(HERE / "03-session.py"), "summary", str(session), "--deliverable", f"{location}|需求说明书")
+            self.assertEqual(proc.returncode, 0, proc.stderr + proc.stdout)
+            page = (session / f"{session.name}.html").read_text(encoding="utf-8")
+            self.assertIn(location, page)  # the location is the project-relative path
+            self.assertIn("<td class=\"left\">需求说明书</td>", page)
+            self.assertEqual(sorted(p.name for p in session.iterdir()), [f"{session.name}.html", "raw"])
+            self.assertEqual(session_mod.layout_report(session), ([], []))
+            self.assertEqual(run(str(HERE / "check_output_layout.py"), "session", str(session), "--project-linked").returncode, 0)
+            # The deliverable is not duplicated into the session: a stray copy fails the project-linked check.
+            (session / "02-另一份协议.pdf").write_bytes(b"%PDF")
+            errors, _ = session_mod.layout_report(session)
+            self.assertTrue(any("项目目录" in e for e in errors))
+            self.assertTrue(any("项目目录" in e for e in session_mod.layout_report(session, True)[0]))
+            self.assertTrue(any("没有列出" in e for e in session_mod.layout_report(session, False)[0]))  # a standalone task must list it
+
+    def test_unusable_project_given_to_new(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            out = Path(temp) / "out"
+            proc = run(str(HERE / "03-session.py"), "new", "--topic", "测试", "--root", str(out), "--card", "general", "--project", str(Path(temp) / "没有"))
+            self.assertEqual(proc.returncode, 1)
+            self.assertIn("project.json", proc.stderr)
+            proc = run(str(HERE / "03-session.py"), "new", "--topic", "测试", "--root", str(out), "--card", "general", "--stage", "proposal")
+            self.assertEqual(proc.returncode, 1)
+            self.assertIn("--stage", proc.stderr)
+
+
+PROJECT_OUTPUT_ROOT = session_mod.PROJECT_OUTPUT_ROOT
 
 
 class BuilderLayoutTests(unittest.TestCase):

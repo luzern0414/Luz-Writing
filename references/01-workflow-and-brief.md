@@ -78,4 +78,4 @@
 
 ## 工作文件
 
-所有产物写进 `D:\Codes\skill输出\Luz-Writing\NNN-主题\`；每个文件的用途和命令见 [16 · 输出路径、采集与排版](16-output-paths-and-tools.md) › 会话结构。不在 Skill 目录里写任何产物，中间文件留在 `raw/`，会话根目录只放成品 HTML。
+所有产物写进 `D:\Codes\skill输出\Luz-Writing\NNN-主题\`；每个文件的用途和命令见 [16 · 输出路径、采集与排版](16-output-paths-and-tools.md) › 会话结构。不在 Skill 目录里写任何产物，源文件和中间文件留在 `raw/`，会话根目录只放汇总页 `NNN-主题.html`（文章、文案类的成品 HTML 就是它）；没有项目目录时，非 HTML 成品也放在根目录并在汇总页列出，项目任务的成果由 Luz-Project 写进项目目录。

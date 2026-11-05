@@ -116,6 +116,21 @@ class ClientDocumentTests(unittest.TestCase):
         found = {f.rule for f in tc.check_items(tc.json_items(bad), "proposal") + tc.structural_findings(bad, "proposal")}
         self.assertTrue({"C09", "C10", "C06"} <= found, found)
 
+    def test_requirements_json_is_checked_like_a_client_document_with_its_own_seven_chapters(self) -> None:
+        section = lambda key, title, text: {"key": key, "title": title, "blocks": [{"type": "text", "text": text}]}
+        good = {"title": "需求说明书", "format": "word", "toc": True, "sections": [
+            section("background", "项目背景", "销售聊完客户后需要马上记下来。"), section("goals", "建设目标", "语音录入不超过 60 秒。"),
+            section("scope", "范围与使用者", "销售用手机录入。"), section("requirements", "需求清单", "录入洽谈记录。"),
+            section("rules", "业务规则与约束", "销售只看自己的客户。"), section("acceptance", "验收标准", "现场计时。"),
+            section("open", "需要客户确认的事项", "服务器位置。")]}
+        findings = tc.check_items(tc.json_items(good), "requirements") + tc.structural_findings(good, "requirements")
+        self.assertEqual([str(f) for f in findings if f.sev == "ERROR"], [])
+        bad = json.loads(json.dumps(good))
+        bad["sections"] = [s for s in bad["sections"] if s["key"] != "open"]
+        bad["sections"][0]["blocks"][0]["text"] = "报价合计 12 万元；对应 FN-001，详见《功能清单》。"
+        found = {f.rule for f in tc.check_items(tc.json_items(bad), "requirements") + tc.structural_findings(bad, "requirements")}
+        self.assertTrue({"C10", "C02", "C01", "C03"} <= found, found)
+
     def test_manual_chapters_need_their_fields(self) -> None:
         manual = {"title": "使用说明", "chapters": [{"id": "c1", "heading": "预约课程", "features": ["FN-001"], "entry": "首页 › 预约",
                                                     "steps": ["点击“预约”"], "rules": []}]}

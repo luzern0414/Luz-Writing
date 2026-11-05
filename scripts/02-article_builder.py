@@ -6,8 +6,10 @@
   py -X utf8 02-article_builder.py --title "标题" --body body.txt --session "D:\\Codes\\skill输出\\Luz-Writing\\001-主题"
   py -X utf8 02-article_builder.py --title "标题" --body body.txt --out 测试.html   # 仅用于测试
 
---session 时输出固定为 <会话>/<会话名>.html，正文源默认取 <会话>/raw/04-draft.txt，
-生成后自动调用 D:\\Codes\\Luz-Design\\scripts\\check_document.py 和 03-session.py 的会话检查，报错即失败。
+--session 时输出固定为 <会话>/<会话名>.html，正文源默认取 <会话>/raw/04-draft.txt。这个页面就是会话的汇总页
+（lang="zh-CN"、h1 唯一且在最前、视口不禁用缩放、与汇总页生成器同一份 md-type 块），
+生成后自动调用 D:\\Codes\\Luz-Design\\scripts\\check_document.py 和 03-session.py 的会话检查
+（含 check_output_layout.py 的布局检查），报错即失败。
 
 模板和本脚本只是骨架，不是规范：动笔前先运行 06-context.py <类型> 读完规则卡。--session 打包前检查
 raw/00-rules/ 有当前规则卡（写作指南改过就要重新生成）、raw/01-brief.md 的“采用的规则”不为空、

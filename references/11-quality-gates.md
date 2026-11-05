@@ -135,8 +135,8 @@
 
 ## Gate 9 · 文件交付
 
-- 产物位于 `D:\Codes\skill输出\Luz-Writing\NNN-主题\`，根目录只有 `NNN-主题.html` 和 `raw/`，`03-session.py check` 通过。
-- 成品 HTML 通过 `D:\Codes\Luz-Design\scripts\check_document.py`，零错误。
+- 产物位于 `D:\Codes\skill输出\Luz-Writing\NNN-主题\`，根目录只有汇总页 `NNN-主题.html` 和 `raw/`（没有项目目录的非 HTML 成品可再放在根目录并在汇总页列出；项目任务的成果在项目目录，不在根目录），`03-session.py check` 通过。
+- 成品 HTML（即汇总页）通过 `D:\Codes\Luz-Design\scripts\check_document.py`，零错误。
 - 输出路径真实存在。
 - 编码 UTF-8，文件名清楚。
 - Markdown 链接、图片和引用路径有效。

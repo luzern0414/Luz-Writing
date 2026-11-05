@@ -140,13 +140,6 @@
           ]
         },
         {
-          "page": "11-quality-gates.md",
-          "title": "11 · 质量闸门",
-          "path": [
-            "Gate 9 · 文件交付"
-          ]
-        },
-        {
           "page": "16-output-paths-and-tools.md",
           "title": "16 · 输出路径、采集与排版",
           "path": [
@@ -370,7 +363,8 @@
         "字数、结构、标签与 CTA 按 10 对应渠道小节；要几条给几条，不加“方向一”这类角度标签",
         "小程序、App 与 H5 的前台文字以文案键表交付（键、页面与位置、文案、字数上限、变量、后台可见），按字数上限写，见 06 › 前台文字以文案键表交付；有会话时同一份另存 raw/07-copy-keys.csv；界面放在哪里、什么时候弹归 Luz-System",
         "要交付 HTML 成品时：`py -X utf8 scripts/03-session.py new --topic \"主题\" --card marketing-copy`，正文写进 raw/04-draft.txt，填好“采用的规则”和“本次沉淀”后 `py -X utf8 scripts/02-article_builder.py --title \"标题\" --session \"<会话>\"`",
-        "海报、活动主视觉与版式交给 Luz-Design：先运行 `py -X utf8 D:\\Codes\\Luz-Design\\scripts\\context.py poster`；本技能只写文案"
+        "海报、活动主视觉与版式交给 Luz-Design：先运行 `py -X utf8 D:\\Codes\\Luz-Design\\scripts\\context.py poster`；本技能只写文案",
+        "成品不是 HTML（协议 docx/pdf、文案键表 xlsx）且没有项目目录时，文件放会话根，用 `py -X utf8 scripts/03-session.py summary \"<会话>\" --deliverable \"文件名|用途\"` 写汇总页；项目任务的成果由 Luz-Project 写进项目目录的 docs，会话只有汇总页和 raw/（用 `new --project <状态根>` 建会话），细则见 16 › 会话结构、项目任务"
       ],
       "checks": [
         "06 › 三问式自检（清晰、具体、可信）与 06 › 合规：价格、退款、隐私、取消条件真实",
@@ -802,13 +796,27 @@
           "path": [
             "Gate 4 · 结构与逻辑"
           ]
+        },
+        {
+          "page": "16-output-paths-and-tools.md",
+          "title": "16 · 输出路径、采集与排版",
+          "path": [
+            "会话结构"
+          ]
+        },
+        {
+          "page": "16-output-paths-and-tools.md",
+          "title": "16 · 输出路径、采集与排版",
+          "path": [
+            "项目任务"
+          ]
         }
       ],
       "tools": [
-        "客户文件的写法以 18 为准（卡里已带 18 的共同写法、方案说明书、业务逻辑确认表、使用说明与交付前自查）；项目模式用 `py -X utf8 D:\\Codes\\Luz-Project\\scripts\\project.py context \"<项目>\" <阶段> --skill luz-writing` 取 features.json、intake.json、变更台账和调研结论，文字写进 data/client/proposal.json（方案阶段）和 manual.json（交付阶段），不手改成品",
-        "素材只用客户原始资料（raw/uploads/）、客户确认过的规则和 Luz-Crawl 前置检索结论（同类方案的结构、行业规则、平台前置条件）；调研来源网址不进客户文件。需要补调研时按 SKILL.md 调用协议先做前置检索",
-        "写完先自查：`py -X utf8 scripts/09-text_check.py <proposal.json 或 manual.json 或草稿> --doc proposal|manual|confirmation [--final]`，ERROR 清零；它只查标点、数字、占位、他文件指引、价格、技术词、标题括号和表题，依据与读者能否看懂仍要逐条人读（18 › 交付前自查）",
-        "版式和导出交给 Luz-Design：先运行 `py -X utf8 D:\\Codes\\Luz-Design\\scripts\\context.py docx`；客户拿到的是 Word 导出的 PDF（确认表是 Excel，用 xlsx 规则卡），不做阅读型网页。没有项目上下文时，会话成品是给自己人评审的阅读型 HTML（`03-session.py new --topic \"主题\" --card client-document`，正文写进 raw/04-draft.txt，填好“采用的规则”和“本次沉淀”后 `02-article_builder.py`）",
+        "客户文件的写法以 18 为准（卡里已带 18 的共同写法、方案说明书、业务逻辑确认表、使用说明与交付前自查）；项目模式用 `py -X utf8 D:\\Codes\\Luz-Project\\scripts\\project.py context \"<项目>\" <阶段> --skill luz-writing` 取 features.json、intake.json、变更台账和调研结论，文字写进项目状态根的 data/client/proposal.json（方案阶段）和 manual.json（交付阶段），由 Luz-Project 渲染进项目目录的 docs，不手改成品；会话用 `03-session.py new --project <状态根> --stage <阶段>` 建，只有汇总页和 raw/（16 › 项目任务）",
+        "素材只用客户原始资料（状态根的 uploads/）、客户确认过的规则和 Luz-Crawl 前置检索结论（同类方案的结构、行业规则、平台前置条件）；调研来源网址不进客户文件。需要补调研时按 SKILL.md 调用协议先做前置检索",
+        "写完先自查：`py -X utf8 scripts/09-text_check.py <proposal.json、requirements.json、manual.json 或草稿> --doc proposal|requirements|manual|confirmation [--final]`，ERROR 清零；它只查标点、数字、占位、他文件指引、价格、技术词、标题括号和表题，依据与读者能否看懂仍要逐条人读（18 › 交付前自查）",
+        "版式和导出交给 Luz-Design：先运行 `py -X utf8 D:\\Codes\\Luz-Design\\scripts\\context.py docx`；客户拿到的是 Word 导出的 PDF（确认表是 Excel，用 xlsx 规则卡），不做阅读型网页。没有项目上下文时，会话成品是给自己人评审的阅读型 HTML（`03-session.py new --topic \"主题\" --card client-document`，正文写进 raw/04-draft.txt，填好“采用的规则”和“本次沉淀”后 `02-article_builder.py`，成品 HTML 即汇总页）；非 HTML 成品放会话根，用 `03-session.py summary` 写汇总页",
         "功能清单、报价和工时不在本技能范围：方案里不写价格；功能内容来自 Luz-System 的 function-list 与 data/client/features.json，缺功能先走变更台账"
       ],
       "checks": [
@@ -952,7 +960,8 @@
         "协议与政策：按 09 › 协议与政策文本起草，从 Luz-Dev 的协议模板开始；需要哪些文档、展示位置、版本与同意记录由 Luz-Dev 实现；缺的事实用 `[待核实：…]` 占位，商户确认、建议律师审核",
         "Word、PDF 等文件版式交给 Luz-Design：先运行 `py -X utf8 D:\\Codes\\Luz-Design\\scripts\\context.py docx`；本技能只负责文字",
         "要交付阅读型 HTML 时：`py -X utf8 scripts/03-session.py new --topic \"主题\" --card academic-professional`，再用 02-article_builder.py --session 打包",
-        "英文稿的英文痕迹（17 › 七、英文痕迹）不在本卡：润色英文论文或文档时另读 `py -X utf8 scripts/06-context.py polish-review`"
+        "英文稿的英文痕迹（17 › 七、英文痕迹）不在本卡：润色英文论文或文档时另读 `py -X utf8 scripts/06-context.py polish-review`",
+        "成品不是 HTML（协议 docx/pdf、文案键表 xlsx）且没有项目目录时，文件放会话根，用 `py -X utf8 scripts/03-session.py summary \"<会话>\" --deliverable \"文件名|用途\"` 写汇总页；项目任务的成果由 Luz-Project 写进项目目录的 docs，会话只有汇总页和 raw/（用 `new --project <状态根>` 建会话），细则见 16 › 会话结构、项目任务"
       ],
       "checks": [
         "09 › 学术审校（论文）或 09 › 读者测试（结构化文档）",

@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 """中文文字的机器可判断部分：标点、数字、日期（GB/T 15834、15835），以及客户文件、协议和营销文案各自的硬性写法。
 
-  py -X utf8 scripts/09-text_check.py <文件> [--doc proposal|manual|confirmation|agreement|copy|article] [--final] [--max-title N]
+  py -X utf8 scripts/09-text_check.py <文件> [--doc proposal|requirements|manual|confirmation|agreement|copy|article] [--final] [--max-title N]
 
-文件可以是 .txt / .md 正文，也可以是 Luz-Project 的 proposal.json / manual.json（逐个字符串检查，标题与表题按位置识别）。
+文件可以是 .txt / .md 正文，也可以是 Luz-Project 的 proposal.json / requirements.json / manual.json（逐个字符串检查，标题与表题按位置识别）。
 没有 --doc 时只查标点、数字、日期、占位。ERROR 会让命令失败，WARN 只提示；它只找能机器判断的问题，
 事实、依据、读者能否看懂仍要人读。规则出处见 references/18-client-documents.md 与 19-chinese-text-standards.md。
 """
@@ -34,8 +34,8 @@ ABSOLUTE = re.compile(r"国家级|最高级|最佳|最好|最优|最大|最强|�
 HEAD_PAREN = re.compile(r"[（(][^）)]+[）)]")
 CHAPTER_KEYS = ("id", "heading", "features", "entry", "steps", "rules")
 
-DOCS = ("proposal", "manual", "confirmation", "agreement", "copy", "article")
-CLIENT_DOCS = ("proposal", "manual", "confirmation")
+DOCS = ("proposal", "requirements", "manual", "confirmation", "agreement", "copy", "article")
+CLIENT_DOCS = ("proposal", "requirements", "manual", "confirmation")
 
 
 class Finding(NamedTuple):
@@ -113,7 +113,7 @@ def client_findings(item: Item, doc: str) -> list[Finding]:
         out.append(Finding("ERROR", "C01", item.where, "客户文件不提及其他文件，内容直接写进本文件", snippet(text, m)))
     for m in POINTERS.finditer(text):
         out.append(Finding("WARN", "C01", item.where, "“详见/参见”如果指向别的文件，改成直接写内容", snippet(text, m)))
-    if doc == "proposal":
+    if doc in ("proposal", "requirements"):
         for m in PRICE_TERMS.finditer(text):
             out.append(Finding("ERROR", "C02", item.where, "方案里不写价格、工时和付款，价格只在功能清单的报价清单里", snippet(text, m)))
         for m in MONEY.finditer(text):
@@ -165,6 +165,12 @@ def structural_findings(data, doc: str) -> list[Finding]:
     if doc == "proposal" and isinstance(data.get("sections"), list):
         keys = {s.get("key") for s in data["sections"] if isinstance(s, dict)}
         for key, label in (("background", "项目背景与需求分析"), ("solution", "解决方案"), ("deliverables", "交付内容")):
+            if key not in keys:
+                out.append(Finding("ERROR", "C10", "sections", f"缺少章节「{label}」（key = {key}）"))
+    if doc == "requirements" and isinstance(data.get("sections"), list):
+        keys = {s.get("key") for s in data["sections"] if isinstance(s, dict)}
+        for key, label in (("background", "项目背景"), ("goals", "建设目标"), ("scope", "范围与使用者"), ("requirements", "需求清单"),
+                           ("rules", "业务规则与约束"), ("acceptance", "验收标准"), ("open", "需要客户确认的事项")):
             if key not in keys:
                 out.append(Finding("ERROR", "C10", "sections", f"缺少章节「{label}」（key = {key}）"))
     if doc == "manual" and isinstance(data.get("chapters"), list):

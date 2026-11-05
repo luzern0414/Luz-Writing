@@ -150,13 +150,13 @@
       "id": 12,
       "name": "output-session-layout",
       "prompt": "写一篇公众号短文介绍某开源项目本周的更新，生成最终 HTML。素材请自己搜索。",
-      "expected_output": "在 D:\\Codes\\skill输出\\Luz-Writing 下新建 NNN-主题 会话；用 Luz-Crawl 采集并导入 raw/05-crawl/；成品 NNN-主题.html 与 raw/ 同级且通过 Luz-Design 文档检查；对话只给路径和文案，不附过程说明。",
+      "expected_output": "在 D:\\Codes\\skill输出\\Luz-Writing 下新建 NNN-主题 会话；用 Luz-Crawl 采集并导入 raw/05-crawl/；成品 NNN-主题.html（它就是汇总页）与 raw/ 同级，通过 03-session.py check（含 check_output_layout 的会话检查）和 Luz-Design 文档检查；对话只给路径和文案，不附过程说明。",
       "assertions": [
-        "会话目录命名为三位序号加主题",
-        "会话根目录只有同名 HTML 和 raw/",
+        "会话目录命名为三位序号加短横线加主题",
+        "会话根目录只有与目录同名的汇总页 HTML 和 raw/",
         "Luz-Crawl 采集结果位于 raw/05-crawl/",
         "成品 HTML 第一行是标题，没有来源区、摘要或说明文字",
-        "check_document.py 零错误"
+        "check_document.py 零错误，check_output_layout.py session 通过"
       ],
       "files": []
     },
@@ -313,6 +313,19 @@
         "没有把译文伪装成中文原话（转述，或标明译）",
         "写明了说话人、10 月 24 日和场合",
         "没有新增原文没有的数字或细节"
+      ]
+    },
+    {
+      "id": 25,
+      "prompt": "给咖啡店小程序写一份用户服务协议，要 docx 交付，没有项目目录；另有一个项目任务要写需求说明书的文字，项目目录已经建好。",
+      "expected_output": "协议：会话 NNN-主题 的根目录放协议 docx 和汇总页，汇总页由 03-session.py summary 生成并列出协议的名称、用途、位置，raw 留简报、声明表和正文源。需求说明书：文字写进项目状态根的 data/client 数据文件，由 Luz-Project 渲染进项目目录的 docs/01-需求对接（文件名 NN-名称）；Writing 会话只有汇总页和 raw/，汇总页写项目内相对路径，用 --project-linked 检查；项目目录里没有简报、声明表或草稿。",
+      "assertions": [
+        "协议 docx 放在会话根，与汇总页同级，汇总页的成果一节列出它",
+        "汇总页由 summary 命令生成：第一行是 h1，每节一张带表题的表",
+        "项目任务的会话根目录没有成品副本，只有汇总页和 raw/",
+        "汇总页里的成果位置是 docs 下的项目内相对路径，不是本机绝对路径",
+        "项目目录里没有 raw、检索记录、简报或草稿",
+        "旧格式（两位序号、下划线）的会话没有被改名或移动"
       ]
     }
   ]

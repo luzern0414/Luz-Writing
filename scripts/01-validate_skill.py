@@ -7,6 +7,7 @@ from __future__ import annotations
 import importlib.util
 import io
 import json
+import os
 import re
 import subprocess
 import sys
@@ -19,7 +20,9 @@ SKILL = ROOT / "SKILL.md"
 REQUIRED_DIRS = ["references", "assets", "scripts", "evals", "experience"]
 REQUIRED_ROOT_FILES = ["SKILL.md", "README.md", "NOTICE.md"]
 REQUIRED_FILES = ["scripts/06-context.py", "scripts/07-test_context.py", "scripts/08-crawl_gate.py", "scripts/09-text_check.py",
-                  "scripts/10-test_text_check.py", "references/cards.json"]
+                  "scripts/10-test_text_check.py", "references/cards.json", "scripts/check_output_layout.py", "scripts/make_summary.py"]
+# Mirrors shared by the seven Luz skills (output-layout check and summary-page generator): the file names carry no number.
+SHARED_SCRIPTS = {"check_output_layout.py", "make_summary.py"}
 # Templates are skeletons; each says so in its first lines and points to the rule card.
 SKELETON_TEMPLATES = ["assets/01-article-template.html", "assets/03-visual-production-brief.md"]
 # The shared rule-card core is identical in every Luz skill; Luz-Design holds the reference copy.
@@ -90,7 +93,7 @@ def check_layout() -> None:
             fail(f"reference is not numbered: {path.name}")
     for directory in ("assets", "examples", "scripts"):
         for path in sorted((ROOT / directory).iterdir()):
-            if path.is_file() and not re.match(r"^\d{2}-", path.name):
+            if path.is_file() and not re.match(r"^\d{2}-", path.name) and not (directory == "scripts" and path.name in SHARED_SCRIPTS):
                 fail(f"{directory} file is not numbered: {path.name}")
 
 
@@ -110,7 +113,8 @@ def check_evals() -> None:
 
 
 def run(args: list[str]) -> subprocess.CompletedProcess:
-    return subprocess.run([sys.executable, "-X", "utf8", *args], cwd=ROOT, text=True,
+    env = {key: value for key, value in os.environ.items() if key != "LUZ_PROJECT_ROOT"}  # the smoke test is a standalone task
+    return subprocess.run([sys.executable, "-X", "utf8", *args], cwd=ROOT, text=True, env=env,
                           capture_output=True, encoding="utf-8", errors="replace", check=False)
 
 
