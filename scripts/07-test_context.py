@@ -94,7 +94,9 @@ class RuleCardTests(unittest.TestCase):
             rules = rules_of(text)
             self.assertNotRegex(rules, r"<(p|td|th|tr|li|ul|div|section|h[1-6])[\s>]", f"{kind}: HTML left in the card")
             size = len(rules.encode("utf-8"))
-            self.assertGreaterEqual(size, 8_000, f"{kind}: rule text too short ({size} bytes)")
+            self.assertIn('### ', rules, f'{kind}: missing resolved rule sections')
+            self.assertTrue(any(len(line.strip()) >= 30 for line in rules.splitlines() if not line.startswith('#')),
+                            f'{kind}: missing actionable source text')
             self.assertLessEqual(size, 35_000, f"{kind}: rule text too long ({size} bytes); narrow its sections")
 
     def test_always_on_rules_are_on_every_card(self) -> None:
@@ -107,7 +109,7 @@ class RuleCardTests(unittest.TestCase):
 
     def test_preferences_are_always_on_the_card(self) -> None:
         notes = context.load_json(context.NOTES_FILE, {"notes": []})["notes"]
-        prefs = [n["key"] for n in notes if n["kind"] == "preference"]
+        prefs = [n["key"] for n in notes if n["kind"] == "preference" and context.note_listed(n)]
         self.assertTrue(prefs)
         for kind in context.card_kinds():
             text, _ = context.make_card(kind, [])
@@ -159,7 +161,7 @@ class RuleCardTests(unittest.TestCase):
 
     def test_topic_picks_a_card_or_falls_back_to_general(self) -> None:
         self.assertEqual(session_mod.guess_cards("大模型发布速览"), ["tech-news"])
-        self.assertEqual(session_mod.guess_cards("小红书种草文案"), ["marketing-copy"])
+        self.assertEqual(session_mod.guess_cards("小红书种草文案"), ["social-note"])
         self.assertEqual(session_mod.guess_cards("去 AI 味润色"), ["polish-review"])
         self.assertEqual(session_mod.guess_cards("Email 营销"), ["marketing-copy"])  # "AI" is case-sensitive
         self.assertEqual(session_mod.guess_cards("随便聊聊"), ["general"])
@@ -187,6 +189,16 @@ class RuleCardTests(unittest.TestCase):
             text, _ = context.make_card(kind, [])
             for phrase in phrases:
                 self.assertIn(phrase, text, f"{kind}: {phrase}")
+
+    def test_estimate_policy_reaches_the_client_card_and_no_default_price_is_built_in(self) -> None:
+        # User, 2026-11-05: no budget, workdays or quote unless asked for; a quote is a human's, never the agent's.
+        card, _ = context.make_card("client-document", [])
+        for phrase in ("estimate.workdays", "estimate.quote", "requested_by", "provided_by", "quote.json", "人工报价", "--project-config", "不得自拟"):
+            self.assertIn(phrase, card, phrase)
+        page = (ROOT / "references" / "18-client-documents.md").read_text(encoding="utf-8")
+        for phrase in ("默认不写价格、人日、预算和报价", "等待人工报价", "不得自拟、暂估、套用示例值"):
+            self.assertIn(phrase, page, phrase)
+        self.assertNotRegex(card, r"\d+\s*元\s*(?:每|/)\s*人[天日]")
 
     def test_chinese_text_checklist_is_on_the_cards_that_write_chinese(self) -> None:
         for kind in ("client-document", "general", "academic-professional", "marketing-copy", "opinion-explainer",
@@ -222,6 +234,50 @@ class RuleCardTests(unittest.TestCase):
                 self.assertNotIn(stale, text)
         claims = session_mod.RAW_FILES["02-claims.md"]
         self.assertIn("| 声明 | 来源与定位 | 事件日期 | 访问日期 | 支持状态 | 限制与冲突 | 正文口径 |", claims)
+
+
+class ContentArchitectureTests(unittest.TestCase):
+    def test_deliverable_route_wins_over_subject_keywords(self) -> None:
+        cases = {
+            "小红书图文笔记介绍 AI 模型新品": "social-note",
+            "公众号长文解读人工智能大模型": "wechat-article",
+            "餐饮系统产品宣传手册": "product-brochure",
+            "模型新品广告宣传文案": "ad-copy",
+            "咖啡店广告语": "ad-copy",
+        }
+        for topic, expected in cases.items():
+            with self.subTest(topic=topic):
+                self.assertEqual(session_mod.guess_cards(topic), [expected])
+
+    def test_editing_and_operational_scope_survive_scene_words(self) -> None:
+        cases = {
+            "只改公众号文章第二段": "polish-review",
+            "润色产品宣传手册": "polish-review",
+            "广告宣传文案去 AI 味": "polish-review",
+            "小红书标题适配": "channel-adaptation",
+            "公众号用户服务协议": "academic-professional",
+            "咖啡店新人礼弹窗文案": "marketing-copy",
+        }
+        for topic, expected in cases.items():
+            with self.subTest(topic=topic):
+                self.assertEqual(session_mod.guess_cards(topic), [expected])
+
+    def test_each_scene_can_create_a_session_with_its_own_card(self) -> None:
+        for kind in ("social-note", "wechat-article", "product-brochure", "ad-copy"):
+            with self.subTest(kind=kind), tempfile.TemporaryDirectory() as temp:
+                proc = run("scripts/03-session.py", "new", "--topic", "场景架构验证", "--card", kind, "--root", temp)
+                self.assertEqual(proc.returncode, 0, proc.stderr)
+                raw = Path(proc.stdout.strip()) / "raw"
+                self.assertTrue((raw / "00-rules" / f"{kind}.md").is_file())
+                self.assertTrue(context.card_is_current(raw / "00-rules" / f"{kind}.md"))
+                self.assertTrue((raw / "00-understanding.md").is_file())
+
+    def test_explicit_card_still_overrides_topic_inference(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            proc = run("scripts/03-session.py", "new", "--topic", "公众号产品宣传手册", "--card", "marketing-copy", "--root", temp)
+            self.assertEqual(proc.returncode, 0, proc.stderr)
+            raw = Path(proc.stdout.strip()) / "raw"
+            self.assertEqual([p.stem for p in (raw / "00-rules").glob("*.md")], ["marketing-copy"])
 
 
 class GateTests(unittest.TestCase):
@@ -279,10 +335,10 @@ class GateTests(unittest.TestCase):
             self.assertFalse(builder.inside_output_root(Path(temp) / "测试.html"))
 
     def test_templates_are_marked_as_skeletons_and_the_note_is_stripped(self) -> None:
-        for name in ("01-article-template.html", "03-visual-production-brief.md"):
-            head = (ROOT / "assets" / name).read_text(encoding="utf-8").splitlines()[:4]
-            self.assertTrue(any("06-context.py" in line for line in head), name)
-        template = (ROOT / "assets" / "01-article-template.html").read_text(encoding="utf-8")
+        for path in (builder.TEMPLATE, ROOT / "assets" / "03-visual-production-brief.md"):
+            head = path.read_text(encoding="utf-8").splitlines()[:4]
+            self.assertTrue(any("06-context.py" in line for line in head), path.name)
+        template = builder.TEMPLATE.read_text(encoding="utf-8")
         stripped = builder.TEMPLATE_NOTE.sub("", template)
         self.assertNotIn("06-context.py", stripped)
         self.assertTrue(stripped.startswith("<!doctype html>\n<html"))
@@ -340,7 +396,12 @@ class GateTests(unittest.TestCase):
             fill_brief(raw, note_key="test-session-note")
             # A real task also needs the separately completed research contract.
             self.assertTrue(any("Crawl" in e for e in session_mod.packaging_errors(session)))
-            complete_fixture(session, "luz-writing")
+            complete_fixture(session, "luz-writing", "writing")
+            code, out = build(argv)
+            self.assertNotEqual(code, 0)
+            self.assertIn("模板选择", out)
+            self.assertFalse((session / f"{session.name}.html").exists())
+            session_mod.design_templates().select(session, "luz-writing", "writing", "writing-article", f"{session.name}.html")
             code, out = build(argv)
             self.assertEqual(code, 0, out)
             page = (session / f"{session.name}.html").read_text(encoding="utf-8")
@@ -350,9 +411,14 @@ class GateTests(unittest.TestCase):
             invalid_template = root / "invalid-template.html"
             template = builder.TEMPLATE.read_text(encoding="utf-8")
             invalid_template.write_text(template.replace("</head>", "<style>h1 {font-size:10px}</style></head>"), encoding="utf-8")
+            final = session / f"{session.name}.html"
+            unchanged = final.read_bytes()
             code, out = build([*argv, "--template", str(invalid_template)])
-            self.assertNotEqual(code, 0, "--no-check must not bypass final-session document checks")
+            self.assertNotEqual(code, 0, "an arbitrary template path must be rejected")
+            self.assertEqual(final.read_bytes(), unchanged)
+            final.write_bytes(unchanged.replace(b"</head>", b"<style>h1 {font-size:10px}</style></head>"))
             self.assertTrue(any("font size below" in e for e in session_mod.session_errors(session, strict=True)))
+            self.assertTrue(any("哈希不符" in e for e in session_mod.session_errors(session, strict=True)))
             code, out = build(argv)
             self.assertEqual(code, 0, out)
 
@@ -484,8 +550,15 @@ class OutputLayoutTests(unittest.TestCase):
             body = session / "raw" / "04-draft.txt"
             body.write_text("## 发生了什么\n\n开场事实。\n\n| 键 | 文案 |\n| --- | --- |\n| a | 一句话 |\n", encoding="utf-8")
             page = session / f"{session.name}.html"
+            notes = Path(temp) / "notes.json"
+            notes.write_text(json.dumps({"notes": [{"key": "layout-fixture", "kind": "lesson", "text": "测试会话写入的经验", "last_confirmed": TODAY}]}, ensure_ascii=False), encoding="utf-8")
+            self.addCleanup(setattr, session_mod, "NOTES_FILE", session_mod.NOTES_FILE)
+            session_mod.NOTES_FILE = notes
+            fill_brief(session / "raw", rule="15 · 只交付要求的文案 › 自检", note_key="layout-fixture")
+            complete_fixture(session, "luz-writing", "writing")
+            session_mod.design_templates().select(session, "luz-writing", "writing", "writing-article", f"{session.name}.html")
             with redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
-                builder.main(["--title", "科技资讯", "--body", str(body), "--out", str(page), "--no-check"])
+                builder.main(["--title", "科技资讯", "--body", str(body), "--session", str(session)])
             self.assertEqual(session_mod.layout_report(session), ([], []))
             text = page.read_text(encoding="utf-8")
             self.assertTrue(text.index("<h1>") < text.index("<h2>"))
@@ -504,6 +577,7 @@ class OutputLayoutTests(unittest.TestCase):
             (session / "raw" / "07-copy-keys.csv").write_text("键,文案\na,一句话\n", encoding="utf-8")
             sheet = session / f"{session.name}.xlsx"
             sheet.write_bytes(b"PK")
+            complete_fixture(session, "luz-writing", "summary")
             errors, _ = session_mod.layout_report(session)
             self.assertTrue(any("汇总页" in e for e in errors))  # no summary page yet
             proc = run(str(HERE / "03-session.py"), "summary", str(session), "--deliverable", f"{sheet.name}|后台录入和开发种子")
@@ -608,6 +682,22 @@ class OutputLayoutTests(unittest.TestCase):
             self.assertEqual(session_mod.project_context(paths["deliver"]), context_by_state)
             self.assertIsNone(session_mod.project_context(Path(temp) / "没有这个项目"))
 
+    def test_a_luz_project_session_folder_resolves_to_its_raw(self) -> None:
+        # Same order as Luz-Project project_paths.resolve_state_root: project.json here, then raw/project.json, then <输出根>/<目录名>/raw.
+        with tempfile.TemporaryDirectory() as temp:
+            paths = self.write_project(Path(temp))
+            session_dir = paths["state"].parent  # the Luz-Project session folder; its raw/ is the state root
+            session_mod.PROJECT_OUTPUT_ROOT = Path(temp) / "nowhere"  # the answer must not come from the output-root lookup
+            self.assertEqual(session_mod.project_state_root(session_dir), paths["state"].resolve())
+            self.assertEqual(session_mod.project_context(session_dir), session_mod.project_context(paths["state"]))
+            self.assertIsNone(session_mod.project_state_root(Path(temp) / "没有这个项目"))
+            proc = run(str(HERE / "03-session.py"), "new", "--topic", "会话目录作项目", "--root", str(Path(temp) / "out"), "--card", "client-document",
+                       "--project", str(session_dir), "--stage", "requirements")
+            self.assertEqual(proc.returncode, 0, proc.stderr)
+            manifest = json.loads((Path(proc.stdout.strip()) / "raw" / "manifest.json").read_text(encoding="utf-8"))
+            self.assertEqual(manifest["project"]["state_root"], str(paths["state"].resolve()))
+            self.assertEqual(manifest["project"]["stage"], "requirements")
+
     def test_old_project_without_deliver_root_keeps_working(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
             old_root = Path(temp) / "012-旧项目"  # old layout: project.json sits in the project root, results beside it
@@ -636,6 +726,7 @@ class OutputLayoutTests(unittest.TestCase):
             missing = run(str(HERE / "03-session.py"), "summary", str(session), "--deliverable", "docs\\01-需求对接\\02-不存在.pdf|方案")
             self.assertEqual(missing.returncode, 1)
             self.assertIn("成果目录里没有", missing.stderr)
+            complete_fixture(paths["state"], "luz-writing", "requirements")
             proc = run(str(HERE / "03-session.py"), "summary", str(session), "--deliverable", f"{location}|需求说明书")
             self.assertEqual(proc.returncode, 0, proc.stderr + proc.stdout)
             page = (session / f"{session.name}.html").read_text(encoding="utf-8")

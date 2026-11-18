@@ -53,8 +53,9 @@
 记到哪里按适用范围分：
 
 - **所有写作都适用**（语气、长度习惯、封面风格、该删的东西）：写进经验库 `experience/notes.json`，用 `scripts/04-experience.py note` 按 key 更新。同一话题只留一条，新说法替换旧说法，旧文自动留一条 `previous`。它会出现在每张规则卡的“用户偏好”里。
-- **只属于某个项目或某个人**（某个公众号的文风、某个客户的禁用词）：写进 git 忽略的本地库，例如 `py -X utf8 scripts/04-experience.py --store experience/voice-<项目>.local.json note --kind preference --key <规则> --text "<一句话>"`。规则卡不读本地库，开始写这个项目时先 `--store experience/voice-<项目>.local.json list` 读一遍；它的 key 也算“本次沉淀”。
-- **改本技能的规范**：只有用户明确要求修改本 Skill 包时才改 references，改完重新生成规则卡。
+- **只属于一个项目的要求**（不含个人和客户信息）：同一条命令加 `--scope project`，正文写明是哪个项目；它留在经验库，不印在规则卡上。维护本技能得到的经验加 `--scope maintenance`，已经写进规范页的加 `--codified "<规范页 › 小节>"`，同样不上卡。
+- **某个人或某个账号的文风、含客户名称的禁用词**：不能进公开仓库，写进 git 忽略的本地库，例如 `py -X utf8 scripts/04-experience.py --store experience/voice-<项目>.local.json note --kind preference --key <规则> --text "<一句话>"`。规则卡不读本地库，开始写这个项目时先 `--store experience/voice-<项目>.local.json list` 读一遍；它的 key 也算“本次沉淀”。
+- **改本技能的规范**：只有用户明确要求修改本技能时才改 references，改完重新生成规则卡。
 
 一条规则只表达一个可执行选择，写清适用文体或渠道、触发条件和一句短正例。新规则推翻旧规则时用同一个 key 改写，不让两条矛盾的规则并存。
 

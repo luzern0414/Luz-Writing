@@ -6,6 +6,7 @@ from __future__ import annotations
 import importlib.util
 import io
 import json
+import os
 import tempfile
 import unittest
 from contextlib import redirect_stderr, redirect_stdout
@@ -83,10 +84,16 @@ class StandardsTests(unittest.TestCase):
 
 
 class ClientDocumentTests(unittest.TestCase):
+    def test_external_sources_and_law_titles_are_not_internal_file_deferrals(self) -> None:
+        for text in ('[S1] 发布方，《年度研究报告》，第 3 章，https://example.org/report。',
+                     '依据《中华人民共和国个人信息保护法》，仅收集业务必需信息。'):
+            self.assertNotIn('ERROR', sev(text, 'C01', 'proposal'))
+
     def test_other_files_prices_and_placeholders_are_errors_in_a_proposal(self) -> None:
         self.assertIn("ERROR", sev("功能范围详见《功能清单》。", "C01", "proposal"))
         self.assertEqual(sev("配套文件：系统架构图", "C01", "proposal"), {"ERROR"})
-        self.assertEqual(sev("报价合计 12 万元，人天单价 500。", "C02", "proposal"), {"ERROR"})
+        self.assertNotIn("ERROR", sev("处理个人信息按《中华人民共和国个人信息保护法》执行。", "C01", "proposal"))
+        self.assertEqual(sev("报价合计 12 万元，人天单价 1000。", "C02", "proposal"), {"ERROR"})        # no switch on: refused
         self.assertEqual(sev("此处待补充。", "X01", "proposal"), {"ERROR"})
         self.assertEqual(sev("功能 [待核实：来源]", "X02", "proposal"), {"WARN"})  # a draft may carry gaps
         final = tc.check_items(tc.text_items("功能 [待核实：来源]"), "proposal", True)
@@ -144,6 +151,185 @@ class ClientDocumentTests(unittest.TestCase):
 
     def test_secrets_never_go_into_a_table(self) -> None:
         self.assertEqual(sev("支付密钥：abcd1234", "C05", "confirmation"), {"ERROR"})
+
+
+WORKDAYS_ON = {"workdays": True, "quote": False, "requested_by": "客户采购负责人", "requested_at": "2026-11-05", "request_note": "请在方案里给出人日"}
+QUOTE_ON = dict(WORKDAYS_ON, quote=True)
+HUMAN_QUOTE = {"unit_price": 1000, "provided_by": "商务经理", "provided_at": "2026-11-05", "request_note": "请按报价单给价",
+               "evidence": "uploads/客户报价单.xlsx 第 2 行"}
+
+
+def gate_for(estimate=None, quote=None):
+    return tc.estimate_gate({"estimate": estimate or {}}, quote)
+
+
+def gated(text: str, doc: str, gate) -> list:
+    return tc.check_items(tc.text_items(text), doc, False, gate)
+
+
+def c02_errors(found) -> list:
+    return [f for f in found if f.rule == "C02" and f.sev == "ERROR"]
+
+
+def cli(argv: list[str]) -> tuple[int, str]:
+    out, err = io.StringIO(), io.StringIO()
+    with redirect_stdout(out), redirect_stderr(err):
+        code = tc.main(argv)
+    return code, out.getvalue() + err.getvalue()
+
+
+class EstimatePolicyTests(unittest.TestCase):
+    """用户 2026-11-05：预算、人日、报价默认不写；明确要求才写；报价必须人工，不许 agent 自拟。"""
+
+    def test_default_has_both_switches_off(self) -> None:
+        gate = tc.Gate()
+        self.assertEqual((gate.workdays, gate.quote), (False, False))
+        found = gated("本期预算 20 万元，共 30 人日，工时按 2 天计。", "proposal", gate)
+        self.assertGreaterEqual(len(c02_errors(found)), 3)
+        self.assertEqual(gate_for({}).findings, ())                                  # an empty estimate or no config turns nothing on
+        self.assertEqual(tc.estimate_gate(None, None), tc.Gate())
+
+    def test_old_amounts_switch_means_both_off(self) -> None:
+        self.assertEqual(tc.estimate_gate({"amounts": False}, None), tc.Gate())
+        gate = tc.estimate_gate({"amounts": True}, None)                              # no evidence: not a switch
+        self.assertEqual((gate.workdays, gate.quote), (False, False))
+        self.assertTrue(any(f.sev == "WARN" and "amounts: true" in f.message for f in gate.findings))
+
+    def test_workdays_on_with_evidence_lets_workdays_through_but_not_prices(self) -> None:
+        gate = gate_for(WORKDAYS_ON)
+        self.assertEqual((gate.workdays, gate.quote, gate.findings), (True, False, ()))
+        self.assertEqual(gated("合计约 30 人日。", "proposal", gate), [])
+        self.assertTrue(c02_errors(gated("总价 20 万元，报价见下。", "proposal", gate)))
+
+    def test_a_switch_without_evidence_is_an_error_and_does_not_count(self) -> None:
+        for broken in ({"workdays": True}, dict(WORKDAYS_ON, request_note=""), dict(WORKDAYS_ON, requested_at=None)):
+            gate = gate_for(broken)
+            self.assertEqual((gate.workdays, gate.quote), (False, False), broken)
+            self.assertTrue(any(f.sev == "ERROR" and f.rule == "C12" for f in gate.findings), broken)
+        gate = gate_for(dict(WORKDAYS_ON, requested_by="智能体"))
+        self.assertFalse(gate.workdays)
+        self.assertTrue(any("不是具体的人" in f.message for f in gate.findings))
+        self.assertTrue(any(f.sev == "ERROR" for f in gate_for({"workdays": "yes"}).findings))
+
+    def test_quote_needs_workdays_and_a_human_quotation(self) -> None:
+        gate = gate_for(dict(QUOTE_ON, workdays=False), HUMAN_QUOTE)
+        self.assertEqual((gate.workdays, gate.quote), (False, False))
+        self.assertTrue(any("workdays 必须同时为 true" in f.message for f in gate.findings))
+        gate = gate_for(QUOTE_ON, None)                                               # nobody gave a number yet: stop
+        self.assertEqual((gate.workdays, gate.quote), (True, False))
+        self.assertTrue(any("等待人工报价" in f.message and f.sev == "ERROR" for f in gate.findings))
+        ok = gate_for(QUOTE_ON, HUMAN_QUOTE)
+        self.assertEqual((ok.workdays, ok.quote, ok.findings), (True, True, ()))
+        self.assertEqual(c02_errors(gated("报价合计 12 万元，人天单价 1000。", "proposal", ok)), [])
+
+    def test_quote_evidence_fields_and_who_may_give_them(self) -> None:
+        for key in ("provided_by", "provided_at", "request_note", "evidence"):
+            gate = gate_for(QUOTE_ON, {k: v for k, v in HUMAN_QUOTE.items() if k != key})
+            self.assertFalse(gate.quote, key)
+            self.assertTrue(any(key in f.message and f.sev == "ERROR" for f in gate.findings), key)
+        for price in (0, -1, True, "1000", None):
+            self.assertFalse(gate_for(QUOTE_ON, dict(HUMAN_QUOTE, unit_price=price)).quote, price)
+        for who in ("智能体", "Claude", "agent", "示例", "暂估", "系统", "default"):
+            gate = gate_for(QUOTE_ON, dict(HUMAN_QUOTE, provided_by=who))
+            self.assertFalse(gate.quote, who)
+            self.assertTrue(any("不是具体的人" in f.message for f in gate.findings), who)
+        for evidence in ("暂估", "示例数据", "默认值", "sample"):
+            self.assertFalse(gate_for(QUOTE_ON, dict(HUMAN_QUOTE, evidence=evidence)).quote, evidence)
+        self.assertTrue(gate_for(QUOTE_ON, dict(HUMAN_QUOTE, provided_by="Zhang Wei")).quote)
+        long_real = "uploads/客户报价单.xlsx 第 2 行，商务经理微信原话"
+        self.assertTrue(gate_for(QUOTE_ON, dict(HUMAN_QUOTE, evidence=long_real)).quote)             # a long, real evidence is never read as a placeholder word
+
+    def test_a_quote_whose_evidence_fails_leaves_the_price_words_forbidden(self) -> None:
+        gate = gate_for(QUOTE_ON, {"unit_price": 500})                                # the old bare quote.json
+        self.assertFalse(gate.quote)
+        self.assertTrue(gate.workdays)
+        self.assertTrue(c02_errors(gated("报价合计 12 万元。", "requirements", gate)))
+
+    def test_requirements_follow_the_same_rule_and_usage_docs_only_refuse_sure_workday_words(self) -> None:
+        self.assertEqual(sev("预算不超过 20 万元。", "C02", "requirements"), {"ERROR"})
+        self.assertNotIn("C02", rules("单价以商品页为准，工时统计按月出报表。", "manual"))
+        self.assertEqual(sev("本次实施共 30 人日。", "C02", "manual"), {"ERROR"})
+        self.assertEqual(sev("本次实施共 30 人天。", "C02", "confirmation"), {"ERROR"})
+        self.assertEqual(gated("本次实施共 30 人日。", "manual", gate_for(WORKDAYS_ON)), [])
+
+    def test_a_business_word_can_be_allowed_by_name(self) -> None:
+        found = tc.check_items(tc.text_items("员工工时统计按月出报表。"), "requirements", False, tc.Gate(), ("工时",))
+        self.assertEqual(c02_errors(found), [])
+        found = tc.check_items(tc.text_items("工时统计后报价。"), "requirements", False, tc.Gate(), ("工时",))
+        self.assertEqual(len(c02_errors(found)), 1)                                   # 报价 is still refused
+
+    def test_money_without_a_human_quote_stays_a_warning(self) -> None:
+        self.assertEqual(sev("满 ¥200 减 ¥20。", "C02", "proposal"), {"WARN"})
+
+    def test_cli_default_and_project_config(self) -> None:
+        bad = json.loads(json.dumps(GOOD_PROPOSAL))
+        bad["sections"][0]["blocks"][0]["text"] = "共 30 人日，报价合计 12 万元。"
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)                                                       # a state root: config/documents.json beside data/client
+            client = root / "data" / "client"
+            client.mkdir(parents=True)
+            (root / "config").mkdir()
+            proposal = client / "proposal.json"
+            proposal.write_text(json.dumps(bad, ensure_ascii=False), encoding="utf-8")
+            run = lambda *a: cli([str(proposal), "--doc", "proposal", *a])
+            code, out = run()
+            self.assertEqual(code, 1, out)                                           # no config: both off
+            self.assertIn("workdays=关", out)
+            (root / "config" / "documents.json").write_text(json.dumps({"amounts": False}), encoding="utf-8")
+            self.assertEqual(run()[0], 1)
+            (root / "config" / "documents.json").write_text(json.dumps({"estimate": QUOTE_ON}), encoding="utf-8")
+            code, out = run()
+            self.assertEqual(code, 1, out)                                           # switches on but nobody gave a quote
+            self.assertIn("等待人工报价", out)
+            (client / "quote.json").write_text(json.dumps(HUMAN_QUOTE, ensure_ascii=False), encoding="utf-8")
+            code, out = run()
+            self.assertEqual(code, 0, out)                                           # evidence complete: found by the folder layout
+            self.assertIn("quote=开", out)
+            other = root / "off.json"
+            other.write_text(json.dumps({"estimate": {}}), encoding="utf-8")
+            self.assertEqual(run("--project-config", str(other))[0], 1)               # an explicit path wins
+            self.assertEqual(run("--project-config", str(root / "missing.json"))[0], 2)
+            code, out = run("--allow-term", "人日", "--allow-term", "报价", "--project-config", str(other))
+            self.assertEqual(code, 0, out)
+
+    def test_cli_reads_the_config_from_the_environment(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            config = root / "documents.json"
+            config.write_text(json.dumps({"estimate": WORKDAYS_ON}), encoding="utf-8")
+            draft = root / "a.md"
+            draft.write_text("## 范围\n\n共 30 人日。\n", encoding="utf-8")
+            old = os.environ.get("LUZ_DOCUMENTS_CONFIG")
+            os.environ["LUZ_DOCUMENTS_CONFIG"] = str(config)
+            try:
+                code, out = cli([str(draft), "--doc", "proposal"])
+            finally:
+                if old is None:
+                    os.environ.pop("LUZ_DOCUMENTS_CONFIG")
+                else:
+                    os.environ["LUZ_DOCUMENTS_CONFIG"] = old
+            self.assertEqual(code, 0, out)
+            self.assertEqual(cli([str(draft), "--doc", "proposal"])[0], 1)            # same file, no config: refused
+
+
+class SharedTermsTests(unittest.TestCase):
+    """The policy's words are one copy for every Luz skill: this copy must match Luz-Design's master, and the checks must not keep their own lists."""
+
+    def test_estimate_terms_copy_matches_the_master(self) -> None:
+        master = Path(r"D:\Codes\Luz-Design\scripts\estimate_terms.py")
+        if not master.is_file():
+            self.skipTest("Luz-Design scripts/estimate_terms.py is not installed: nothing to compare the copy with")
+        spec_ = importlib.util.spec_from_file_location("luz_design_estimate_terms", master)
+        module = importlib.util.module_from_spec(spec_)
+        spec_.loader.exec_module(module)
+        self.assertEqual(tc.et.terms_digest(), module.terms_digest(), "run Luz-Design scripts/sync_estimate_terms.py --write")
+
+    def test_the_check_reads_the_shared_words(self) -> None:
+        for name in ("NOT_A_PERSON", "NOT_EVIDENCE"):
+            self.assertFalse(hasattr(tc, name), f"09-text_check must not keep its own {name}")
+        for word in tc.et.WORKDAY_WORDS:
+            self.assertTrue(tc.WORKDAY_TERMS.search(word), word)
+        self.assertTrue(tc.et.not_a_person("智能体") and not tc.et.not_a_person("商务经理"))
 
 
 class AgreementAndCopyTests(unittest.TestCase):

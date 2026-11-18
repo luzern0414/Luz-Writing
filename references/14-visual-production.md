@@ -49,12 +49,12 @@
 
 ~~~powershell
 py -X utf8 src/imagegen.py `
-  --prompt-file "D:\Codes\skill输出\Luz-Writing\NNN-主题\raw\06-images\01-cover-prompt.txt" `
+  --prompt-file "E:\Skill输出\Luz-Writing\NNN-主题\raw\06-images\01-cover-prompt.txt" `
   --ratio 16:9 `
   --resolution 2k `
   --quality xhigh `
   --format png `
-  --output-dir "D:\Codes\skill输出\Luz-Writing\NNN-主题\raw\06-images" `
+  --output-dir "E:\Skill输出\Luz-Writing\NNN-主题\raw\06-images" `
   --dry-run
 ~~~
 
@@ -76,7 +76,7 @@ py -X utf8 src/imagegen_edit.py `
   --format png `
   --input-fidelity high `
   --count 1 `
-  --output-dir "D:\Codes\skill输出\Luz-Writing\NNN-主题\raw\06-images" `
+  --output-dir "E:\Skill输出\Luz-Writing\NNN-主题\raw\06-images" `
   --dry-run
 ~~~
 
@@ -177,7 +177,7 @@ Imagegen 只保存服务返回的原始图片字节，并生成同名 JSON。记
 - 排版层文字可编辑，图注、替代文本和来源完整；正文里的图片用 `[img] 路径 | 替代文本 | 图注` 写进去，builder 缺替代文本会警告。
 - HTML 中图片路径有效，构建后能打开，封面和复制区完整。
 - 素材权利、生成参数和加工状态可追溯。
-- AI 生成的封面和插图按渠道要求标明：小红书《社区公约 2.0》要求使用 AI 辅助工具创作时主动标明，抖音用户服务协议 4.5 要求生成式 AI 制作的非真实内容以显著方式标识；生成服务添加的显式、隐式标识不得删除或篡改（《人工智能生成合成内容标识办法》，2025-09-01 起施行）。细节见 [10](10-channels-and-formats.md) › 平台规则要点。
+- AI 生成的封面和插图按渠道要求标明（小红书要求主动标明，抖音要求显著标识），不删改生成服务加的显式、隐式标识；依据与条款见 [10](10-channels-and-formats.md) › 平台规则要点。
 - 方案说明书、使用说明这类客户正式文档不配封面插图和图标（[18](18-client-documents.md)）；本篇的风格菜单只服务文章。
 - 任何失败都明确说明：没有生成、没有验证或依赖本机工具不可用。
 

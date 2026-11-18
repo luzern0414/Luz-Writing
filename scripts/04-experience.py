@@ -4,6 +4,7 @@
 
 文件、字段与命令在 Luz-System、Luz-Design、Luz-Dev、Luz-Writing 四个技能中完全一致：
   py -X utf8 scripts/04-experience.py note --kind preference|lesson|fact --key K --text "…" [--why "…"]
+                                           [--scope project|maintenance] [--codified "<规范页 › 小节>"]   这三类不印在规则卡上
   py -X utf8 scripts/04-experience.py list [--kind K]
   py -X utf8 scripts/04-experience.py search <关键词> [--kind K]
   py -X utf8 scripts/04-experience.py prune
@@ -30,13 +31,22 @@ STORE = Path(os.environ.get("LUZ_EXPERIENCE_STORE") or SKILL_STORE)
 
 # ---------------------------------------------------------------- notes store (identical in Luz-System, Luz-Design, Luz-Dev, Luz-Writing)
 # experience/notes.json = {"schema_version": "1.0", "caps": {...}, "notes": [{key, kind, text, why?, uses, first_seen,
-# last_confirmed, previous?}]}. A note on an existing key replaces its text (one `previous` kept); the same statement
-# under another key confirms that note; over a cap the fewest uses, then the oldest confirmation, are dropped.
+# last_confirmed, previous?, scope?, codified?}]}. A note on an existing key replaces its text (one `previous` kept); the same
+# statement under another key confirms that note; over a cap the fewest uses, then the oldest confirmation, are dropped.
+# scope says where a note applies: absent = every task of this skill; shared/ui/app/web/poster/documents = a Luz-Design
+# category; project = one project only (the text names it); maintenance = only when the skill itself is being changed.
+# codified names the rule page that now states the note. Project, maintenance and codified notes stay searchable but no rule
+# card prints them and they do not use up the caps; Luz-Design keeps the master copy (scripts/sync_rule_core.py).
 NOTES_SCHEMA_VERSION = "1.0"
 NOTE_KINDS = {"preference": "偏好", "lesson": "教训", "fact": "有效信息"}
-NOTE_CAPS = {"preference": 60, "lesson": 120, "fact": 120}
-NOTE_FIELDS = ("key", "kind", "text", "why", "uses", "first_seen", "last_confirmed", "previous")
+NOTE_CAPS = {"preference": 80, "lesson": 120, "fact": 120}
+NOTE_FIELDS = ("key", "kind", "text", "why", "uses", "first_seen", "last_confirmed", "previous", "scope", "codified")
 NOTE_REQUIRED = ("key", "kind", "text", "uses", "first_seen", "last_confirmed")
+NOTE_SCOPES = ("shared", "ui", "app", "web", "poster", "documents", "project", "maintenance")
+NOTE_ARCHIVE_SCOPES = ("project", "maintenance")
+NOTE_ARCHIVE_CAP = 240
+# Explicit user requirements a skill never lets capacity pruning drop; a skill assigns its own set after this block.
+PROTECTED_NOTE_KEYS: frozenset = frozenset()
 NOTE_STALE_DAYS = 180
 NOTE_TEXT_MAX = 400
 NOTE_KEY_RE = re.compile(r"[\w一-鿿][\w一-鿿-]{0,47}")
@@ -63,6 +73,11 @@ def note_normalize(text: str) -> str:
 
 def note_private_hits(text: str) -> list[str]:
     return [label for pattern, label in NOTE_PRIVATE_RES if pattern.search(text or "")]
+
+
+def note_listed(note: dict) -> bool:
+    """True when rule cards may print the note: it applies to every task of its category and no rule page states it yet."""
+    return note.get("scope") not in NOTE_ARCHIVE_SCOPES and not note.get("codified")
 
 
 def new_notes_doc() -> dict:
@@ -93,14 +108,22 @@ def save_notes(path: Path, doc: dict) -> None:
 
 
 def prune_notes(doc: dict, keep: dict | None = None) -> list[dict]:
-    """Enforce the caps: drop the fewest uses first, then the oldest confirmation; never the note just written."""
+    """Enforce the caps on the notes the cards print: fewest uses first, then the oldest confirmation; never the note just
+    written nor a protected key. Archived notes (project, maintenance, codified) share one cap and go oldest first."""
     removed: list[dict] = []
     for kind, cap in NOTE_CAPS.items():
-        group = [n for n in doc["notes"] if n.get("kind") == kind]
+        group = [n for n in doc["notes"] if n.get("kind") == kind and note_listed(n)]
         overflow = len(group) - cap
         if overflow <= 0:
             continue
-        ranked = sorted((n for n in group if n is not keep), key=lambda n: (int(n.get("uses") or 0), str(n.get("last_confirmed", ""))))
+        ranked = sorted((n for n in group if n is not keep and n.get("key") not in PROTECTED_NOTE_KEYS),
+                        key=lambda n: (int(n.get("uses") or 0), str(n.get("last_confirmed", ""))))
+        removed += ranked[:overflow]
+    archive = [n for n in doc["notes"] if not note_listed(n)]
+    overflow = len(archive) - NOTE_ARCHIVE_CAP
+    if overflow > 0:
+        ranked = sorted((n for n in archive if n is not keep and n.get("key") not in PROTECTED_NOTE_KEYS),
+                        key=lambda n: (str(n.get("last_confirmed", "")), int(n.get("uses") or 0)))
         removed += ranked[:overflow]
     gone = {id(n) for n in removed}
     doc["notes"] = [n for n in doc["notes"] if id(n) not in gone]
@@ -108,8 +131,9 @@ def prune_notes(doc: dict, keep: dict | None = None) -> list[dict]:
 
 
 def upsert_note(doc: dict, kind: str, key: str, text: str, why: str = "", on: str | None = None,
-                privacy: bool = True) -> tuple[str, dict, list[dict]]:
-    """Insert or replace one note by key. Returns (added|replaced|confirmed, note, pruned notes); raises ValueError."""
+                privacy: bool = True, scope: str | None = None, codified: str | None = None) -> tuple[str, dict, list[dict]]:
+    """Insert or replace one note by key. Returns (added|replaced|confirmed, note, pruned notes); raises ValueError.
+    scope and codified change only when given: "global" clears the scope, an empty string clears codified."""
     if kind not in NOTE_KINDS:
         raise ValueError(f"--kind must be one of {', '.join(NOTE_KINDS)}")
     key = (key or "").strip()
@@ -120,7 +144,12 @@ def upsert_note(doc: dict, kind: str, key: str, text: str, why: str = "", on: st
         raise ValueError("--text is empty")
     if len(text) > NOTE_TEXT_MAX:
         raise ValueError(f"--text is longer than {NOTE_TEXT_MAX} characters; record the general principle, not task details")
-    hits = note_private_hits(f"{text} {why}") if privacy else []
+    if scope is not None and scope != "global" and scope not in NOTE_SCOPES:
+        raise ValueError(f"--scope must be global or one of {', '.join(NOTE_SCOPES)}")
+    codified = None if codified is None else " ".join(codified.split())
+    if codified and len(codified) > 200:
+        raise ValueError("--codified names the rule page and section, at most 200 characters")
+    hits = note_private_hits(f"{text} {why} {codified or ''}") if privacy else []
     if hits:
         raise ValueError(f"notes are public; remove the {', '.join(hits)} and write the general principle")
     on = on or note_today()
@@ -145,6 +174,14 @@ def upsert_note(doc: dict, kind: str, key: str, text: str, why: str = "", on: st
         entry.update(kind=kind, text=text)
         if why:
             entry["why"] = why
+    if scope is not None:
+        entry.pop("scope", None)
+        if scope != "global":
+            entry["scope"] = scope
+    if codified is not None:
+        entry.pop("codified", None)
+        if codified:
+            entry["codified"] = codified
     entry["uses"] = int(entry.get("uses") or 0) + 1
     entry["last_confirmed"] = on
     return action, entry, prune_notes(doc, keep=entry)
@@ -193,6 +230,10 @@ def check_notes(doc: dict, privacy: bool = True) -> list[str]:
             errors.append(f"note {key} has unknown fields {', '.join(extra)}")
         if n.get("kind") not in NOTE_KINDS:
             errors.append(f"note {key} kind must be one of {', '.join(NOTE_KINDS)}")
+        if n.get("scope") is not None and n["scope"] not in NOTE_SCOPES:
+            errors.append(f"note {key} scope must be one of {', '.join(NOTE_SCOPES)}")
+        if n.get("codified") is not None and (not isinstance(n["codified"], str) or not n["codified"].strip() or len(n["codified"]) > 200):
+            errors.append(f"note {key} codified must name the rule page in at most 200 characters")
         if key and not NOTE_KEY_RE.fullmatch(key):
             errors.append(f"note key is not a short slug: {key}")
         if not isinstance(n.get("uses"), int) or isinstance(n.get("uses"), bool) or n.get("uses", 0) < 1:
@@ -217,9 +258,12 @@ def check_notes(doc: dict, privacy: bool = True) -> list[str]:
                 errors.append(f"note {key} contains a {', '.join(hits)}; notes are public")
     errors += [f"duplicate note key {k} ({c} entries); a key is replaced, never repeated" for k, c in keys.items() if c > 1]
     for kind, cap in NOTE_CAPS.items():
-        count = sum(1 for n in notes if isinstance(n, dict) and n.get("kind") == kind)
+        count = sum(1 for n in notes if isinstance(n, dict) and n.get("kind") == kind and note_listed(n))
         if count > cap:
             errors.append(f"{count} {kind} notes exceed the cap {cap}; run prune")
+    archived = sum(1 for n in notes if isinstance(n, dict) and not note_listed(n))
+    if archived > NOTE_ARCHIVE_CAP:
+        errors.append(f"{archived} archived notes (project, maintenance, codified) exceed the cap {NOTE_ARCHIVE_CAP}; run prune")
     return errors
 
 
@@ -231,11 +275,13 @@ def search_notes(doc: dict, words: list[str], kind: str | None = None) -> list[d
 
 def format_note(n: dict) -> str:
     why = f"（{n['why']}）" if n.get("why") else ""
-    return f"[{NOTE_KINDS.get(n.get('kind'), n.get('kind'))}] {n.get('key')}：{n.get('text')}{why}  （{n.get('uses', 1)} 次，最近 {n.get('last_confirmed')}）"
+    marks = "".join(f" [{label}]" for label in (n.get("scope"), "已入规范：" + n["codified"] if n.get("codified") else None) if label)
+    return f"[{NOTE_KINDS.get(n.get('kind'), n.get('kind'))}] {n.get('key')}：{n.get('text')}{why}{marks}  （{n.get('uses', 1)} 次，最近 {n.get('last_confirmed')}）"
 
 
 def note_counts(doc: dict) -> str:
-    return "，".join(f"{NOTE_KINDS[k]} {sum(1 for n in doc['notes'] if n.get('kind') == k)}/{cap}" for k, cap in NOTE_CAPS.items())
+    counts = "，".join(f"{NOTE_KINDS[k]} {sum(1 for n in doc['notes'] if n.get('kind') == k and note_listed(n))}/{cap}" for k, cap in NOTE_CAPS.items())
+    return f"{counts}，不上卡 {sum(1 for n in doc['notes'] if not note_listed(n))}/{NOTE_ARCHIVE_CAP}"
 # ---------------------------------------------------------------- end of notes store
 
 
@@ -276,6 +322,8 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--key", required=True, help="稳定的主题键，例如 封面风格 或 cover-style")
     p.add_argument("--text", required=True, help="一句话通用原则")
     p.add_argument("--why", default="", help="依据或纠正来源")
+    p.add_argument("--scope", choices=("global", *NOTE_SCOPES), help="经验的适用范围：global（缺省）每次任务都适用；project 只属于某个项目（正文写明项目）；maintenance 只在维护本技能时用；其余为设计类别")
+    p.add_argument("--codified", help="规则已经写进的规范页和小节（之后由规范页给出，规则卡不再重复这条经验）；传空字符串取消")
     p = sub.add_parser("list", help="列出条目")
     p.add_argument("--kind", choices=list(NOTE_KINDS))
     p = sub.add_parser("search", help="按关键词检索，所有词都要命中")
@@ -297,7 +345,8 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.cmd == "note":
         try:
-            action, entry, removed = upsert_note(doc, args.kind, args.key, args.text, args.why, privacy=not local)
+            action, entry, removed = upsert_note(doc, args.kind, args.key, args.text, args.why, privacy=not local,
+                                                 scope=args.scope, codified=args.codified)
         except ValueError as exc:
             print(f"FAIL: {exc}", file=sys.stderr)
             return 1

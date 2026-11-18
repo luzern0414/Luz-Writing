@@ -20,18 +20,20 @@ SKILL = ROOT / "SKILL.md"
 REQUIRED_DIRS = ["references", "assets", "scripts", "evals", "experience"]
 REQUIRED_ROOT_FILES = ["SKILL.md", "README.md", "NOTICE.md"]
 REQUIRED_FILES = ["scripts/06-context.py", "scripts/07-test_context.py", "scripts/08-crawl_gate.py", "scripts/09-text_check.py",
-                  "scripts/10-test_text_check.py", "references/cards.json", "scripts/check_output_layout.py", "scripts/make_summary.py"]
+                  "scripts/10-test_text_check.py", "scripts/11-test_crawl_gate.py", "references/cards.json", "scripts/check_output_layout.py", "scripts/make_summary.py"]
+# pytest files (fixtures, parametrize): the builder's --out boundary and the research gate of the summary page.
+PYTEST_FILES = ["scripts/test_article_output_boundary.py", "scripts/test_summary_generation_gate.py"]
 # Mirrors shared by the seven Luz skills (output-layout check and summary-page generator): the file names carry no number.
-SHARED_SCRIPTS = {"check_output_layout.py", "make_summary.py"}
+SHARED_SCRIPTS = {"check_output_layout.py", "make_summary.py", "estimate_terms.py"}      # copies of Luz-Design files; estimate_terms.py is written by its sync_estimate_terms.py
 # Templates are skeletons; each says so in its first lines and points to the rule card.
-SKELETON_TEMPLATES = ["assets/01-article-template.html", "assets/03-visual-production-brief.md"]
+SKELETON_TEMPLATES = ["assets/03-visual-production-brief.md"]
 # The shared rule-card core is identical in every Luz skill; Luz-Design holds the reference copy.
 CORE_REFERENCE = Path(r"D:\Codes\Luz-Design\scripts\context.py")
 CORE_START = b"# ---- shared rule-card core"
 CORE_END = b"# ---- end of shared rule-card core"
 # .git is version-control metadata of the repository, not packaged content.
 FORBIDDEN_ROOT_ENTRIES = [".research", "__pycache__", "working", "raw", "outputs"]
-REQUIRED_REFERENCES = [f"{i:02d}-" for i in range(1, 20)]
+REQUIRED_REFERENCES = [f"{i:02d}-" for i in range(1, 26)]  # 01–25; a reference added later extends this range
 SKIP_LINK_PREFIXES = ("http://", "https://", "mailto:", "#")
 
 
@@ -93,7 +95,8 @@ def check_layout() -> None:
             fail(f"reference is not numbered: {path.name}")
     for directory in ("assets", "examples", "scripts"):
         for path in sorted((ROOT / directory).iterdir()):
-            if path.is_file() and not re.match(r"^\d{2}-", path.name) and not (directory == "scripts" and path.name in SHARED_SCRIPTS):
+            if path.is_file() and not re.match(r"^\d{2}-", path.name) and not (directory == "scripts" and
+                    (path.name in SHARED_SCRIPTS or (path.name.startswith("test_") and path.suffix == ".py"))):
                 fail(f"{directory} file is not numbered: {path.name}")
 
 
@@ -165,7 +168,8 @@ def smoke_builder() -> None:
         # Offline gate fixture only; validators do not browse or claim live research.
         sys.path.append(str(ROOT.parent / "Luz-Crawl/scripts"))
         from test_crawl_preflight import complete_fixture
-        complete_fixture(session, "luz-writing")
+        complete_fixture(session, "luz-writing", "writing")
+        session_module.design_templates().select(session, "luz-writing", "writing", "writing-article", f"{session.name}.html")
         out, err = io.StringIO(), io.StringIO()
         try:
             with redirect_stdout(out), redirect_stderr(err):
@@ -187,7 +191,7 @@ def smoke_builder() -> None:
 
 def check_rule_cards(text: str) -> None:
     """Rule cards resolve, the shared core matches Luz-Design, and SKILL.md opens with the invocation protocol."""
-    for rel in REQUIRED_FILES:
+    for rel in [*REQUIRED_FILES, *PYTEST_FILES]:
         if not (ROOT / rel).is_file():
             fail(f"missing required file: {rel}")
     try:
@@ -218,8 +222,8 @@ def check_rule_cards(text: str) -> None:
     sections = re.findall(r"(?m)^## (.+)$", normalized)
     if not sections or not sections[0].startswith("调用协议"):
         fail("SKILL.md must open with the section 调用协议 (invocation protocol) before any other section")
-    if len(sections) < 2 or sections[1] != "Deliver only the requested copy":
-        fail("SKILL.md must keep 'Deliver only the requested copy' right after 调用协议")
+    if len(sections) < 2 or sections[1] != "只交付用户要求的文字":
+        fail("SKILL.md 的‘调用协议’之后必须紧接‘只交付用户要求的文字’")
     protocol = normalized.split("\n## ", 2)[1]
     for phrase in ("scripts/06-context.py", "采用的规则", "本次沉淀", "04-experience.py note"):
         if phrase not in protocol:
@@ -252,6 +256,12 @@ def check_rule_cards(text: str) -> None:
     proc = run([str(ROOT / "scripts" / "10-test_text_check.py")])
     if proc.returncode != 0:
         fail(f"text check tests failed: {proc.stderr or proc.stdout}")
+    proc = run([str(ROOT / "scripts" / "11-test_crawl_gate.py")])
+    if proc.returncode != 0:
+        fail(f"crawl gate tests failed: {proc.stderr or proc.stdout}")
+    proc = run(["-m", "pytest", "-q", "-p", "no:cacheprovider", *(str(ROOT / rel) for rel in PYTEST_FILES)])
+    if proc.returncode != 0:
+        fail(f"pytest gate tests failed (they need pytest): {proc.stdout or proc.stderr}")
 
 
 def check_experience() -> None:

@@ -228,10 +228,92 @@ def markdown_section(path: Path, heading_path: list[str]) -> str:
     return re.sub(r"\n{3,}", "\n\n", body).strip()
 
 
-def section_text(path: Path, heading_path: list[str]) -> str:
+TEXT_MARK = re.compile(r"^===\s+(.+?)\s+===\s*$")
+
+
+def text_section(path: Path, heading_path: list[str]) -> str:
+    """Plain-text rule files (prompt templates): a block opens at a line `=== title ===` and runs to the next one; the text before
+    the first marker is the block titled "". One step names one block (exact title); an empty heading_path is the whole file,
+    each marker shown as a #### heading."""
+    blocks: list[tuple[str, list[str]]] = [("", [])]
+    for line in path.read_text(encoding="utf-8").splitlines():
+        m = TEXT_MARK.match(line)
+        if m:
+            blocks.append((m.group(1), []))
+        else:
+            blocks[-1][1].append(line.rstrip())
+    if heading_path:
+        found = [lines for title, lines in blocks if len(heading_path) == 1 and title == heading_path[0]]
+        if not found:
+            raise KeyError(f"{path.name}: block '{' › '.join(heading_path)}' not found")
+        body = "\n".join(found[0])
+    else:
+        body = "\n\n".join((f"#### {title}\n" if title else "") + "\n".join(lines) for title, lines in blocks)
+    return re.sub(r"\n{3,}", "\n\n", body).strip()
+
+
+def json_text(value) -> str:
+    """One JSON value as single-line text for a bullet or a table cell."""
+    text = value if isinstance(value, str) else json.dumps(value, ensure_ascii=False)
+    return clean(text.replace("|", "/").replace("\n", " "))
+
+
+def json_lines(value, depth: int = 0) -> list[str]:
+    pad = "  " * depth
+    if isinstance(value, dict):
+        out: list[str] = []
+        for key, item in value.items():
+            if isinstance(item, (dict, list)) and item:
+                out += [f"{pad}- {key}：", *json_lines(item, depth + 1)]
+            else:
+                out.append(f"{pad}- {key}：{json_text(item)}")
+        return out
+    if isinstance(value, list):
+        return [f"{pad}- {json_text(item)}" for item in value]
+    return [json_text(value)]
+
+
+def json_table(rows: list[dict], columns: list[str]) -> list[str]:
+    head = ["| " + " | ".join(columns) + " |", "|" + "---|" * len(columns)]
+    return head + ["| " + " | ".join(json_text(row.get(c, "")) for c in columns) + " |" for row in rows]
+
+
+def json_section(path: Path, keys: list[str], fields: list[str] | None = None, group_by: str | None = None) -> str:
+    """JSON data files: the value under the key path (a list index is a digit string) as bullets; a list of objects becomes a table
+    of `fields` (default: every key), split by the value of `group_by` into #### groups so a long registry reads by kind."""
+    value = json.loads(path.read_text(encoding="utf-8"))
+    for step in keys:
+        try:
+            value = value[int(step)] if isinstance(value, list) else value[step]
+        except (KeyError, IndexError, ValueError, TypeError):
+            raise KeyError(f"{path.name}: key '{step}' not found ({' › '.join(keys)})") from None
+    if not (isinstance(value, list) and value and all(isinstance(row, dict) for row in value)):
+        return "\n".join(json_lines(value)).strip()
+    columns = fields or list(dict.fromkeys(k for row in value for k in row))
+    absent = [c for c in [*columns, *([group_by] if group_by else [])] if not any(c in row for row in value)]
+    if absent:
+        raise KeyError(f"{path.name}: no row has {', '.join(absent)} ({' › '.join(keys)})")
+    if not group_by:
+        return "\n".join(json_table(value, columns))
+    groups: dict[str, list[dict]] = {}
+    for row in value:
+        groups.setdefault(json_text(row.get(group_by, "")), []).append(row)
+    out: list[str] = []
+    for name, rows in groups.items():
+        out += [f"#### {name}（{len(rows)}）", "", *json_table(rows, [c for c in columns if c != group_by]), ""]
+    return "\n".join(out).strip()
+
+
+def section_text(path: Path, heading_path: list[str], fields: list[str] | None = None, group_by: str | None = None) -> str:
     """Text under the heading reached by heading_path (each step a descendant heading), up to the next heading of the same or higher level.
-    An empty heading_path on a Markdown file means the whole file."""
-    if path.suffix.lower() == ".md":
+    An empty heading_path on a Markdown file means the whole file. Other rule sources: .txt blocks (text_section) and .json
+    key paths (json_section, which alone reads `fields` and `group_by`)."""
+    suffix = path.suffix.lower()
+    if suffix == ".json":
+        return json_section(path, heading_path, fields, group_by)
+    if suffix == ".txt":
+        return text_section(path, heading_path)
+    if suffix == ".md":
         if not heading_path:
             return demote_markdown(path.read_text(encoding="utf-8"), 0).strip()
         return markdown_section(path, heading_path)
@@ -296,6 +378,36 @@ def note_matches(note: dict, words: list[str]) -> bool:
     return any(w.lower() in hay for w in words if w)
 
 
+ARCHIVE_SCOPES = ("project", "maintenance")
+
+
+def note_listed(note: dict) -> bool:
+    """A card prints a note only when it applies to every task of its category and no rule page states it yet: notes of one
+    project, notes about maintaining the skill and codified notes stay in the store for search (same rule as the notes store)."""
+    return note.get("scope") not in ARCHIVE_SCOPES and not note.get("codified")
+
+
+def note_in_scope(note: dict, card: dict, cards: dict) -> bool:
+    """Explicit categories prevent broad topic words from importing other domains.
+
+    Opt-in preserves the existing behavior for other rule-card consumers.
+    Unclassified historical notes remain searchable; they are not global rules.
+    """
+    scope = card.get("experience_scope")
+    if not scope:
+        return True
+    if note.get('scope'):
+        permitted = {'shared', scope}
+        if scope in {'app', 'web'}:
+            permitted.add('ui')
+        return note['scope'] in permitted
+    mapping = cards.get("experience_scopes", {})
+    allowed = set(mapping.get("shared", [])) | set(mapping.get(scope, []))
+    if scope in {"app", "web"}:
+        allowed.update(mapping.get("ui", []))
+    return note.get("key") in allowed
+
+
 def closing_lines(cards: dict, card: dict) -> list[str]:
     """Part 6 of the card. A skill may replace the wording (cards.json "closing", per card or top level) and the fact examples ("fact_examples")."""
     note = cards.get("note_command", "scripts/experience.py note --kind preference|lesson|fact --key <主题> --text <一句话>")
@@ -313,48 +425,86 @@ def closing_lines(cards: dict, card: dict) -> list[str]:
         "  - lesson：规则纠正、踩过的坑、检查没拦住的问题及正确做法；",
         f"  - fact：{facts}；",
         "  - 已有经验这次又用上了：用同一 key 再写一次即确认（次数加一），不新增重复条目；与旧经验冲突时用同一 key 改写，旧内容自动留作上一版。",
+        "- 标清范围，经验才不会污染以后的规则卡：只属于某个项目的要求加 --scope project 并在正文写明项目；维护本技能自身的经验加 --scope maintenance；"
+        "规则已经写进规范页的加 --codified \"<规范页 › 小节>\"。这三类仍可检索，但不再印在卡上。",
         "- 只记一般规律，不记一次性的任务细节；不写手机号、邮箱、个人路径、凭据和客户名称。",
         cross,
     ]
 
 
-def make_card(kind: str, topic: list[str], full: bool = False) -> tuple[str, str]:
+COMMON_RULES = ("Luz-Project", "references", "skill-architecture.md", "用户的共同硬规则")
+
+
+def common_rules() -> str:
+    """The user's rules that hold for all seven skills, kept once in Luz-Project and printed first on every card.
+    A copy of the skill without Luz-Project beside it prints none."""
+    page = SKILL_ROOT.parent.joinpath(*COMMON_RULES[:3])
+    try:
+        return markdown_section(page, [COMMON_RULES[3]])
+    except (OSError, KeyError):
+        return ""
+
+
+def card_parts(kind: str, topic: list[str], full: bool = False) -> dict:
+    """What one card holds, before it is laid out: rule sections, the notes that apply, tools, checks and the rule hash."""
     cards = load_json(CARDS_FILE, {})
     card = cards["cards"][kind]
     skill = cards.get("skill", SKILL_ROOT.name)
-    rule_parts: list[str] = []
+    sections: list[tuple[str, str]] = []
     for spec in card_sections(card, cards):
         page = resolve_page(spec)
         label = spec.get("label") or f"{spec.get('title', page.stem)} › {' › '.join(spec['path'])}"
         if not page.is_file():
-            rule_parts.append(f"### {label}\n\n（本机没有 {page}，请直接阅读：{spec.get('url', page)}）")
+            sections.append((label, f"（本机没有 {page}，请直接阅读：{spec.get('url', page)}）"))
             continue
-        body = section_text(page, spec["path"])
+        body = section_text(page, spec["path"], spec.get("fields"), spec.get("group_by"))
         limit = spec.get("max_chars")
         if limit and not full and len(body) > limit:
             body = body[:limit].rsplit("\n", 1)[0] + f"\n…（已截断，全文见 {page.name} › {' › '.join(spec['path'])}；加 --full 显示全部）"
-        rule_parts.append(f"### {label}\n\n{body}")
-    rules = "\n\n".join(rule_parts)
-    rules += "\n\n前置检索：D:/Codes/Luz-Crawl/references/preflight.md"
-    digest = hashlib.sha256(rules.encode("utf-8")).hexdigest()[:12]
-    notes = load_json(NOTES_FILE, {"notes": []}).get("notes", [])
+        sections.append((label, body))
+    policy = SKILL_ROOT.parent / "Luz-Crawl" / "references" / "evidence-policy.md"
+    common = common_rules()
+    rules = "\n\n".join(f"### {label}\n\n{body}" for label, body in sections) + "\n\n必读：" + str(policy)
+    digest = hashlib.sha256((rules + "\n" + policy.read_text(encoding="utf-8") + "\n" + common).encode("utf-8")).hexdigest()[:12]
+    notes = [n for n in load_json(NOTES_FILE, {"notes": []}).get("notes", [])
+             if note_listed(n) and note_in_scope(n, card, cards)]
     words = [*card.get("keywords", []), *topic]
-    # Preferences are the user's standing instructions: all of them apply unless a card narrows them by keywords.
+    # Preferences are the user's standing instructions: every listed one applies unless a card narrows them by keywords.
     narrow = card.get("preference_keywords")
-    # Preferences about how things look moved to Luz-Design (references/ui-ownership.md); the keys stay valid for older sessions
-    # but this skill's cards no longer print them.
-    moved = set(cards.get("moved_preferences", []))
-    prefs = [n for n in notes if n.get("kind") == "preference" and n.get("key") not in moved and (not narrow or note_matches(n, narrow + topic))]
-    others = [n for n in notes if n.get("kind") in ("lesson", "fact") and note_matches(n, words)][:12]
+    return {
+        "kind": kind, "card": card, "cards": cards, "skill": skill, "sections": sections, "policy": policy, "common": common, "digest": digest,
+        "prefs": [n for n in notes if n.get("kind") == "preference" and (not narrow or note_matches(n, narrow + topic))],
+        "others": [n for n in notes if n.get("kind") in ("lesson", "fact") and note_matches(n, words)][:12],
+    }
+
+
+def unique(items: list, key=lambda item: item) -> list:
+    seen: set = set()
+    return [item for item in items if not (key(item) in seen or seen.add(key(item)))]
+
+
+def render_card(parts: list[dict]) -> tuple[str, str]:
+    """Lay out one card, or several kinds as one card: a preference, a lesson, a rule section, a tool or a check that two kinds
+    share prints once. The hash of a single card is its rule hash; a merged card hashes the hashes of its kinds."""
+    first = parts[0]
+    skill = first["skill"]
+    digest = first["digest"] if len(parts) == 1 else hashlib.sha256("".join(p["digest"] for p in parts).encode("utf-8")).hexdigest()[:12]
+    title = "；".join(p["card"]["title"] for p in parts)
+    prefs = unique([n for p in parts for n in p["prefs"]], key=lambda n: n["key"])
+    others = unique([n for p in parts for n in p["others"]], key=lambda n: n["key"])
+    sections = unique([s for p in parts for s in p["sections"]], key=lambda s: s[0])
+    rules = "\n\n".join(f"### {label}\n\n{body}" for label, body in sections) + "\n\n必读：" + str(first["policy"])
+    common = [first["common"], ""] if first["common"] else []
     out = [
-        f"# 规则卡：{card['title']}（{skill} · 规则 {digest}）",
+        f"# 规则卡：{title}（{skill} · 规则 {digest}）",
         "",
         "动手前读完本卡。模板和脚本只是骨架；内容、结构、版式、字号、配色、对齐、图标、分页等一律以本卡和规范页为准，与模板冲突时按本卡改。",
         "本卡全文同时存成文件（路径见命令输出末尾，会话里在 raw/00-rules/）；终端输出被截断时，用文件读取工具分段读完整个文件，不要只看前一部分。",
         "",
         "## 1 用户偏好（必须遵守）",
         "",
-        *([f"- {n['text']}（{n['key']}）" for n in prefs] or ["- 暂无"]),
+        *common,
+        *([f"- {n['text']}（{n['key']}）" for n in prefs] or ["- 本类任务没有另外的偏好"]),
         "",
         "## 2 相关教训与有效做法",
         "",
@@ -366,19 +516,28 @@ def make_card(kind: str, topic: list[str], full: bool = False) -> tuple[str, str
         "",
         "## 4 用什么做",
         "",
-        *[f"- {t}" for t in card.get("tools", [])],
-        "- 前置检索：crawl_preflight.py run --caller " + skill + " --session <会话> --topic <任务>；阅读正文后 conclude --file <补充信息.json>。已有任务加 --task，项目加 --stage。查询不得含密钥或真实用户数据。",
+        *[f"- {t}" for t in unique([t for p in parts for t in p["card"].get("tools", [])])],
+        "- 依据按原始请求选择。外部研究用 crawl_preflight.py run --research search，再读正文、conclude 和 check。已有代码或给定材料可直接处理；生成器要求阶段记录时用 --research local 记录本地依据并 check。已有任务加 --task，项目加 --stage。查询使用公开任务描述。",
         "",
         "## 5 交付前必须通过",
         "",
-        *[f"- {c}" for c in card.get("checks", [])],
-        "- crawl_preflight.py check --caller " + skill + " --session <会话或项目根> [--stage <项目阶段>] 必须通过；项目中的专属更严格检查仍然有效。",
+        *[f"- {c}" for c in unique([c for p in parts for c in p["card"].get("checks", [])])],
+        "- 已做联网研究或生成器需要阶段记录时，用 crawl_preflight.py check --caller " + skill + " --session <会话或项目根> [--stage <项目阶段>] 核对对应的记录。",
         "",
         "## 6 收尾（必做，发布与交付会检查）",
         "",
-        *closing_lines(cards, card),
+        *closing_lines(first["cards"], first["card"]),
     ]
     return "\n".join(out).rstrip() + "\n", digest
+
+
+def make_card(kind: str, topic: list[str], full: bool = False) -> tuple[str, str]:
+    return render_card([card_parts(kind, topic, full)])
+
+
+def make_cards(kinds: list[str], topic: list[str], full: bool = False) -> tuple[str, str]:
+    """Several kinds as one card; sessions still save and verify one file per kind (save_card)."""
+    return render_card([card_parts(kind, topic, full) for kind in unique(kinds)])
 
 
 def card_kinds() -> list[str]:
@@ -419,7 +578,7 @@ def check_cards() -> list[str]:
                     errors.append(f"card {kind}: page {page} not found")
                 continue
             try:
-                if not section_text(page, spec["path"]):
+                if not section_text(page, spec["path"], spec.get("fields"), spec.get("group_by")):
                     errors.append(f"card {kind}: empty section {page.name} › {' › '.join(spec['path'])}")
             except KeyError as exc:
                 errors.append(f"card {kind}: {exc}")
@@ -428,36 +587,39 @@ def check_cards() -> list[str]:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("kind", help="task kind (see `list`), or list / check")
+    parser.add_argument("kind", nargs="+", help="task kind (see `list`), several kinds for one merged card, or list / check")
     parser.add_argument("--topic", nargs="*", default=[], help="words of this task; pulls matching lessons and facts")
     parser.add_argument("--session", help="session folder; the card is also saved to raw/00-rules/<kind>.md")
     parser.add_argument("--full", action="store_true", help="do not shorten long sections")
     args = parser.parse_args(argv)
     cards = load_json(CARDS_FILE, {"cards": {}})
-    if args.kind == "list":
+    if args.kind == ["list"]:
         for kind, card in cards["cards"].items():
             print(f"{kind:<16} {card['title']} — {card.get('summary', '')}")
         return 0
-    if args.kind == "check":
+    if args.kind == ["check"]:
         errors = check_cards()
         for e in errors:
             print("ERROR", e)
         print("FAIL" if errors else "PASS", f"rule cards: {len(cards['cards'])}")
         return 1 if errors else 0
-    if args.kind not in cards["cards"]:
-        print(f"unknown kind '{args.kind}'. Kinds: {', '.join(cards['cards'])}", file=sys.stderr)
+    kinds = unique(args.kind)
+    unknown = [kind for kind in kinds if kind not in cards["cards"]]
+    if unknown:
+        print(f"unknown kind '{', '.join(unknown)}'. Kinds: {', '.join(cards['cards'])}", file=sys.stderr)
         return 2
-    text, _ = make_card(args.kind, args.topic, args.full)
+    text, _ = make_cards(kinds, args.topic, args.full)
     if args.session:
-        saved = save_card(Path(args.session) / "raw", args.kind, args.topic)
+        # One file per kind, so the session gates keep checking each card against its own rule pages.
+        saved = [save_card(Path(args.session) / "raw", kind, args.topic) for kind in kinds]
     else:
         import tempfile
         skill = load_json(CARDS_FILE, {}).get("skill", SKILL_ROOT.name)
-        saved = Path(tempfile.gettempdir()) / "luz-rule-cards" / f"{skill}-{args.kind}.md"
-        saved.parent.mkdir(parents=True, exist_ok=True)
-        saved.write_text(text, encoding="utf-8")
+        saved = [Path(tempfile.gettempdir()) / "luz-rule-cards" / f"{skill}-{'+'.join(kinds)}.md"]
+        saved[0].parent.mkdir(parents=True, exist_ok=True)
+        saved[0].write_text(text, encoding="utf-8")
     print(text)
-    print(f"全文已保存：{saved}（约 {len(text.encode('utf-8')) // 1024} KB；输出被截断时用文件读取工具分段读完）")
+    print(f"全文已保存：{'、'.join(map(str, saved))}（约 {len(text.encode('utf-8')) // 1024} KB；输出被截断时用文件读取工具分段读完）")
     return 0
 # ---- end of shared rule-card core ---------------------------------------------------------------------------------
 

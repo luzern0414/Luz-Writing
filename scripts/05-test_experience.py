@@ -106,8 +106,8 @@ class SharedNotesSpecTest(unittest.TestCase):
         doc = json.loads(path.read_text(encoding="utf-8"))
         self.assertEqual(list(doc), ["schema_version", "caps", "notes"])
         self.assertEqual(doc["schema_version"], "1.0")
-        self.assertEqual(doc["caps"], {"preference": 60, "lesson": 120, "fact": 120})
-        allowed = {"key", "kind", "text", "why", "uses", "first_seen", "last_confirmed", "previous"}
+        self.assertEqual(doc["caps"], {"preference": 80, "lesson": 120, "fact": 120})
+        allowed = {"key", "kind", "text", "why", "uses", "first_seen", "last_confirmed", "previous", "scope", "codified"}
         for n in doc["notes"]:
             self.assertLessEqual({"key", "kind", "text", "uses", "first_seen", "last_confirmed"}, set(n), n.get("key"))
             self.assertLessEqual(set(n), allowed, n.get("key"))

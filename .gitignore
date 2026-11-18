@@ -4,6 +4,7 @@ __pycache__/
 .env
 .env.*
 .DS_Store
+*.tmp
 
 # 个人经验只留本地
 *.local.json

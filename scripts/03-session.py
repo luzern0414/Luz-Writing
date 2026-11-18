@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""管理 Luz Writing 的输出会话：D:\\Codes\\skill输出\\Luz-Writing\\NNN-主题\\{NNN-主题.html, raw\\}
+"""管理 Luz Writing 的输出会话：E:\\Skill输出\\Luz-Writing\\NNN-主题\\{NNN-主题.html, raw\\}
 
   py -X utf8 03-session.py new --topic "主题" [--card <类型> …] [--project <状态根或项目目录>] [--stage <阶段>]
   py -X utf8 03-session.py import-crawl "<会话目录>" "<Luz-Crawl begin 返回的任务目录>"
@@ -11,8 +11,8 @@ new 打印新会话的绝对路径，并把规则卡（06-context.py）存进 ra
 不写时按主题关键词推断，推断不出用 general。读完规则卡再写，并在 raw/01-brief.md 的“采用的规则”逐行
 写出本次落实的写作指南小节或偏好 key；结束前用 04-experience.py note 写入或确认至少一条经验，把 key 填进
 “本次沉淀”。02-article_builder.py 打包前两栏都会检查。
-有 Luz-Project 项目上下文（--project，或环境变量 LUZ_PROJECT_ROOT，指项目状态根；给项目目录时按
-skill输出\\Luz-Project\\<目录名>\\raw 找状态根，旧项目的项目根自己带 project.json 也行）时，会话记下状态根和成果目录
+有 Luz-Project 项目上下文（--project，或环境变量 LUZ_PROJECT_ROOT，指项目状态根；给 Luz-Project 会话目录时取它的 raw，给项目目录时按
+Skill输出\\Luz-Project\\<目录名>\\raw 找状态根，旧项目的项目根自己带 project.json 也行）时，会话记下状态根和成果目录
 （project.json 的 deliver_root，旧项目没有就是状态根），之后 check 自动按项目任务检查：根目录只有汇总页和 raw/，
 文字成果由 Luz-Project 渲染进项目目录的 docs，本会话不放成品。
 import-crawl 把 Luz-Crawl 的任务目录（begin "主题" --new 返回的 folder：<输出根>\\NNN-主题，旧任务是 NNN_主题，爬取的全部内容在其下 raw\\，
@@ -43,12 +43,14 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
+# Luz-Design（模板库、文档检查器、汇总页生成器）：环境变量 LUZ_DESIGN_ROOT，否则相邻的技能目录；02-article_builder.py 同一写法。
+DESIGN_ROOT = Path(os.environ.get("LUZ_DESIGN_ROOT") or HERE.parents[1] / "Luz-Design")
 # 经验库（04-experience.py 写入）；模块级变量，测试可替换成临时文件。同目录 git 忽略的 *.local.json 也算。
 # LUZ_EXPERIENCE_STORE names another notes file for tests and rehearsals; the skill's own notes and catalog stay untouched.
 NOTES_FILE = Path(os.environ.get("LUZ_EXPERIENCE_STORE") or HERE.parent / "experience" / "notes.json")
-OUTPUT_ROOT = Path(r"D:\Codes\skill输出\Luz-Writing")
-CRAWL_ROOT = Path(r"D:\Codes\skill输出\Luz-Crawl")
-PROJECT_OUTPUT_ROOT = Path(os.environ.get("LUZ_PROJECT_OUTPUT") or r"D:\Codes\skill输出\Luz-Project")  # 模块级变量，测试可替换
+OUTPUT_ROOT = Path(r"E:\Skill输出\Luz-Writing")
+CRAWL_ROOT = Path(r"E:\Skill输出\Luz-Crawl")
+PROJECT_OUTPUT_ROOT = Path(os.environ.get("LUZ_PROJECT_OUTPUT") or r"E:\Skill输出\Luz-Project")  # 模块级变量，测试可替换
 SESSION_NAME = re.compile(r"^(\d{3})-.+$")
 LEGACY_SESSION_NAME = re.compile(r"^(\d{2,3})[-_].+$")  # 旧格式：两位序号或下划线；保留原样、仍可读取
 LAYOUT_VERSION = 2  # 写进 manifest：会话按“根目录只有 raw 和同名汇总页”的布局规范建立；没有它的是旧会话
@@ -67,6 +69,12 @@ CONTEXT_COMMAND = 'py -X utf8 scripts/06-context.py {kind} --session "<会话目
 NOTE_COMMAND = 'py -X utf8 scripts/04-experience.py note --kind preference|lesson|fact --key {key} --text "<一句话原则>"'
 
 RAW_FILES = {
+    "00-understanding.md": (
+        "# 材料理解\n\n<!-- 过程记录，按任务需要填写；旧会话不强制补建。单句和定点修改只记必要判断。"
+        "事实来源细节放 02-claims.md，这里引用其定位，不重复抄表。见 references/20、21。 -->\n\n"
+        "## 任务与改动范围\n\n## 读者已有知识与需要解决的问题\n\n## 材料范围与未读部分\n\n"
+        "## 核心事实与成立条件\n\n## 冲突、空白与采用决定\n\n## 读者价值与写作主轴\n"
+    ),
     BRIEF: (
         "# 简报\n\n## 用户原话\n\n## 交付物\n\n## 读者与渠道\n\n## 约束\n\n"
         f"{RULES_HEADING}\n\n"
@@ -83,16 +91,19 @@ RAW_FILES = {
     "02-claims.md": ("# 声明与来源\n\n<!-- 支持状态：已核验 / 有边界支持 / 尚未解决 / 已反驳 / 不真实（见 references/02 › 声明分级） -->\n\n"
                      "| 声明 | 来源与定位 | 事件日期 | 访问日期 | 支持状态 | 限制与冲突 | 正文口径 |\n"
                      "| --- | --- | --- | --- | --- | --- | --- |\n"),
-    "03-outline.md": "# 提纲\n",
+    "03-outline.md": (
+        "# 提纲\n\n<!-- 按需要记录段落或页面、读者问题、主张、证据定位和前后关系；"
+        "它是过程文件，不自动交付。用户只要一句或定点修改时无需展开完整提纲。 -->\n"
+    ),
     "04-draft.txt": "",
 }
 RAW_DIRS = ["05-crawl", "06-images"]
 
-_CONTEXT = None
 _SIBLINGS: dict[str, object] = {}
 
 # raw 下的主要文件和用途，汇总页“过程文件”一节按实际存在的列出。
 RAW_USES = {
+    "00-understanding.md": "材料理解、条件与采用决定",
     "00-rules": "规则卡", "00-crawl": "前置检索记录与结论页", BRIEF: "简报（用户原话、交付物、采用的规则、本次沉淀）",
     "02-claims.md": "声明与来源", "03-outline.md": "提纲", "04-draft.txt": "正文源", "05-crawl": "Luz-Crawl 任务目录副本",
     "06-images": "图片原图与生成记录", "07-copy-keys.csv": "文案键表源数据", "manifest.json": "会话与导入记录",
@@ -100,32 +111,56 @@ RAW_USES = {
 }
 
 
+def load_module(name: str, file: Path):
+    """按路径加载一个脚本（带编号的文件名不能按名字 import）。"""
+    spec = importlib.util.spec_from_file_location(name, file)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
 def load_sibling(name: str, filename: str):
-    """同目录的脚本按路径加载（check_output_layout.py、make_summary.py 是七个技能共用的镜像，不带数字前缀）。"""
+    """同目录的脚本，只加载一次（check_output_layout.py、make_summary.py 是七个技能共用的镜像，不带数字前缀）。"""
     if name not in _SIBLINGS:
-        spec = importlib.util.spec_from_file_location(name, HERE / filename)
-        module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(module)
-        _SIBLINGS[name] = module
+        _SIBLINGS[name] = load_module(name, HERE / filename)
     return _SIBLINGS[name]
 
 
-def crawl_errors(session, *, caller="luz-writing", stage=None):
-    spec = importlib.util.spec_from_file_location("luz_writing_crawl_gate", HERE / "08-crawl_gate.py")
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module.crawl_errors(session, stage=stage, caller=caller)
+def crawl_errors(session, *, caller="luz-writing", stage=None, state_root=None):
+    """前置检索的校验。项目任务给阶段和状态根：项目里该阶段已完成时，检索记录超过七天这一条不再算（只去这一条，其余照报）。"""
+    gate = load_sibling("luz_writing_crawl_gate", "08-crawl_gate.py")
+    return gate.crawl_errors(session, stage=stage, caller=caller, state_root=state_root)
+
+
+def project_crawl_errors(session: Path, stage: str = "writing") -> list[str]:
+    """项目采用关联阶段与状态根；独立会话采用 writing / summary，不启用项目过期豁免。"""
+    project = load_manifest(session).get("project") or {}
+    return crawl_errors(project.get("state_root") or session, caller="luz-writing", stage=project.get("stage") or stage, state_root=project.get("state_root"))
+
+
+def design_templates():
+    """Luz-Design 的模板库；每次调用重新加载，模板登记改了立即生效。"""
+    return load_module("_writing_design_templates", DESIGN_ROOT / "scripts" / "template_library.py")
+
+
+def formal_template_errors(session: Path) -> list[str]:
+    target = session / f"{session.name}.html"
+    if not target.is_file():
+        return []
+    # An article and a non-HTML deliverable's summary occupy the same target,
+    # but their actual generators and selected templates are distinct.
+    declared = load_manifest(session).get("html_template") or {}
+    stage, identifier = (declared.get("stage"), declared.get("id")) if declared else (("writing", "writing-article") if (session / "raw" / "00-design" / "luz-writing-writing.json").is_file() else ("summary", "reading-html"))
+    try:
+        design_templates().require_selected(session, "luz-writing", stage, target, identifier, phase="post")
+        return []
+    except (OSError, ValueError) as exc:
+        return [str(exc)]
 
 
 def load_context():
-    """规则卡命令 scripts/06-context.py；文件名带编号，按路径加载。"""
-    global _CONTEXT
-    if _CONTEXT is None:
-        spec = importlib.util.spec_from_file_location("luz_writing_context", HERE / "06-context.py")
-        module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(module)
-        _CONTEXT = module
-    return _CONTEXT
+    """规则卡命令 scripts/06-context.py。"""
+    return load_sibling("luz_writing_context", "06-context.py")
 
 
 def now() -> str:
@@ -165,11 +200,13 @@ def require_session(path: str, *, need_raw: bool = True) -> Path:
 
 
 def project_state_root(path) -> Path | None:
-    """给一个路径找项目状态根：该路径下有 project.json 就是状态根（旧项目的项目根也适用）；
-    否则当作项目目录，状态根是 skill输出\\Luz-Project\\<目录名>\\raw。找不到返回 None。"""
+    """给一个路径找项目状态根，顺序与 Luz-Project 的 project_paths.resolve_state_root 相同：该路径下有 project.json 就是状态根
+    （旧项目的项目根也适用）；Luz-Project 会话目录取它的 raw；否则当作项目目录，状态根是 Skill输出\\Luz-Project\\<目录名>\\raw。找不到返回 None。"""
     path = Path(path).resolve()
     if (path / "project.json").is_file():
         return path
+    if (path / "raw" / "project.json").is_file():
+        return path / "raw"
     candidate = PROJECT_OUTPUT_ROOT / path.name / "raw"
     return candidate if (candidate / "project.json").is_file() else None
 
@@ -198,9 +235,18 @@ def old_layout(session: Path) -> bool:
 
 
 def guess_cards(topic: str) -> list[str]:
-    """主题里命中关键词最多的那张卡（区分大小写，避免 AI 误配 email；同分取 cards.json 里靠前的）；都不命中用 general。"""
+    """先按配置提示改动范围和交付对象，再按题材关键词计数；只是关键词提示，不解析否定和混合请求。"""
     context = load_context()
     cards = context.load_json(context.CARDS_FILE, {"cards": {}})["cards"]
+    # 显式 --card 在 cmd_new 先处理，不经过这里。范围类提示优先于场景，场景优先于题材。
+    # 同优先级选最长的明确用语；再同分保留配置顺序。保持大小写，避免 AI 命中 email。
+    routes = []
+    for index, (kind, card) in enumerate(cards.items()):
+        hits = [len(word) for word in card.get("route_keywords", []) if word and word in topic]
+        if hits:
+            routes.append((card.get("route_priority", 0), max(hits), -index, kind))
+    if routes:
+        return [max(routes)[3]]
     scores = {kind: sum(1 for word in card.get("keywords", []) if word and word in topic) for kind, card in cards.items()}
     best = max(scores, key=lambda kind: scores[kind]) if scores else DEFAULT_CARD
     return [best if scores.get(best) else DEFAULT_CARD]
@@ -329,11 +375,12 @@ def session_report(session: Path, strict: bool = False, project_linked: bool | N
     raw = session / "raw"
     legacy = "rule_cards" not in load_manifest(session) and not (raw / RULES_DIR).is_dir()  # 建卡之前的旧会话
     if strict or (session / f"{session.name}.html").is_file():
-        stage = (load_manifest(session).get("project") or {}).get("stage")
-        errors.extend(crawl_errors(session, caller="luz-writing", stage=stage))
+        declared = load_manifest(session).get("html_template") or {}
+        errors.extend(project_crawl_errors(session, declared.get("stage") or "writing"))
     final = session / f"{session.name}.html"
     if final.is_file():
-        checker = Path(r"D:\Codes\Luz-Design\scripts\check_document.py")
+        errors.extend(formal_template_errors(session))
+        checker = DESIGN_ROOT / "scripts" / "check_document.py"
         if not checker.is_file():
             errors.append(f"文档校验器不存在: {checker}")
         else:
@@ -357,8 +404,7 @@ def session_errors(session: Path, strict: bool = False, project_linked: bool | N
 def packaging_errors(session: Path) -> list[str]:
     """打包成品前的卡口：当前规则卡、“采用的规则”不为空、“本次沉淀”的经验已写入或确认（旧会话也不豁免）。"""
     raw = session / "raw"
-    stage = (load_manifest(session).get("project") or {}).get("stage")
-    return [*crawl_errors(session, caller="luz-writing", stage=stage), *rule_card_errors(raw, require_adopted=True, check_current=True),
+    return [*project_crawl_errors(session), *rule_card_errors(raw, require_adopted=True, check_current=True),
             *sediment_errors(raw, created_date(session))]
 
 
@@ -400,6 +446,7 @@ def cmd_new(args) -> None:
         if project is not None:
             manifest["project"] = project
         save_manifest(session, manifest)
+        design_templates().select(session, "luz-writing", "summary", "reading-html", f"{name}.html")
     except Exception:
         shutil.rmtree(session, ignore_errors=True)
         raise
@@ -534,8 +581,17 @@ def cmd_summary(args) -> None:
         unlisted = [p.name for p in sorted(session.iterdir()) if p.is_file() and p != target and p.name not in listed]
         if unlisted:
             sys.exit(f"会话根里的成品都要列出，还差：{', '.join(unlisted)}")
+    research_errors = project_crawl_errors(session, "summary")
+    if research_errors:
+        sys.exit("Crawl 前置检索未通过：" + "; ".join(research_errors))
     spec = summary_spec(session, args.title or manifest.get("topic") or session.name, rows)
-    target.write_text(load_sibling("luz_writing_make_summary", "make_summary.py").render(spec), encoding="utf-8")
+    library = design_templates()
+    library.require_selected(session, "luz-writing", "summary", target, "reading-html")
+    renderer = load_module("_writing_design_summary", DESIGN_ROOT / "scripts" / "make_summary.py")
+    target.write_text(renderer.render(spec), encoding="utf-8")
+    library.record_output(session, "luz-writing", "summary", target, "reading-html", generator="Luz-Writing/scripts/03-session.py:summary")
+    manifest["html_template"] = {"stage": "summary", "id": "reading-html"}
+    save_manifest(session, manifest)
     print(target)
     errors, notes = layout_report(session, linked)
     for note in notes:
@@ -565,9 +621,7 @@ def main() -> None:
     p_new = sub.add_parser("new", help="创建下一个 NNN-主题 会话，并把规则卡存进 raw/00-rules/")
     p_new.add_argument("--topic", required=True)
     p_new.add_argument("--card", action="append",
-                       help="规则卡类型，可重复：tech-news、marketing-copy、opinion-explainer、narrative-fiction、"
-                            "client-document、academic-professional、channel-adaptation、polish-review、fact-check、"
-                            "visual-production、general；不写时按主题推断（06-context.py list 看说明）")
+                       help="规则卡类型，可重复，类型与说明见 06-context.py list；不写时按主题关键词推断，推断不出用 general")
     p_new.add_argument("--root", help="测试用输出根目录")
     p_new.add_argument("--project", help="项目状态根（Luz-Project 会话的 raw 目录）或项目目录；缺省读环境变量 LUZ_PROJECT_ROOT")
     p_new.add_argument("--stage", help="项目阶段（只用于项目任务）；前置检索记录按阶段分开")

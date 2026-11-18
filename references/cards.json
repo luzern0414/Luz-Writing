@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "1.1",
   "skill": "luz-writing",
   "note_command": "py -X utf8 scripts/04-experience.py note --kind preference|lesson|fact --key <主题> --text \"<一句话原则>\" [--why \"<依据>\"]",
   "closing": [
@@ -46,6 +46,13 @@
       "title": "01 · 工作流与写作简报",
       "path": [
         "何时停下来问"
+      ]
+    },
+    {
+      "page": "20-material-understanding.md",
+      "title": "20 · 材料理解与内容提炼",
+      "path": [
+        "最小理解闭环"
       ]
     }
   ],
@@ -119,13 +126,6 @@
           ]
         },
         {
-          "page": "04-natural-expression.md",
-          "title": "04 · 自然表达",
-          "path": [
-            "常见伪深刻结构"
-          ]
-        },
-        {
           "page": "11-quality-gates.md",
           "title": "11 · 质量闸门",
           "path": [
@@ -165,13 +165,6 @@
           "title": "17 · AI 痕迹模式目录",
           "path": [
             "二之一、过度去味：报告腔与数字堆"
-          ]
-        },
-        {
-          "page": "17-ai-pattern-catalog.md",
-          "title": "17 · AI 痕迹模式目录",
-          "path": [
-            "九、自检顺序"
           ]
         }
       ],
@@ -241,21 +234,7 @@
           "page": "10-channels-and-formats.md",
           "title": "10 · 渠道与格式",
           "path": [
-            "朋友圈"
-          ]
-        },
-        {
-          "page": "10-channels-and-formats.md",
-          "title": "10 · 渠道与格式",
-          "path": [
             "电商详情页"
-          ]
-        },
-        {
-          "page": "10-channels-and-formats.md",
-          "title": "10 · 渠道与格式",
-          "path": [
-            "广告语与 Slogan"
           ]
         },
         {
@@ -277,6 +256,14 @@
           "title": "10 · 渠道与格式",
           "path": [
             "渠道适配原则"
+          ]
+        },
+        {
+          "page": "10-channels-and-formats.md",
+          "title": "10 · 渠道与格式",
+          "path": [
+            "平台规则要点",
+            "AI 生成内容标识"
           ]
         },
         {
@@ -373,6 +360,18 @@
         "17 › 三、中文词汇 与 › 话术壳：空话和宣传词回到具体事实",
         "回复只有用户要的文案（或成品路径）：无建议、改动说明、评分、备选或客套（15 › 自检）",
         "合规：绝对化用语、划线价、自动续费、AI 生成内容标识按 06 › 合规 的依据逐条对过；渠道硬性限制（公众号标题 32 个字等）按 10 › 平台规则要点"
+      ],
+      "route_priority": 70,
+      "route_keywords": [
+        "新人礼弹窗",
+        "门店公告",
+        "停业公告",
+        "优惠券使用规则",
+        "券使用规则",
+        "价格说明",
+        "活动规则",
+        "自动续费说明",
+        "文案键表"
       ]
     },
     "opinion-explainer": {
@@ -671,7 +670,7 @@
     },
     "client-document": {
       "title": "客户正式文档：方案说明书、使用说明与业务逻辑确认表",
-      "summary": "交给客户的方案说明书（先分析需求再给方案）、使用说明、业务逻辑确认表的文字；项目模式下写进 proposal.json、manual.json",
+      "summary": "交给客户的方案说明书（先分析需求再给方案）、使用说明、业务逻辑确认表的文字；项目模式下写进 requirements.json、proposal.json、manual.json",
       "keywords": [
         "方案说明书",
         "方案书",
@@ -697,6 +696,13 @@
           "title": "18 · 客户文件的写法",
           "path": [
             "共同写法"
+          ]
+        },
+        {
+          "page": "18-client-documents.md",
+          "title": "18 · 客户文件的写法",
+          "path": [
+            "预算、人日与报价"
           ]
         },
         {
@@ -813,18 +819,27 @@
         }
       ],
       "tools": [
-        "客户文件的写法以 18 为准（卡里已带 18 的共同写法、方案说明书、业务逻辑确认表、使用说明与交付前自查）；项目模式用 `py -X utf8 D:\\Codes\\Luz-Project\\scripts\\project.py context \"<项目>\" <阶段> --skill luz-writing` 取 features.json、intake.json、变更台账和调研结论，文字写进项目状态根的 data/client/proposal.json（方案阶段）和 manual.json（交付阶段），由 Luz-Project 渲染进项目目录的 docs，不手改成品；会话用 `03-session.py new --project <状态根> --stage <阶段>` 建，只有汇总页和 raw/（16 › 项目任务）",
-        "素材只用客户原始资料（状态根的 uploads/）、客户确认过的规则和 Luz-Crawl 前置检索结论（同类方案的结构、行业规则、平台前置条件）；调研来源网址不进客户文件。需要补调研时按 SKILL.md 调用协议先做前置检索",
-        "写完先自查：`py -X utf8 scripts/09-text_check.py <proposal.json、requirements.json、manual.json 或草稿> --doc proposal|requirements|manual|confirmation [--final]`，ERROR 清零；它只查标点、数字、占位、他文件指引、价格、技术词、标题括号和表题，依据与读者能否看懂仍要逐条人读（18 › 交付前自查）",
+        "客户文件的写法以 18 为准（卡里已带 18 的共同写法、方案说明书、业务逻辑确认表、使用说明与交付前自查）；项目模式用 `py -X utf8 D:\\Codes\\Luz-Project\\scripts\\project.py context \"<项目>\" <阶段> --skill luz-writing` 取 features.json、intake.json、变更台账和调研结论，文字写进项目状态根的 data/client/requirements.json（需求阶段）、proposal.json（方案阶段）和 manual.json（交付阶段），由 Luz-Project 渲染进项目目录的 docs，不手改成品；会话用 `03-session.py new --project <状态根> --stage <阶段>` 建，只有汇总页和 raw/（16 › 项目任务）",
+        "素材只用客户原始资料（状态根的 uploads/）、客户确认过的规则和 Luz-Crawl 前置检索结论（同类方案的结构、行业规则、平台前置条件）；采用的外部事实就近引用、文末列可查原文，内部档案和私有路径不外露（18 › 共同写法）。需要补调研时按 SKILL.md 调用协议先做前置检索",
+        "写完先自查：`py -X utf8 scripts/09-text_check.py <proposal.json、requirements.json、manual.json 或草稿> --doc proposal|requirements|manual|confirmation [--final]`，ERROR 清零；它只查标点、数字、占位、他文件指引、价格与人日、技术词、标题括号和表题，依据与读者能否看懂仍要逐条人读（18 › 交付前自查）；项目模式下它自动读状态根 `config/documents.json` 的 `estimate` 和被检文件同目录的 `quote.json`，单独运行可用 `--project-config`，读不到就按人日与报价都关闭",
+        "项目模式的步骤：用户只逐个审批 docs 里的文件（需求说明书、方案说明书、使用说明各一个，一次一个，不自己判定已通过），评审页、Crawl 记录、规则卡记录、自查是内部步骤，必须做完、不让用户审；开工前 `project.py next <项目>` 与 `checklist <项目> <阶段>`，读完本卡后 `project.py step <项目> <阶段> rules --note \"读了…；采用的规则：…\"`，`09-text_check.py --final` 零 ERROR 后 `project.py step <项目> <阶段> specialist --note \"<写了哪个数据文件；自检结论>\"`（这两步只能自己记）；修改意见走 `project.py review`；本技能没有动作门；完整流程见 Luz-Project 的 references/runbook.md",
         "版式和导出交给 Luz-Design：先运行 `py -X utf8 D:\\Codes\\Luz-Design\\scripts\\context.py docx`；客户拿到的是 Word 导出的 PDF（确认表是 Excel，用 xlsx 规则卡），不做阅读型网页。没有项目上下文时，会话成品是给自己人评审的阅读型 HTML（`03-session.py new --topic \"主题\" --card client-document`，正文写进 raw/04-draft.txt，填好“采用的规则”和“本次沉淀”后 `02-article_builder.py`，成品 HTML 即汇总页）；非 HTML 成品放会话根，用 `03-session.py summary` 写汇总页",
-        "功能清单、报价和工时不在本技能范围：方案里不写价格；功能内容来自 Luz-System 的 function-list 与 data/client/features.json，缺功能先走变更台账"
+        "功能清单、报价和工时不在本技能范围：方案、需求说明书默认不写价格、人日和预算，只有项目开启 `estimate.workdays` / `estimate.quote`（带 requested_by、requested_at、request_note 证据）才写，报价数字只能来自人工报价单 `quote.json`（provided_by、provided_at、request_note、evidence、unit_price），任何数字不得自拟、暂估或套用示例值，缺依据就停下来问用户；功能内容来自 Luz-System 的 function-list 与 data/client/features.json，缺功能先走变更台账"
       ],
       "checks": [
-        "18 › 交付前自查逐条通过：背景先写现状、痛点和各使用方核心需求；每个数字说得出依据；全文没有“详见”“配套文件”、书名号、价格、技术词、占位词；每张表有表题、每个标题没有括号",
+        "18 › 交付前自查逐条通过：背景先写现状、痛点和各使用方核心需求；每个数字说得出依据；全文没有指向其他内部文件的话（“详见”“配套文件”），没有价格、预算、人日、报价（明确要求并有人工证据的除外）、技术词和占位词；真实来源的标题、书名号和引用保留并逐条核对；每张表有表题、每个标题没有括号",
         "09-text_check.py 在 --final 下零 ERROR；WARN 逐条看过，保留的有理由",
         "Gate 2、3、4：数字前后一致，用词是客户的词，章节顺序服务于客户的决定",
         "客户新增需求或改规则时，变更台账已先登记，只改了受影响的章节",
+        "项目任务：`project.py checklist <项目> <阶段>` 里 rules 与 specialist 两步已记录；一次只出示 `project.py next` 指定的那一个文件，没有把评审页、Crawl 记录当作文件让用户审",
         "回复只有成品路径和用户要的文字：无建议、改动说明、评分、备选或客套（15 › 自检）"
+      ],
+      "route_priority": 80,
+      "route_keywords": [
+        "方案说明书",
+        "业务逻辑确认表",
+        "使用说明",
+        "操作手册"
       ]
     },
     "academic-professional": {
@@ -880,13 +895,6 @@
           "title": "03 · 选题策略与结构",
           "path": [
             "结构选择"
-          ]
-        },
-        {
-          "page": "03-strategy-and-structure.md",
-          "title": "03 · 选题策略与结构",
-          "path": [
-            "反向提纲"
           ]
         },
         {
@@ -956,7 +964,7 @@
       "tools": [
         "交给客户的使用说明、方案说明书、业务逻辑确认表属于专门类型，改用 `py -X utf8 scripts/06-context.py client-document`；本卡保留 18 的共同写法和使用说明两节，是因为 Luz-Project 的交付阶段仍指向这张卡",
         "先写主轴：论文是“问题 Q 存在，现有研究缺少 G，本文用 M 提供 E，贡献 C，限制 L”；文档是读者要做的决定或操作，以及条件、步骤、结果和例外",
-        "引用逐条对应原文，claim-evidence 写进 raw/02-claims.md；法律、协议与制度原文、条款编号、标识符和精确界面文字逐字保留，改写也不偷换否定、条件与责任主体",
+        "引用逐条对应原文，主张与证据的对应写进 raw/02-claims.md；法律、协议与制度原文、条款编号、标识符和精确界面文字逐字保留，改写也不偷换否定、条件与责任主体",
         "协议与政策：按 09 › 协议与政策文本起草，从 Luz-Dev 的协议模板开始；需要哪些文档、展示位置、版本与同意记录由 Luz-Dev 实现；缺的事实用 `[待核实：…]` 占位，商户确认、建议律师审核",
         "Word、PDF 等文件版式交给 Luz-Design：先运行 `py -X utf8 D:\\Codes\\Luz-Design\\scripts\\context.py docx`；本技能只负责文字",
         "要交付阅读型 HTML 时：`py -X utf8 scripts/03-session.py new --topic \"主题\" --card academic-professional`，再用 02-article_builder.py --session 打包",
@@ -970,6 +978,14 @@
         "17 › 六、翻译腔 与 › 七、英文痕迹",
         "回复只有用户要的文本（或成品路径）（15 › 自检）",
         "使用说明：每个功能入口、步骤、规则、状态都写全，界面文字与界面一字不差，不留占位（18 › 使用说明）"
+      ],
+      "route_priority": 80,
+      "route_keywords": [
+        "隐私政策",
+        "用户服务协议",
+        "用户协议",
+        "单独同意书",
+        "储值卡协议"
       ]
     },
     "channel-adaptation": {
@@ -1081,6 +1097,18 @@
         "Gate 7：标题、摘要、首段与 CTA 一致，字数在硬限制内，平台格式实际实现，社媒帖不残留 Markdown",
         "Gate 3：适配不改事实、数字、条件与归因",
         "回复只有用户要的文案（或成品路径）（15 › 自检）"
+      ],
+      "route_priority": 60,
+      "route_keywords": [
+        "标题适配",
+        "摘要适配",
+        "只写标题",
+        "只要标题",
+        "只写摘要",
+        "起标题",
+        "拟标题",
+        "个小红书标题",
+        "个公众号标题"
       ]
     },
     "polish-review": {
@@ -1152,13 +1180,6 @@
           "path": [
             "改写时如何落声"
           ]
-        },
-        {
-          "page": "06-marketing-copy.md",
-          "title": "06 · 营销文案",
-          "path": [
-            "服务目录与功能表逐项定制"
-          ]
         }
       ],
       "tools": [
@@ -1171,6 +1192,20 @@
         "Gate 3 原意与保真：前后对照事实、数字、否定、条件、责任和受保护文本",
         "17 › 二、防止矫枉过正：改后没有变长、没有新增事实、没有统一成假口语",
         "回复只有改后文本（或用户要的问题清单）：无改动说明、前后对照、自评（15 › 自检）"
+      ],
+      "route_priority": 100,
+      "route_keywords": [
+        "只改",
+        "定点修改",
+        "定点编辑",
+        "润色",
+        "去 AI 味",
+        "去AI味",
+        "去机器腔",
+        "保声改写",
+        "审稿",
+        "挑问题",
+        "诊断"
       ]
     },
     "fact-check": {
@@ -1256,6 +1291,12 @@
         "Gate 2：来源支持的是当前断言本身，事件日期与页面日期分开，反证没有被隐藏，厂商自报保持归因",
         "交付核实结果与状态；用户没要求时不附接下来该查什么或写作建议（15 › 交付什么）",
         "引语逐字照录，来源是 AI 摘要或聊天回答的一律回到原文（02 › 引语与转述）"
+      ],
+      "route_priority": 90,
+      "route_keywords": [
+        "事实核查",
+        "核实",
+        "核查"
       ]
     },
     "visual-production": {
@@ -1295,6 +1336,14 @@
           "title": "10 · 渠道与格式",
           "path": [
             "海报与活动"
+          ]
+        },
+        {
+          "page": "10-channels-and-formats.md",
+          "title": "10 · 渠道与格式",
+          "path": [
+            "平台规则要点",
+            "AI 生成内容标识"
           ]
         },
         {
@@ -1388,14 +1437,6 @@
           ]
         },
         {
-          "page": "03-strategy-and-structure.md",
-          "title": "03 · 选题策略与结构",
-          "path": [
-            "03 · 选题策略与结构"
-          ],
-          "label": "03 · 选题策略与结构（全文）"
-        },
-        {
           "page": "02-evidence-and-fact-checking.md",
           "title": "02 · 证据与事实核查",
           "path": [
@@ -1407,27 +1448,6 @@
           "title": "02 · 证据与事实核查",
           "path": [
             "从来源到句子"
-          ]
-        },
-        {
-          "page": "04-natural-expression.md",
-          "title": "04 · 自然表达",
-          "path": [
-            "去掉 AI 味之后，还要有表达"
-          ]
-        },
-        {
-          "page": "04-natural-expression.md",
-          "title": "04 · 自然表达",
-          "path": [
-            "改写方法"
-          ]
-        },
-        {
-          "page": "04-natural-expression.md",
-          "title": "04 · 自然表达",
-          "path": [
-            "快速自检"
           ]
         },
         {
@@ -1478,6 +1498,62 @@
           "path": [
             "成品 HTML 排版"
           ]
+        },
+        {
+          "page": "20-material-understanding.md",
+          "title": "20 · 材料理解与内容提炼",
+          "path": [
+            "先读请求，再读材料"
+          ]
+        },
+        {
+          "page": "20-material-understanding.md",
+          "title": "20 · 材料理解与内容提炼",
+          "path": [
+            "给材料分工"
+          ]
+        },
+        {
+          "page": "20-material-understanding.md",
+          "title": "20 · 材料理解与内容提炼",
+          "path": [
+            "从原文提取完整命题"
+          ]
+        },
+        {
+          "page": "20-material-understanding.md",
+          "title": "20 · 材料理解与内容提炼",
+          "path": [
+            "合并多份材料"
+          ]
+        },
+        {
+          "page": "20-material-understanding.md",
+          "title": "20 · 材料理解与内容提炼",
+          "path": [
+            "从事实到内容重点"
+          ]
+        },
+        {
+          "page": "20-material-understanding.md",
+          "title": "20 · 材料理解与内容提炼",
+          "path": [
+            "留下可复核的理解结果"
+          ]
+        },
+        {
+          "page": "21-writing-foundations.md",
+          "title": "21 · 写作基础与成稿复核",
+          "path": [
+            "共用写作顺序"
+          ]
+        },
+        {
+          "page": "21-writing-foundations.md",
+          "title": "21 · 写作基础与成稿复核",
+          "path": [
+            "从大到小复核"
+          ]
         }
       ],
       "tools": [
@@ -1487,9 +1563,554 @@
       ],
       "checks": [
         "Gate 1 任务与范围、Gate 4 结构与逻辑；11 › 交付前快速提问",
-        "写客户方案时：先分析需求再给方案，不写价格，不提及其他文件，不留占位（18 › 共同写法、交付前自查）",
+        "写客户方案时：先分析需求再给方案，默认不写价格、人日和预算（明确要求且有人工数字才写，数字不得自拟），不提及其他文件，不留占位（18 › 共同写法、交付前自查）",
         "有成品 HTML 时：article builder 的 check_document 零 ERROR，`py -X utf8 scripts/03-session.py check \"<会话>\"` 通过",
         "回复只有用户要的文本（或成品路径）（15 › 自检）"
+      ]
+    },
+    "social-note": {
+      "title": "图文笔记",
+      "summary": "图文笔记、小红书笔记、多页知识卡片；按请求提供标题正文、逐页文字或完整发布包",
+      "keywords": [
+        "图文笔记",
+        "小红书",
+        "种草笔记",
+        "知识卡片",
+        "多页笔记"
+      ],
+      "route_priority": 20,
+      "route_keywords": [
+        "图文笔记",
+        "小红书",
+        "种草笔记",
+        "知识卡片",
+        "多页笔记"
+      ],
+      "sections": [
+        {
+          "page": "20-material-understanding.md",
+          "title": "20 · 材料理解与内容提炼",
+          "path": [
+            "先读请求，再读材料"
+          ]
+        },
+        {
+          "page": "20-material-understanding.md",
+          "title": "20 · 材料理解与内容提炼",
+          "path": [
+            "给材料分工"
+          ]
+        },
+        {
+          "page": "20-material-understanding.md",
+          "title": "20 · 材料理解与内容提炼",
+          "path": [
+            "从原文提取完整命题"
+          ]
+        },
+        {
+          "page": "20-material-understanding.md",
+          "title": "20 · 材料理解与内容提炼",
+          "path": [
+            "合并多份材料"
+          ]
+        },
+        {
+          "page": "20-material-understanding.md",
+          "title": "20 · 材料理解与内容提炼",
+          "path": [
+            "从事实到内容重点"
+          ]
+        },
+        {
+          "page": "20-material-understanding.md",
+          "title": "20 · 材料理解与内容提炼",
+          "path": [
+            "留下可复核的理解结果"
+          ]
+        },
+        {
+          "page": "21-writing-foundations.md",
+          "title": "21 · 写作基础与成稿复核",
+          "path": [
+            "21 · 写作基础与成稿复核"
+          ]
+        },
+        {
+          "page": "22-social-notes.md",
+          "title": "22 · 图文笔记",
+          "path": [
+            "22 · 图文笔记"
+          ]
+        },
+        {
+          "page": "10-channels-and-formats.md",
+          "title": "10 · 渠道与格式",
+          "path": [
+            "小红书"
+          ]
+        },
+        {
+          "page": "10-channels-and-formats.md",
+          "title": "10 · 渠道与格式",
+          "path": [
+            "平台规则要点",
+            "小红书"
+          ]
+        },
+        {
+          "page": "10-channels-and-formats.md",
+          "title": "10 · 渠道与格式",
+          "path": [
+            "平台规则要点",
+            "AI 生成内容标识"
+          ]
+        },
+        {
+          "page": "11-quality-gates.md",
+          "title": "11 · 质量闸门",
+          "path": [
+            "Gate 2 · 事实与证据"
+          ]
+        },
+        {
+          "page": "11-quality-gates.md",
+          "title": "11 · 质量闸门",
+          "path": [
+            "Gate 12 · 材料理解与场景成稿"
+          ]
+        },
+        {
+          "page": "19-chinese-text-standards.md",
+          "title": "19 · 中文文字规范",
+          "path": [
+            "速查"
+          ]
+        }
+      ],
+      "tools": [
+        "建会话：py -X utf8 scripts/03-session.py new --topic \"主题\" --card social-note；规则卡和材料理解记录在 raw 内",
+        "按 20、21 填必要的 raw/00-understanding.md，证据定位写进 02-claims.md，段落或页面职责写进 03-outline.md，成稿源写进 04-draft.txt；这些记录不自动附进成品",
+        "需要额外题材、文风或视觉规范时追加对应规则卡；封面、插图与最终版式按 14 交接，不自动扩大交付",
+        "HTML 成品使用 02-article_builder.py --session；非 HTML 成品按 16 用 summary 生成汇总页；打包前填写采用的规则与本次沉淀"
+      ],
+      "checks": [
+        "Gate 12：源材料与成稿双向核对，关键条件、版本、否定与归因无丢失；未读范围如实记录",
+        "页序与每页信息不重复，图与配文互补，不虚构亲测；字段、页数与篇幅只按请求交付",
+        "按 19 核对中文标点数字；09-text_check.py --doc article 或 copy 只检查机器可判断部分，实际理解与文风须人工复核",
+        "生成文件时按 16 完成会话与文件检查；对话只交用户要求的字段和数量（15）"
+      ]
+    },
+    "wechat-article": {
+      "title": "公众号文章",
+      "summary": "公众号知识文章、观点长文、品牌与产品解读；题材细则按需追加",
+      "keywords": [
+        "公众号",
+        "微信长文"
+      ],
+      "route_priority": 20,
+      "route_keywords": [
+        "公众号",
+        "微信长文"
+      ],
+      "sections": [
+        {
+          "page": "20-material-understanding.md",
+          "title": "20 · 材料理解与内容提炼",
+          "path": [
+            "先读请求，再读材料"
+          ]
+        },
+        {
+          "page": "20-material-understanding.md",
+          "title": "20 · 材料理解与内容提炼",
+          "path": [
+            "给材料分工"
+          ]
+        },
+        {
+          "page": "20-material-understanding.md",
+          "title": "20 · 材料理解与内容提炼",
+          "path": [
+            "从原文提取完整命题"
+          ]
+        },
+        {
+          "page": "20-material-understanding.md",
+          "title": "20 · 材料理解与内容提炼",
+          "path": [
+            "合并多份材料"
+          ]
+        },
+        {
+          "page": "20-material-understanding.md",
+          "title": "20 · 材料理解与内容提炼",
+          "path": [
+            "从事实到内容重点"
+          ]
+        },
+        {
+          "page": "20-material-understanding.md",
+          "title": "20 · 材料理解与内容提炼",
+          "path": [
+            "留下可复核的理解结果"
+          ]
+        },
+        {
+          "page": "21-writing-foundations.md",
+          "title": "21 · 写作基础与成稿复核",
+          "path": [
+            "21 · 写作基础与成稿复核"
+          ]
+        },
+        {
+          "page": "23-wechat-articles.md",
+          "title": "23 · 公众号文章",
+          "path": [
+            "23 · 公众号文章"
+          ]
+        },
+        {
+          "page": "10-channels-and-formats.md",
+          "title": "10 · 渠道与格式",
+          "path": [
+            "微信公众号"
+          ]
+        },
+        {
+          "page": "10-channels-and-formats.md",
+          "title": "10 · 渠道与格式",
+          "path": [
+            "平台规则要点",
+            "微信公众号"
+          ]
+        },
+        {
+          "page": "03-strategy-and-structure.md",
+          "title": "03 · 选题策略与结构",
+          "path": [
+            "反向提纲"
+          ]
+        },
+        {
+          "page": "11-quality-gates.md",
+          "title": "11 · 质量闸门",
+          "path": [
+            "Gate 2 · 事实与证据"
+          ]
+        },
+        {
+          "page": "11-quality-gates.md",
+          "title": "11 · 质量闸门",
+          "path": [
+            "Gate 12 · 材料理解与场景成稿"
+          ]
+        },
+        {
+          "page": "19-chinese-text-standards.md",
+          "title": "19 · 中文文字规范",
+          "path": [
+            "速查"
+          ]
+        }
+      ],
+      "tools": [
+        "建会话：py -X utf8 scripts/03-session.py new --topic \"主题\" --card wechat-article；规则卡和材料理解记录在 raw 内",
+        "按 20、21 填必要的 raw/00-understanding.md，证据定位写进 02-claims.md，段落或页面职责写进 03-outline.md，成稿源写进 04-draft.txt；这些记录不自动附进成品",
+        "需要额外题材、文风或视觉规范时追加对应规则卡；封面、插图与最终版式按 14 交接，不自动扩大交付",
+        "HTML 成品使用 02-article_builder.py --session；非 HTML 成品按 16 用 summary 生成汇总页；打包前填写采用的规则与本次沉淀"
+      ],
+      "checks": [
+        "Gate 12：源材料与成稿双向核对，关键条件、版本、否定与归因无丢失；未读范围如实记录",
+        "主轴明确，小节推进，证据支撑判断，标题在正文兑现；资讯数字预算不扩大到所有文章",
+        "按 19 核对中文标点数字；09-text_check.py --doc article 或 copy 只检查机器可判断部分，实际理解与文风须人工复核",
+        "生成文件时按 16 完成会话与文件检查；对话只交用户要求的字段和数量（15）"
+      ]
+    },
+    "product-brochure": {
+      "title": "产品宣传手册",
+      "summary": "产品宣传手册、宣传册、产品画册、服务介绍册的整本顺序与逐页文字；版式交给 Luz-Design",
+      "keywords": [
+        "产品宣传手册",
+        "宣传手册",
+        "产品宣传册",
+        "宣传册",
+        "产品画册",
+        "服务介绍册",
+        "brochure"
+      ],
+      "route_priority": 20,
+      "route_keywords": [
+        "产品宣传手册",
+        "宣传手册",
+        "产品宣传册",
+        "宣传册",
+        "产品画册",
+        "服务介绍册",
+        "brochure"
+      ],
+      "sections": [
+        {
+          "page": "20-material-understanding.md",
+          "title": "20 · 材料理解与内容提炼",
+          "path": [
+            "先读请求，再读材料"
+          ]
+        },
+        {
+          "page": "20-material-understanding.md",
+          "title": "20 · 材料理解与内容提炼",
+          "path": [
+            "给材料分工"
+          ]
+        },
+        {
+          "page": "20-material-understanding.md",
+          "title": "20 · 材料理解与内容提炼",
+          "path": [
+            "从原文提取完整命题"
+          ]
+        },
+        {
+          "page": "20-material-understanding.md",
+          "title": "20 · 材料理解与内容提炼",
+          "path": [
+            "合并多份材料"
+          ]
+        },
+        {
+          "page": "20-material-understanding.md",
+          "title": "20 · 材料理解与内容提炼",
+          "path": [
+            "从事实到内容重点"
+          ]
+        },
+        {
+          "page": "20-material-understanding.md",
+          "title": "20 · 材料理解与内容提炼",
+          "path": [
+            "留下可复核的理解结果"
+          ]
+        },
+        {
+          "page": "21-writing-foundations.md",
+          "title": "21 · 写作基础与成稿复核",
+          "path": [
+            "21 · 写作基础与成稿复核"
+          ]
+        },
+        {
+          "page": "24-product-brochures.md",
+          "title": "24 · 产品宣传手册",
+          "path": [
+            "24 · 产品宣传手册"
+          ]
+        },
+        {
+          "page": "06-marketing-copy.md",
+          "title": "06 · 营销文案",
+          "path": [
+            "先从事实搭论点"
+          ]
+        },
+        {
+          "page": "06-marketing-copy.md",
+          "title": "06 · 营销文案",
+          "path": [
+            "三道门槛"
+          ]
+        },
+        {
+          "page": "06-marketing-copy.md",
+          "title": "06 · 营销文案",
+          "path": [
+            "合规"
+          ]
+        },
+        {
+          "page": "10-channels-and-formats.md",
+          "title": "10 · 渠道与格式",
+          "path": [
+            "平台规则要点",
+            "AI 生成内容标识"
+          ]
+        },
+        {
+          "page": "11-quality-gates.md",
+          "title": "11 · 质量闸门",
+          "path": [
+            "Gate 2 · 事实与证据"
+          ]
+        },
+        {
+          "page": "11-quality-gates.md",
+          "title": "11 · 质量闸门",
+          "path": [
+            "Gate 12 · 材料理解与场景成稿"
+          ]
+        },
+        {
+          "page": "19-chinese-text-standards.md",
+          "title": "19 · 中文文字规范",
+          "path": [
+            "速查"
+          ]
+        }
+      ],
+      "tools": [
+        "建会话：py -X utf8 scripts/03-session.py new --topic \"主题\" --card product-brochure；规则卡和材料理解记录在 raw 内",
+        "按 20、21 填必要的 raw/00-understanding.md，证据定位写进 02-claims.md，段落或页面职责写进 03-outline.md，成稿源写进 04-draft.txt；这些记录不自动附进成品",
+        "需要额外题材、文风或视觉规范时追加对应规则卡；封面、插图与最终版式按 14 交接，不自动扩大交付",
+        "HTML 成品使用 02-article_builder.py --session；非 HTML 成品按 16 用 summary 生成汇总页；打包前填写采用的规则与本次沉淀"
+      ],
+      "checks": [
+        "Gate 12：源材料与成稿双向核对，关键条件、版本、否定与归因无丢失；未读范围如实记录",
+        "整本按客户决策顺序，各页职责清楚；不同型号、版本、内测与选配不串用；文字审查不冒充排版验收",
+        "按 19 核对中文标点数字；09-text_check.py --doc article 或 copy 只检查机器可判断部分，实际理解与文风须人工复核",
+        "生成文件时按 16 完成会话与文件检查；对话只交用户要求的字段和数量（15）"
+      ]
+    },
+    "ad-copy": {
+      "title": "广告宣传文案",
+      "summary": "信息流、搜索、海报和活动广告文字，广告语、Slogan 与落地页首屏",
+      "keywords": [
+        "广告宣传文案",
+        "广告文案",
+        "广告语",
+        "广告",
+        "Slogan",
+        "slogan",
+        "海报文案"
+      ],
+      "route_priority": 20,
+      "route_keywords": [
+        "广告宣传文案",
+        "广告文案",
+        "广告语",
+        "广告",
+        "Slogan",
+        "slogan",
+        "海报文案"
+      ],
+      "sections": [
+        {
+          "page": "20-material-understanding.md",
+          "title": "20 · 材料理解与内容提炼",
+          "path": [
+            "先读请求，再读材料"
+          ]
+        },
+        {
+          "page": "20-material-understanding.md",
+          "title": "20 · 材料理解与内容提炼",
+          "path": [
+            "给材料分工"
+          ]
+        },
+        {
+          "page": "20-material-understanding.md",
+          "title": "20 · 材料理解与内容提炼",
+          "path": [
+            "从原文提取完整命题"
+          ]
+        },
+        {
+          "page": "20-material-understanding.md",
+          "title": "20 · 材料理解与内容提炼",
+          "path": [
+            "合并多份材料"
+          ]
+        },
+        {
+          "page": "20-material-understanding.md",
+          "title": "20 · 材料理解与内容提炼",
+          "path": [
+            "从事实到内容重点"
+          ]
+        },
+        {
+          "page": "20-material-understanding.md",
+          "title": "20 · 材料理解与内容提炼",
+          "path": [
+            "留下可复核的理解结果"
+          ]
+        },
+        {
+          "page": "21-writing-foundations.md",
+          "title": "21 · 写作基础与成稿复核",
+          "path": [
+            "21 · 写作基础与成稿复核"
+          ]
+        },
+        {
+          "page": "25-ad-copy.md",
+          "title": "25 · 广告宣传文案",
+          "path": [
+            "25 · 广告宣传文案"
+          ]
+        },
+        {
+          "page": "06-marketing-copy.md",
+          "title": "06 · 营销文案",
+          "path": [
+            "三道门槛"
+          ]
+        },
+        {
+          "page": "06-marketing-copy.md",
+          "title": "06 · 营销文案",
+          "path": [
+            "CTA"
+          ]
+        },
+        {
+          "page": "06-marketing-copy.md",
+          "title": "06 · 营销文案",
+          "path": [
+            "合规"
+          ]
+        },
+        {
+          "page": "10-channels-and-formats.md",
+          "title": "10 · 渠道与格式",
+          "path": [
+            "平台规则要点",
+            "AI 生成内容标识"
+          ]
+        },
+        {
+          "page": "11-quality-gates.md",
+          "title": "11 · 质量闸门",
+          "path": [
+            "Gate 2 · 事实与证据"
+          ]
+        },
+        {
+          "page": "11-quality-gates.md",
+          "title": "11 · 质量闸门",
+          "path": [
+            "Gate 12 · 材料理解与场景成稿"
+          ]
+        },
+        {
+          "page": "19-chinese-text-standards.md",
+          "title": "19 · 中文文字规范",
+          "path": [
+            "速查"
+          ]
+        }
+      ],
+      "tools": [
+        "建会话：py -X utf8 scripts/03-session.py new --topic \"主题\" --card ad-copy；规则卡和材料理解记录在 raw 内",
+        "按 20、21 填必要的 raw/00-understanding.md，证据定位写进 02-claims.md，段落或页面职责写进 03-outline.md，成稿源写进 04-draft.txt；这些记录不自动附进成品",
+        "需要额外题材、文风或视觉规范时追加对应规则卡；封面、插图与最终版式按 14 交接，不自动扩大交付",
+        "HTML 成品使用 02-article_builder.py --session；非 HTML 成品按 16 用 summary 生成汇总页；打包前填写采用的规则与本次沉淀"
+      ],
+      "checks": [
+        "Gate 12：源材料与成稿双向核对，关键条件、版本、否定与归因无丢失；未读范围如实记录",
+        "一个主信息有证明，必要条件压缩后仍在，CTA 真实且落地页兑现；不虚构效果、优惠或紧迫感",
+        "按 19 核对中文标点数字；09-text_check.py --doc article 或 copy 只检查机器可判断部分，实际理解与文风须人工复核",
+        "生成文件时按 16 完成会话与文件检查；对话只交用户要求的字段和数量（15）"
       ]
     }
   }

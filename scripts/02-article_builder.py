@@ -3,18 +3,18 @@
 """把正文文本和图片打包成单文件阅读型网页，排版遵循 Luz-Design 阅读型网页规范。
 
 用法：
-  py -X utf8 02-article_builder.py --title "标题" --body body.txt --session "D:\\Codes\\skill输出\\Luz-Writing\\001-主题"
+  py -X utf8 02-article_builder.py --title "标题" --body body.txt --session "E:\\Skill输出\\Luz-Writing\\001-主题"
   py -X utf8 02-article_builder.py --title "标题" --body body.txt --out 测试.html   # 仅用于测试
 
 --session 时输出固定为 <会话>/<会话名>.html，正文源默认取 <会话>/raw/04-draft.txt。这个页面就是会话的汇总页
 （lang="zh-CN"、h1 唯一且在最前、视口不禁用缩放、与汇总页生成器同一份 md-type 块），
-生成后自动调用 D:\\Codes\\Luz-Design\\scripts\\check_document.py 和 03-session.py 的会话检查
+生成后自动调用 Luz-Design 的 scripts/check_document.py 和 03-session.py 的会话检查
 （含 check_output_layout.py 的布局检查），报错即失败。
 
 模板和本脚本只是骨架，不是规范：动笔前先运行 06-context.py <类型> 读完规则卡。--session 打包前检查
 raw/00-rules/ 有当前规则卡（写作指南改过就要重新生成）、raw/01-brief.md 的“采用的规则”不为空、
 “本次沉淀”的 key 已用 04-experience.py note 写入或确认（不早于会话创建日）；任何一项不满足就拒绝，
-并写明要运行的命令。--out 只用于测试，不能写进 Luz-Writing 输出根目录。
+并写明要运行的命令。--out 只接受临时目录中的测试文件，不能写进技能会话或项目 docs 成果目录。
 
 body.txt 的格式（references/16 › 正文格式 是同一份说明）：
   - 空行分段，一段一个 <p>
@@ -44,17 +44,21 @@ import html
 import importlib.util
 import io
 import json
+import os
 import re
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 from urllib.parse import quote
 
 HERE = Path(__file__).resolve().parent
-TEMPLATE = HERE.parent / "assets" / "01-article-template.html"
-OUTPUT_ROOT = Path(r"D:\Codes\skill输出\Luz-Writing")
-CHECK_DOCUMENT = Path(r"D:\Codes\Luz-Design\scripts\check_document.py")
-THEMES_FILE = Path(r"D:\Codes\Luz-Design\references\themes.json")
+# Luz-Design（文章模板、文档检查器、行业主题）：环境变量 LUZ_DESIGN_ROOT，否则相邻的技能目录；03-session.py 同一写法。
+DESIGN_ROOT = Path(os.environ.get("LUZ_DESIGN_ROOT") or HERE.parents[1] / "Luz-Design")
+TEMPLATE = DESIGN_ROOT / "templates" / "documents" / "reading" / "writing-article.html"
+OUTPUT_ROOT = Path(r"E:\Skill输出\Luz-Writing")
+CHECK_DOCUMENT = DESIGN_ROOT / "scripts" / "check_document.py"
+THEMES_FILE = DESIGN_ROOT / "references" / "themes.json"
 SESSION_NAME = re.compile(r"^\d{3}-.+$")
 # 模板顶部“模板只是骨架”的注释只写给动笔的人看，成品里去掉。
 TEMPLATE_NOTE = re.compile(r"<!--\s*模板只是骨架.*?-->[ \t]*\r?\n?", re.S)
@@ -434,6 +438,24 @@ def inside_output_root(path: Path) -> bool:
     return target == root or root in target.parents
 
 
+def test_output_error(path: Path) -> str | None:
+    """Scratch rendering stays below the temporary root and outside every deliverable layout."""
+    if inside_output_root(path):
+        return f"--out 只用于测试，不能写进 {OUTPUT_ROOT}；正式成品用 --session \"<会话目录>\""
+    target = path.resolve()
+    temporary = Path(tempfile.gettempdir()).resolve()
+    try:
+        relative = target.relative_to(temporary)
+    except ValueError:
+        return f"--out 只接受临时测试目录 {temporary} 内的文件；正式成品用 --session"
+    # Inspect only paths below the temporary root. A test run may itself live in
+    # a session's raw/ tree; that parent is process storage, not its output target.
+    business_roots = {"docs", "luz-project", "luz-system", "luz-design", "luz-dev", "luz-ops", "luz-writing", "luz-crawl"}
+    if any(part.casefold() in business_roots or re.fullmatch(r"\d{2,}[-_].+", part) for part in relative.parts[:-1]):
+        return "--out 不能写进技能会话或项目 docs 成果目录；正式成品用 --session"
+    return None
+
+
 def resolve_session(session: str) -> Path:
     folder = Path(session).resolve()
     if not folder.is_dir() or not SESSION_NAME.match(folder.name):
@@ -447,8 +469,7 @@ def resolve_session(session: str) -> Path:
 
 def run_document_check(out: Path) -> None:
     if not CHECK_DOCUMENT.is_file():
-        print(f"警告：找不到 {CHECK_DOCUMENT}，未运行文档检查", file=sys.stderr)
-        return
+        sys.exit(f"找不到 {CHECK_DOCUMENT}，文档检查未通过")
     proc = subprocess.run([sys.executable, "-X", "utf8", str(CHECK_DOCUMENT), str(out)],
                           text=True, capture_output=True, encoding="utf-8", errors="replace")
     sys.stdout.write(proc.stdout)
@@ -463,8 +484,9 @@ def main(argv: list[str] | None = None):
     ap.add_argument("--body", help="正文文本文件（UTF-8）；--session 时默认 raw/04-draft.txt")
     target = ap.add_mutually_exclusive_group(required=True)
     target.add_argument("--session", help="NNN-主题 会话目录；输出 <会话>/<会话名>.html")
-    target.add_argument("--out", help="任意输出路径，仅用于测试")
-    ap.add_argument("--template", default=str(TEMPLATE), help="模板路径，默认 assets/01-article-template.html")
+    target.add_argument("--out", help="临时目录中的测试文件；不能指向技能会话或项目 docs")
+    ap.add_argument("--template", default="writing-article", choices=["writing-article"],
+                    help="Luz-Design 模板库 ID；不接受自定义文件路径")
     ap.add_argument("--keep-original", action="store_true", help="图片不转 JPEG，原样内嵌")
     ap.add_argument("--copy-button", action="store_true", help="用户明确要求时才加复制按钮")
     ap.add_argument("--icon", default="auto", choices=["auto", *ICONS],
@@ -481,6 +503,8 @@ def main(argv: list[str] | None = None):
     if args.session:
         session = resolve_session(args.session)
         session_module = load_session_module()
+        if session_module.load_manifest(session).get("project"):
+            sys.exit("项目文字成果由 Luz-Project 生成到项目 docs；本命令只生成独立文章，项目会话汇总用 03-session.py summary")
         cards = sorted((session / "raw" / session_module.RULES_DIR).glob("*.md"))
         if cards:
             print("本会话的规则卡：" + "、".join(str(card) for card in cards), file=sys.stderr)
@@ -492,19 +516,24 @@ def main(argv: list[str] | None = None):
             sys.exit("先读完规则卡，填写 raw/01-brief.md 的“采用的规则”，用 04-experience.py note 写入或确认经验并填进"
                      "“本次沉淀”，再重新运行本命令")
         out = session / f"{session.name}.html"
+        try:
+            session_module.design_templates().require_selected(session, "luz-writing", "writing", out, "writing-article")
+        except (OSError, ValueError) as exc:
+            sys.exit(str(exc))
         body_path = Path(args.body) if args.body else session / "raw" / "04-draft.txt"
     else:
         if not args.body:
             sys.exit("--out 模式需要 --body")
         out = Path(args.out)
-        if inside_output_root(out):
-            sys.exit(f"--out 只用于测试，不能写进 {OUTPUT_ROOT}；正式成品用 --session \"<会话目录>\"")
+        error = test_output_error(out)
+        if error:
+            sys.exit(error)
         body_path = Path(args.body)
     if not body_path.is_file():
         sys.exit(f"找不到正文：{body_path}")
 
     text = body_path.read_text(encoding="utf-8-sig")
-    template = TEMPLATE_NOTE.sub("", Path(args.template).read_text(encoding="utf-8"))
+    template = TEMPLATE_NOTE.sub("", TEMPLATE.read_text(encoding="utf-8"))
     themes = load_themes()
     theme_key = pick_theme(args.title, text, themes) if args.theme == "auto" else args.theme
     if theme_key != "template":
@@ -539,6 +568,11 @@ def main(argv: list[str] | None = None):
     if not args.no_check and session_module is None:
         run_document_check(out)
     if session_module is not None:
+        session_module.design_templates().record_output(session, "luz-writing", "writing", out, "writing-article",
+                                                       generator="Luz-Writing/scripts/02-article_builder.py")
+        manifest = session_module.load_manifest(session)
+        manifest["html_template"] = {"stage": "writing", "id": "writing-article"}
+        session_module.save_manifest(session, manifest)
         errors = session_module.session_errors(session)
         if errors:
             for error in errors:

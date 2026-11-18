@@ -1,19 +1,42 @@
 {
   "schema_version": "1.0",
   "caps": {
-    "preference": 60,
+    "preference": 80,
     "lesson": 120,
     "fact": 120
   },
   "notes": [
     {
+      "key": "beginner-short-report-order",
+      "kind": "preference",
+      "text": "给小白的简版报告按先总结、商家怎么开通、用户怎么使用（含用户从哪里进入）、功能逻辑加例子的顺序写，不写时间，只写具体步骤，每个功能配一个假设的例子。",
+      "why": "用户要求从头开始讲清楚，并举例",
+      "uses": 1,
+      "first_seen": "2026-11-05",
+      "last_confirmed": "2026-11-05"
+    },
+    {
+      "key": "chinese-first-readable-content",
+      "kind": "preference",
+      "text": "说明、报告和界面文案尽量使用中文；代码、字段、命令、路径、固定协议值、必要专名及核对用原文保留原样。必要缩写首次解释中文含义，不无故中英文夹杂。",
+      "why": "2026-11-07 用户明确要求中文表达，并取消强制双主题、组件最低数量及所有按钮图标规则。",
+      "uses": 1,
+      "first_seen": "2026-11-07",
+      "last_confirmed": "2026-11-07",
+      "codified": "Luz-Project/references/skill-architecture.md › 用户的共同硬规则"
+    },
+    {
       "key": "client-formal-docs",
       "kind": "preference",
-      "text": "客户正式文档（方案说明书、使用说明、业务逻辑确认表）：先分析需求（现状、痛点、各使用方核心需求）再给方案；用客户的词，不写技术栈和内部编号；标题短、无括号说明，一、（一）编号；每个数字有依据；方案不写价格；一份文件写完整，不提及其他文件，不留占位，不用卡片和图标；确认表先给拟定逻辑，由客户确认或修改",
-      "why": "用户 2026-11-02 确认的最新客户文档标准",
-      "uses": 1,
+      "text": "客户正式文档（方案说明书、使用说明、业务逻辑确认表）：先分析需求（现状、痛点、各使用方核心需求）再给方案；用客户的词，不写技术栈和内部编号；标题短、无括号说明，一、（一）编号；每个数字有依据；方案默认不写价格、人日和预算（明确要求且有人工数字才写，见 estimate-policy-human-quote）；一份文件写完整，不提及其他文件，不留占位，不用卡片和图标；确认表先给拟定逻辑，由客户确认或修改",
+      "why": "用户 2026-11-02 确认的最新客户文档标准；2026-11-05 补充预算政策",
+      "uses": 2,
       "first_seen": "2026-11-02",
-      "last_confirmed": "2026-11-02"
+      "last_confirmed": "2026-11-05",
+      "previous": {
+        "text": "客户正式文档（方案说明书、使用说明、业务逻辑确认表）：先分析需求（现状、痛点、各使用方核心需求）再给方案；用客户的词，不写技术栈和内部编号；标题短、无括号说明，一、（一）编号；每个数字有依据；方案不写价格；一份文件写完整，不提及其他文件，不留占位，不用卡片和图标；确认表先给拟定逻辑，由客户确认或修改",
+        "replaced_at": "2026-11-05"
+      }
     },
     {
       "key": "commerce-ops-copy",
@@ -23,6 +46,19 @@
       "uses": 1,
       "first_seen": "2026-10-29",
       "last_confirmed": "2026-10-29"
+    },
+    {
+      "key": "contract-meeting-only-short-comments",
+      "kind": "preference",
+      "text": "合同审查仅落实用户确认事项，以精简真实Word批注说明删改补，并同步正文及附件表格；不自行增加商务法律条款、费率或工时换算。",
+      "why": "用户纠正审查范围和批注长度，并要求附件表格同步。",
+      "uses": 2,
+      "first_seen": "2026-11-06",
+      "last_confirmed": "2026-11-06",
+      "previous": {
+        "text": "合同定点审阅仅落实用户确认的会议决定，使用简短Word批注直接说明删改补；不自行增加商务、法律建议，不另设未经确认的金额、工时换算或责任条件。",
+        "replaced_at": "2026-11-06"
+      }
     },
     {
       "key": "copy-key-table",
@@ -36,11 +72,16 @@
     {
       "key": "html-tab-icon-required",
       "kind": "preference",
-      "text": "每个 HTML 成品都必须有贴合主题、好看的标签页图标，不能空白：内联 <link rel=\"icon\"> SVG，32×32 圆角浅色底 + 主色单线稿（线宽 2.5–3、最多 3 个图形、无文字、16px 可辨认），由 article builder 按主题自动选择，颜色取文章主色。",
-      "why": "用户要求：所有 HTML 交付物的浏览器标签页都要有主题图标",
-      "uses": 1,
+      "text": "每个 HTML 成品都有贴合主题的实心页签图标，不留空白：主色圆角底加白色图形，不规定颜色，由文章生成器按主题选择",
+      "why": "用户 2026-11-09 确认页签图标只要求实心、颜色不限，取代原来的线稿画法",
+      "uses": 2,
       "first_seen": "2026-10-28",
-      "last_confirmed": "2026-10-28"
+      "last_confirmed": "2026-11-11",
+      "previous": {
+        "text": "每个 HTML 成品都必须有贴合主题、好看的标签页图标，不能空白：内联 <link rel=\"icon\"> SVG，32×32 圆角浅色底 + 主色单线稿（线宽 2.5–3、最多 3 个图形、无文字、16px 可辨认），由 article builder 按主题自动选择，颜色取文章主色。",
+        "replaced_at": "2026-11-11"
+      },
+      "codified": "Luz-Design/references/design/hard-rules.md › 图像"
     },
     {
       "key": "no-blue-focus-box",
@@ -49,13 +90,24 @@
       "why": "用户 2026-11-04：点击文本框时会显示蓝色的选中框，严格禁止此类多余的显示，太丑了",
       "uses": 1,
       "first_seen": "2026-11-04",
-      "last_confirmed": "2026-11-04"
+      "last_confirmed": "2026-11-04",
+      "codified": "Luz-Design/references/design/foundation.md"
     },
     {
       "key": "output-dir-standard",
       "kind": "preference",
-      "text": "输出目录统一（用户 2026-11-05 定）：每个会话 skill输出/Luz-Writing/NNN-主题（三位序号加短横线）；根目录只有 raw/ 和同名汇总页 NNN-主题.html，文章与文案的成品 HTML 就是汇总页，没有项目目录的非 HTML 成品放根目录并由汇总页列出；raw 存源文件和检索信息；项目任务的文字成果只写进项目目录的 docs，项目不保存任何原始文件，会话只留汇总页和 raw",
+      "text": "输出目录统一（用户 2026-11-05 定）：每个会话 Skill输出/Luz-Writing/NNN-主题（三位序号加短横线）；根目录只有 raw/ 和同名汇总页 NNN-主题.html，文章与文案的成品 HTML 就是汇总页，没有项目目录的非 HTML 成品放根目录并由汇总页列出；raw 存源文件和检索信息；项目任务的文字成果只写进项目目录的 docs，项目不保存任何原始文件，会话只留汇总页和 raw",
       "why": "用户 2026-11-05 规定各技能输出目录；03-session.py check 调用 check_output_layout，旧会话只提示不报错",
+      "uses": 2,
+      "first_seen": "2026-11-05",
+      "last_confirmed": "2026-11-11",
+      "codified": "Luz-Project/references/skill-architecture.md › 用户的共同硬规则"
+    },
+    {
+      "key": "plain-steps-no-timeline",
+      "kind": "preference",
+      "text": "给小白看的实施简报：用生活里的话解释术语，只写具体执行步骤（谁做、做什么、做到什么算完），不要时间安排；风险和费用留短。",
+      "why": "用户要求通俗化并说不需要时间，只要具体执行步骤",
       "uses": 1,
       "first_seen": "2026-11-05",
       "last_confirmed": "2026-11-05"
@@ -76,7 +128,8 @@
       "why": "用户 2026-11-04：HTML 的字体偏小、不好看，桌面端要大、手机端可以小一点，层级做成 md 格式、分清楚、美观，并修改相关技能",
       "uses": 1,
       "first_seen": "2026-11-04",
-      "last_confirmed": "2026-11-04"
+      "last_confirmed": "2026-11-04",
+      "codified": "Luz-Design/references/file-design.html › 网页文件 › 排版参数"
     },
     {
       "key": "service-catalog-copy",
@@ -86,6 +139,16 @@
       "uses": 9,
       "first_seen": "2026-10-30",
       "last_confirmed": "2026-11-02"
+    },
+    {
+      "key": "stage-research-template-evidence",
+      "kind": "preference",
+      "text": "每个独立业务阶段和项目阶段先实际调用 Luz-Crawl：至少5组不同查询、10篇去重正文、3个独立主体，其中至少3篇官方/标准/一手原文；文档与UI实际使用Design模板。读完正文，逐字引用、定位与覆盖核验后才写作设计开发；关键缺口阻塞，禁止凭模型记忆编造。",
+      "why": "用户2026-11-06明确要求及现行AGENTS规则；统一合同见Luz-Crawl/references/evidence-policy.md。",
+      "uses": 2,
+      "first_seen": "2026-11-06",
+      "last_confirmed": "2026-11-07",
+      "codified": "Luz-Crawl/references/evidence-policy.md"
     },
     {
       "key": "table-only-search-output",
@@ -104,6 +167,16 @@
       "uses": 1,
       "first_seen": "2026-10-30",
       "last_confirmed": "2026-10-30"
+    },
+    {
+      "key": "ui-decisions-follow-function",
+      "kind": "preference",
+      "text": "界面只需清楚展现已确认功能，由模型根据任务、成熟组件和统一规范决定主题、组件与图标；取消全局双主题、至少六种组件和按钮一律配图标等配额。按实际功能、操作和整体一致性验收，保留必要语义与恢复。",
+      "why": "2026-11-07 用户明确要求中文表达，并取消强制双主题、组件最低数量及所有按钮图标规则。",
+      "uses": 1,
+      "first_seen": "2026-11-07",
+      "last_confirmed": "2026-11-07",
+      "codified": "Luz-Project/references/skill-architecture.md › 用户的共同硬规则"
     },
     {
       "key": "封面风格",
@@ -133,16 +206,65 @@
       "last_confirmed": "2026-10-29"
     },
     {
+      "key": "article-stage-real-template-boundary",
+      "kind": "lesson",
+      "text": "独立正文 writing 与阅读汇总 summary 分别核验 Crawl，不能因独立阶段有名称就调用项目过期豁免。文章只使用 Design writing-article 真模板，拒绝任意模板路径；最终文件必须有真实模板快照、准确路径及成品哈希，交付再次复核。",
+      "why": "本次源码审计及正文打包、汇总生成、独立过期豁免和成品篡改回归。",
+      "uses": 1,
+      "first_seen": "2026-11-06",
+      "last_confirmed": "2026-11-06"
+    },
+    {
+      "key": "business-copy-from-input-to-deliverables",
+      "kind": "lesson",
+      "text": "企业服务写出每个场景的数据来源、执行动作和可核对输出，避免将功能词组当作整页内容。",
+      "why": "乐昀科技的客户演示稿，原公司资料为事实，厂商方案案例为结构参考。",
+      "uses": 1,
+      "first_seen": "2026-11-18",
+      "last_confirmed": "2026-11-18",
+      "scope": "project"
+    },
+    {
+      "key": "business-entry-research-gate",
+      "kind": "lesson",
+      "text": "业务 CLI（含汇总页）必须在写入正式内容前核验同需求、对应技能与项目阶段的正文归档、采用结论和报告；纯排版 API 由已通过门禁的上游负责，不递归检索；诊断只写过程目录并明确标记，不能冒充正式交付。",
+      "why": "跨技能审计已覆盖缺证据零写入、项目状态根、引用绑定、汇总入口与下游纯 API 的正负回归。",
+      "uses": 1,
+      "first_seen": "2026-11-06",
+      "last_confirmed": "2026-11-06",
+      "codified": "Luz-Crawl/references/evidence-policy.md"
+    },
+    {
+      "key": "business-ppt-function-action-output",
+      "kind": "lesson",
+      "text": "企业介绍页用用户能识别的实际动作、操作对象和交付物表达能力。",
+      "why": "乐昀科技企业介绍改稿，操作流程由给定企业介绍与产品资料复核，使用场景保持为建议用途口径。",
+      "uses": 1,
+      "first_seen": "2026-11-18",
+      "last_confirmed": "2026-11-18",
+      "scope": "project"
+    },
+    {
+      "key": "card-budget-before-adding",
+      "kind": "lesson",
+      "text": "general 与 client-document 两张卡的规则正文离 35000 字节上限只剩约一百字节；往 16、18、01 加字前先跑 07-test_context.py 量一次，超了就压短原句或收窄卡的小节，不放宽上限",
+      "why": "2026-11-11 维护：16 号一句来源规则加长后 client-document 卡超出 81 字节",
+      "uses": 1,
+      "first_seen": "2026-11-11",
+      "last_confirmed": "2026-11-11",
+      "scope": "maintenance"
+    },
+    {
       "key": "card-size-cap-trade-offs",
       "kind": "lesson",
-      "text": "给规则卡加小节后先跑 07-test_context.py：每张卡的规则原文必须在 8–35 KB。超出就从该卡删最不相关或重复的小节，不抬高上限（中文速查不放 tech-news；服务目录重复小节从 marketing-copy 删；英文痕迹留给 polish-review；会话结构加长后，tech-news 去掉与它重复的 Gate 9，marketing-copy 与 academic-professional 只留一行汇总页工具提示，只有 client-document 带完整的项目任务小节）",
-      "why": "2026-11-02 新增客户文档卡与中文速查后三张卡超出上限；2026-11-05 输出规范使会话结构变长，tech-news、marketing-copy、academic-professional 再次超限",
-      "uses": 2,
+      "text": "规则卡要有完整可解析原文和关键规则；保留 35 KB 上限但取消 8 KB 下限，不为字数堆砌。超出时精简重复或移出不适用章节，不截断必要条件、不抬高上限。",
+      "why": "2026-11-08 客户文档卡超限后精简重复文字，07-test_context.py 通过。",
+      "uses": 3,
       "first_seen": "2026-11-02",
-      "last_confirmed": "2026-11-05",
+      "last_confirmed": "2026-11-08",
       "previous": {
-        "text": "给规则卡加小节后先跑 07-test_context.py：每张卡的规则原文必须在 8–35 KB。超出就从该卡删最不相关或重复的小节，不抬高上限（本次：tech-news 不放中文速查，marketing-copy 删重复的服务目录小节，academic-professional 把英文痕迹留给 polish-review）",
-        "replaced_at": "2026-11-05"
+        "text": "给规则卡加小节后先跑 07-test_context.py：每张卡的规则原文必须在 8–35 KB。超出就从该卡删最不相关或重复的小节，不抬高上限（中文速查不放 tech-news；服务目录重复小节从 marketing-copy 删；英文痕迹留给 polish-review；会话结构加长后，tech-news 去掉与它重复的 Gate 9，marketing-copy 与 academic-professional 只留一行汇总页工具提示，只有 client-document 带完整的项目任务小节）",
+        "replaced_at": "2026-11-08"
       }
     },
     {
@@ -164,6 +286,14 @@
       "last_confirmed": "2026-10-31"
     },
     {
+      "key": "category-only-product-copy",
+      "kind": "lesson",
+      "text": "用户仅给产品类别并授权补写时，可拟定目标读者与适用方向；未经核验不把竞品模块、AI能力、案例或效果数字写成该产品事实。",
+      "uses": 1,
+      "first_seen": "2026-11-05",
+      "last_confirmed": "2026-11-05"
+    },
+    {
       "key": "chinese-text-standards-current",
       "kind": "lesson",
       "text": "中文正文标点按 GB/T 15834—2011，数字日期按 GB/T 15835—2011，参考文献按现行 GB/T 7714—2025（2026-07-01 起代替 2015 版，2015 版已废止）；GB/T 9704 公文格式只在用户明确要公文时用。引用标准前先在国家标准全文公开系统核对状态，不沿用记忆里的旧版本号",
@@ -173,6 +303,15 @@
       "last_confirmed": "2026-11-02"
     },
     {
+      "key": "client-citations-are-content",
+      "kind": "lesson",
+      "text": "客户文档必须内容自足，同时保留外部事实的就近引用与原文。书名号、法规和真实报告标题不是内部文件转指；行业案例不能创造客户现状。事实、用户规则、实测、方案推导和未知分别表达。",
+      "why": "2026-11-08 09-text_check.py 的 C01 反例：真实外部报告/法规保留，详见内部功能清单仍拒绝。",
+      "uses": 1,
+      "first_seen": "2026-11-08",
+      "last_confirmed": "2026-11-08"
+    },
+    {
       "key": "client-example-files-outdated",
       "kind": "lesson",
       "text": "其他技能里遗留的方案示例或模板（含“配套文件”指引、报价、“用《文件名》指引”，或缺解决方案章）与现行客户文档标准冲突；写客户文件以 references/18 为准，不照抄这些示例",
@@ -180,6 +319,33 @@
       "uses": 1,
       "first_seen": "2026-11-02",
       "last_confirmed": "2026-11-02"
+    },
+    {
+      "key": "company-deck-source-framework-not-facts",
+      "kind": "lesson",
+      "text": "企业介绍框架中的未填写工商字段、案例占位和建议工期或响应数字不能直接变成企业事实；业务文案按用户确认的主线压缩，能力与应用场景用具体名词表达。",
+      "why": "整理企业介绍框架时必须区分真实业务资料与拟定承诺，不能用文案润色消除依据缺口。",
+      "uses": 1,
+      "first_seen": "2026-11-18",
+      "last_confirmed": "2026-11-18",
+      "scope": "documents"
+    },
+    {
+      "key": "contract-performance-resource-baseline",
+      "kind": "lesson",
+      "text": "软件性能验收应绑定双方确认的服务器、网络、模型及测试数据条件，并明确资源不足的告知与调整；权限、数据安全和确定性规则不因服务器性能而免除。",
+      "uses": 1,
+      "first_seen": "2026-11-06",
+      "last_confirmed": "2026-11-06"
+    },
+    {
+      "key": "contract-review-cross-reference-closure",
+      "kind": "lesson",
+      "text": "软件合同修改交易模式、源码交付或降级方案时，应同步核对正文、附件、价款、验收、质保和解除条款，不能只删某一条而保留冲突义务。",
+      "why": "对照稿逐字摘录原文，保留用户明确选择的条款，并关闭其余章节与附件的冲突义务。",
+      "uses": 2,
+      "first_seen": "2026-11-06",
+      "last_confirmed": "2026-11-06"
     },
     {
       "key": "crawl-task-folder-import",
@@ -195,6 +361,15 @@
       }
     },
     {
+      "key": "deliverable-scope-before-topic",
+      "kind": "lesson",
+      "text": "选写作规则卡时先判断修改范围和交付对象，再补题材；关键词自动选卡只作提示，否定、引语与多产物请求用显式卡片。",
+      "why": "新增选卡回归先暴露场景缺失与题材覆盖交付范围的问题；按范围、场景、题材分级提示，保留显式选卡优先。",
+      "uses": 1,
+      "first_seen": "2026-11-05",
+      "last_confirmed": "2026-11-05"
+    },
+    {
       "key": "docx-check-cue-brackets",
       "kind": "lesson",
       "text": "Word 成品里的舞台提示不用【】（check_document 把 12 字内的【…】判为占位符），改用（停顿）（计时 10 分钟）；正文避开“数据来源”“我们来看”“以下是”“如有问题”等会被判为元信息或套话的说法，引用提问模板时转述而不照抄【XX】",
@@ -204,6 +379,16 @@
       "last_confirmed": "2026-10-30"
     },
     {
+      "key": "estimate-policy-human-quote",
+      "kind": "lesson",
+      "text": "方案、需求说明书等客户文件默认不写价格、人日、工时、预算；只有项目 config/documents.json 的 estimate.workdays 或 estimate.quote 打开并带 requested_by、requested_at、request_note 才写，报价数字只能来自人工报价单 quote.json（provided_by、provided_at、request_note、evidence），任何数字不得自拟、暂估或套用示例值，缺依据就停下来问用户；09-text_check.py 读配置：未打开时出现这些字样是错误，打开但缺证据也是错误",
+      "why": "用户 2026-11-05 原话：有一些项目是不需要写预算的，只有明确要求写人日和报价，才写，否则只需要给出清单即可，且报价必须人工报价，不允许agent随便填",
+      "uses": 1,
+      "first_seen": "2026-11-05",
+      "last_confirmed": "2026-11-05",
+      "codified": "Luz-Project/references/runbook.md › 11"
+    },
+    {
       "key": "hardware-service-catalog",
       "kind": "lesson",
       "text": "介绍软硬件结合项目时，以常见、完整的业务场景命名，写清软件如何联动门禁、电控、收银或设备启停，并说明收费核对、求助或故障处理等具体用途；保留人工处理异常的去向，避免只罗列设备或泛称智能化。条目数量和放置位置按当前文档决定。",
@@ -211,6 +396,78 @@
       "uses": 1,
       "first_seen": "2026-11-01",
       "last_confirmed": "2026-11-01"
+    },
+    {
+      "key": "material-claim-conditions",
+      "kind": "lesson",
+      "text": "材料中的角色、版本与运行条件要随主张保留；本地保存不能直接推成断网可用，店长权限不能直接扩成店员权限。",
+      "why": "隔离试写出现存储位置到离线能力、店长到店员的无依据扩展；回到原材料逐句核对后修正规则并复测。",
+      "uses": 1,
+      "first_seen": "2026-11-05",
+      "last_confirmed": "2026-11-05"
+    },
+    {
+      "key": "model-retention-claims-per-endpoint",
+      "kind": "lesson",
+      "text": "写模型隐私结论时区分训练、滥用日志、应用状态、缓存、托管工具及第三方留存；只核对供应商品牌或单个开关不能证明全链路零留存。",
+      "uses": 1,
+      "first_seen": "2026-11-05",
+      "last_confirmed": "2026-11-05"
+    },
+    {
+      "key": "pointer-keeps-card-section",
+      "kind": "lesson",
+      "text": "把被规则卡整节切用的正文改成指针时，同时把指向的出处小节加进那张卡，卡上的规则正文不能因此变少",
+      "why": "2026-11-11 维护：06、14 的 AI 标识正文改指 10 时补了四张卡的 10 › 平台规则要点",
+      "uses": 1,
+      "first_seen": "2026-11-11",
+      "last_confirmed": "2026-11-11",
+      "scope": "maintenance"
+    },
+    {
+      "key": "portfolio-link-is-not-capability-proof",
+      "kind": "lesson",
+      "text": "产品网址和网页标题只能证明所给入口与观测标题，不能证明正式名称、AI能力、效果数据或客户案例；公开宣传前逐项核实。",
+      "uses": 1,
+      "first_seen": "2026-11-05",
+      "last_confirmed": "2026-11-05"
+    },
+    {
+      "key": "project-gates-via-readonly-api",
+      "kind": "lesson",
+      "text": "项目模式下，检索记录的七天期限还算不算只向 Luz-Project 的只读接口问（approval_docs.crawl_expiry_waived，sys.path.append 引入）；会话记着项目的阶段和状态根才问，独立会话不问；接口读不到或出错按不豁免处理，本技能不自带判定。",
+      "why": "Luz-Project runbook 第 12 节；08-crawl_gate 加七天豁免，03-session 传阶段和状态根",
+      "uses": 1,
+      "first_seen": "2026-11-05",
+      "last_confirmed": "2026-11-05",
+      "codified": "Luz-Project/references/runbook.md › 12"
+    },
+    {
+      "key": "project-mode-file-by-file",
+      "kind": "lesson",
+      "text": "项目模式下用户只逐个审批 docs 里的文件，一次一个，不自己判定用户已批准；规则卡、Crawl、自查、评审页等内部步骤一步不省，只是不让用户审、也不向用户罗列；rules 与 specialist 两步由本技能的 agent 用 project.py step 自己记录。",
+      "why": "Luz-Project 流程改造：用户只关注 docs 的产出文件，要求路径完整、不跳步骤、不偷工减料；步骤缺失时生成命令、approve 与下游阶段都会拒绝",
+      "uses": 1,
+      "first_seen": "2026-11-05",
+      "last_confirmed": "2026-11-05",
+      "codified": "Luz-Project/references/runbook.md"
+    },
+    {
+      "key": "provider-retention-language-in-intake",
+      "kind": "lesson",
+      "text": "确认表收集公司批准的外部服务与账号留存核验材料，不把不训练写成不保留；服务材料和凭据安全交付状态分开，绝不收明文秘密。",
+      "why": "OpenAI 数据控制官方正文区分滥用监测、应用状态、资格和端点例外；适用于本次确认资料用语，不代表供应商已准入。",
+      "uses": 1,
+      "first_seen": "2026-11-05",
+      "last_confirmed": "2026-11-05"
+    },
+    {
+      "key": "public-site-product-login-boundary",
+      "kind": "lesson",
+      "text": "产品宣传方案应明确本站浏览与产品登录的责任；仅观察到登录页时只写访问条件，正式能力须有其他确认资料。",
+      "uses": 1,
+      "first_seen": "2026-11-05",
+      "last_confirmed": "2026-11-05"
     },
     {
       "key": "readme-verified-vs-unverified",
@@ -224,11 +481,54 @@
     {
       "key": "reference-code-fence-headings",
       "kind": "lesson",
-      "text": "规则卡按 Markdown 标题切小节，代码块里的 # 行已被跳过；给写作指南新增或改名小节后，同步改 cards.json 的 path，再跑 06-context.py check 和 07 测试，确认卡里切出的原文完整、每张卡的规则原文在 8–35 KB",
-      "why": "06-context.py 的 markdown_marks 已跳过代码块里的 # 行（2026-10-29 审计）",
-      "uses": 2,
+      "text": "规则卡按 Markdown 标题切小节，代码块里的 # 行不当标题；章节改名同步 cards.json.path，再运行 06-context.py check 与 07 测试，核对原文完整和长度上限，不用最低字节数判断质量。",
+      "why": "2026-11-08 维护卡抽取回归；废止旧经验中的 8 KB 下限。",
+      "uses": 3,
       "first_seen": "2026-10-29",
-      "last_confirmed": "2026-10-29"
+      "last_confirmed": "2026-11-08",
+      "previous": {
+        "text": "规则卡按 Markdown 标题切小节，代码块里的 # 行已被跳过；给写作指南新增或改名小节后，同步改 cards.json 的 path，再跑 06-context.py check 和 07 测试，确认卡里切出的原文完整、每张卡的规则原文在 8–35 KB",
+        "replaced_at": "2026-11-08"
+      }
+    },
+    {
+      "key": "requirements-distinguish-fact-and-proposal",
+      "kind": "lesson",
+      "text": "需求文件区分用户明确要求、核实事实和拟定细则；用户改变主流程时替换旧前提、统计与验收，不只追加新段落。外部示例、瞬时资源与可选建议不能写成性能或已批准事实。",
+      "why": "需求调研可支持方案边界，实际容量和处理时长仍须用本项目样本验证。",
+      "uses": 4,
+      "first_seen": "2026-11-05",
+      "last_confirmed": "2026-11-07",
+      "previous": {
+        "text": "需求说明书分别标清用户明示、核实事实和拟定业务规则；外部产品示例、接口上限与瞬时资源不能写成本项目性能承诺。",
+        "replaced_at": "2026-11-05"
+      }
+    },
+    {
+      "key": "research-update-must-reach-client-docs",
+      "kind": "lesson",
+      "text": "补查结论必须回写正式事实源，并重建、核查所有受影响文件；研究页不能代替文档更新，补查也不能倒填成旧版形成前的依据。",
+      "uses": 1,
+      "first_seen": "2026-11-05",
+      "last_confirmed": "2026-11-05"
+    },
+    {
+      "key": "software-sla-response-vs-resolution",
+      "kind": "lesson",
+      "text": "软件质保SLA应区分报障受理、首次人工响应、临时恢复与最终修复，注明服务时段及客户配合的计时规则；厂商套餐时限不能直接当作定制项目的统一行业标准。",
+      "why": "用户已授权将前一轮条款补入合同；区分确认方案与原会议决定，不新增未经要求的赔偿或其他条款。",
+      "uses": 2,
+      "first_seen": "2026-11-06",
+      "last_confirmed": "2026-11-06"
+    },
+    {
+      "key": "source-backed-proposal-business-language",
+      "kind": "lesson",
+      "text": "客户方案用业务动作解释问数、澄清、记忆、取数、核验与自动图表，技术框架约束留内部事实；已确认规则、参考做法、拟定方案和待核实内容分开，不把调研示例或拟定验收目标写成实际成绩。",
+      "why": "当前客户文档规则与用户要求真实检索相结合；客户端应能理解如何使用和复核，不需要看到框架接口与采集过程。",
+      "uses": 1,
+      "first_seen": "2026-11-06",
+      "last_confirmed": "2026-11-06"
     },
     {
       "key": "unsupported-peer-claims-out",
@@ -242,6 +542,36 @@
         "text": "客户文件里“同类企业的经验是……”这类说法，要么在前置检索里读到正文并写明出处，要么删掉改写成用户原话或材料里有的事实；调研来源网址不进客户文件，但结论必须能回到读过的正文。",
         "replaced_at": "2026-11-05"
       }
+    },
+    {
+      "key": "use-design-article-template-in-tests",
+      "kind": "lesson",
+      "text": "文章模板由 Luz-Design 的模板库管理，打包、回归和同步检查都读取正式成品对应的模板。",
+      "why": "Writing 的文章外壳副本与正式模板完全相同，生产打包实际只使用后者。",
+      "uses": 1,
+      "first_seen": "2026-11-18",
+      "last_confirmed": "2026-11-18",
+      "scope": "maintenance",
+      "codified": "README.md › 目录结构"
+    },
+    {
+      "key": "ux-dx-ax-measured-rules-20261107",
+      "kind": "lesson",
+      "text": "简洁文案删除重复标语和次要标签，保留任务必要标签、单位、状态和恢复；按共享质量规则检查动作术语和AI能力声明，不能以精简为由丢失含义。 适用当前七技能协作；具体数值、例外与证据见Luz-Project/references/quality-rules.md及quality-rules.json。",
+      "why": "用户要求把大厂规范与UX/DX/AX研究落为逐条可验证指标，2026-11-07；不得仅写三轴口号。",
+      "uses": 2,
+      "first_seen": "2026-11-07",
+      "last_confirmed": "2026-11-07",
+      "codified": "Luz-Project/references/quality-rules.md"
+    },
+    {
+      "key": "clinic-whatsapp-workflow-plain",
+      "kind": "fact",
+      "text": "给小白讲诊所 WhatsApp 预约：按患者全过程（进聊天、同意、预约、确认、提醒、改期取消、问信息、转真人、押金）和员工一天的工作（开门前、接手聊天、到诊完成、休诊、收工看送达、每周设置）分开写，功能分第一批、以后、不做三档，并说明健康信息类功能为什么不做。",
+      "why": "2026-11 诊所预约简报补充使用流程与功能，来源为同类产品介绍页与平台规则",
+      "uses": 1,
+      "first_seen": "2026-11-05",
+      "last_confirmed": "2026-11-05"
     },
     {
       "key": "research-patch-workflow",
@@ -266,9 +596,9 @@
       "kind": "fact",
       "text": "技能说明按职责、边界、交接和调用阶段组织，每段只推进一个判断，事实与推断分开",
       "why": "本次依据真实技能目录与规则卡整理说明",
-      "uses": 1,
+      "uses": 2,
       "first_seen": "2026-10-31",
-      "last_confirmed": "2026-10-31"
+      "last_confirmed": "2026-11-05"
     },
     {
       "key": "src-ad-price-law",
@@ -287,6 +617,15 @@
       "uses": 1,
       "first_seen": "2026-11-02",
       "last_confirmed": "2026-11-02"
+    },
+    {
+      "key": "src-audience-skill-architecture",
+      "kind": "fact",
+      "text": "受众分析与技能架构来源：Google Technical Writing 的 Audience 用于读者已有知识与知识差距；OpenAI Build skills 用于明确触发、按需加载和行为验证，不证明内容传播或转化效果。",
+      "why": "2026-11-05 阅读 developers.google.com/tech-writing/one/audience 与 learn.chatgpt.com/docs/build-skills；后者读到最佳实践部分，未覆盖页面尾部。",
+      "uses": 1,
+      "first_seen": "2026-11-05",
+      "last_confirmed": "2026-11-05"
     },
     {
       "key": "src-doc-style-guides",
@@ -336,13 +675,13 @@
     {
       "key": "text-check-requirements-doc",
       "kind": "fact",
-      "text": "09-text_check.py 有 --doc requirements 用来查项目状态根下的 data/client/requirements.json：按客户文件查他文件指引、价格与工时、技术词和功能编号，并核对需求说明书七章（background、goals、scope、requirements、rules、acceptance、open）。需求清单用 auto 块时，表里的编号是连续序号，不带 FN。",
+      "text": "09-text_check.py 有 --doc requirements 用来查项目状态根下的 data/client/requirements.json：按客户文件查他文件指引、价格人日预算（受 estimate 开关与人工证据控制）、技术词和功能编号，并核对需求说明书七章（background、goals、scope、requirements、rules、acceptance、open）。需求清单用 auto 块时，表里的编号是连续序号，不带 FN。",
       "why": "用 --doc proposal 查需求说明书会误报缺解决方案与交付内容两章。",
-      "uses": 2,
+      "uses": 3,
       "first_seen": "2026-11-05",
       "last_confirmed": "2026-11-05",
       "previous": {
-        "text": "09-text_check.py 有 --doc requirements 用来查 data/client/requirements.json：按客户文件查他文件指引、价格与工时、技术词和功能编号，并核对需求说明书七章（background、goals、scope、requirements、rules、acceptance、open）。需求清单用 auto 块时，表里的编号是连续序号，不带 FN。",
+        "text": "09-text_check.py 有 --doc requirements 用来查项目状态根下的 data/client/requirements.json：按客户文件查他文件指引、价格与工时、技术词和功能编号，并核对需求说明书七章（background、goals、scope、requirements、rules、acceptance、open）。需求清单用 auto 块时，表里的编号是连续序号，不带 FN。",
         "replaced_at": "2026-11-05"
       }
     }
