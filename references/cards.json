@@ -819,10 +819,11 @@
         }
       ],
       "tools": [
+        "商业项目 scope 取客户原件与 System 的同阶段搜索依据，协写需求说明与系统方案，二者同批。后期按实际获确认的规则、原型和运行能力写使用说明与协议。",
         "客户文件的写法以 18 为准（卡里已带 18 的共同写法、方案说明书、业务逻辑确认表、使用说明与交付前自查）；项目模式用 `py -X utf8 D:\\Codes\\Luz-Project\\scripts\\project.py context \"<项目>\" <阶段> --skill luz-writing` 取 features.json、intake.json、变更台账和调研结论，文字写进项目状态根的 data/client/requirements.json（需求阶段）、proposal.json（方案阶段）和 manual.json（交付阶段），由 Luz-Project 渲染进项目目录的 docs，不手改成品；会话用 `03-session.py new --project <状态根> --stage <阶段>` 建，只有汇总页和 raw/（16 › 项目任务）",
         "素材只用客户原始资料（状态根的 uploads/）、客户确认过的规则和 Luz-Crawl 前置检索结论（同类方案的结构、行业规则、平台前置条件）；采用的外部事实就近引用、文末列可查原文，内部档案和私有路径不外露（18 › 共同写法）。需要补调研时按 SKILL.md 调用协议先做前置检索",
         "写完先自查：`py -X utf8 scripts/09-text_check.py <proposal.json、requirements.json、manual.json 或草稿> --doc proposal|requirements|manual|confirmation [--final]`，ERROR 清零；它只查标点、数字、占位、他文件指引、价格与人日、技术词、标题括号和表题，依据与读者能否看懂仍要逐条人读（18 › 交付前自查）；项目模式下它自动读状态根 `config/documents.json` 的 `estimate` 和被检文件同目录的 `quote.json`，单独运行可用 `--project-config`，读不到就按人日与报价都关闭",
-        "项目模式的步骤：用户只逐个审批 docs 里的文件（需求说明书、方案说明书、使用说明各一个，一次一个，不自己判定已通过），评审页、Crawl 记录、规则卡记录、自查是内部步骤，必须做完、不让用户审；开工前 `project.py next <项目>` 与 `checklist <项目> <阶段>`，读完本卡后 `project.py step <项目> <阶段> rules --note \"读了…；采用的规则：…\"`，`09-text_check.py --final` 零 ERROR 后 `project.py step <项目> <阶段> specialist --note \"<写了哪个数据文件；自检结论>\"`（这两步只能自己记）；修改意见走 `project.py review`；本技能没有动作门；完整流程见 Luz-Project 的 references/runbook.md",
+        "既有逐文件项目模式的步骤：用户只逐个审批 docs 里的文件（需求说明书、方案说明书、使用说明各一个，一次一个，不自己判定已通过），评审页、Crawl 记录、规则卡记录、自查是内部步骤，必须做完、不让用户审；开工前 `project.py next <项目>` 与 `checklist <项目> <阶段>`，读完本卡后 `project.py step <项目> <阶段> rules --note \"读了…；采用的规则：…\"`，`09-text_check.py --final` 零 ERROR 后 `project.py step <项目> <阶段> specialist --note \"<写了哪个数据文件；自检结论>\"`（这两步只能自己记）；修改意见走 `project.py review`；本技能没有动作门；完整流程见 Luz-Project 的 references/runbook.md",
         "版式和导出交给 Luz-Design：先运行 `py -X utf8 D:\\Codes\\Luz-Design\\scripts\\context.py docx`；客户拿到的是 Word 导出的 PDF（确认表是 Excel，用 xlsx 规则卡），不做阅读型网页。没有项目上下文时，会话成品是给自己人评审的阅读型 HTML（`03-session.py new --topic \"主题\" --card client-document`，正文写进 raw/04-draft.txt，填好“采用的规则”和“本次沉淀”后 `02-article_builder.py`，成品 HTML 即汇总页）；非 HTML 成品放会话根，用 `03-session.py summary` 写汇总页",
         "功能清单、报价和工时不在本技能范围：方案、需求说明书默认不写价格、人日和预算，只有项目开启 `estimate.workdays` / `estimate.quote`（带 requested_by、requested_at、request_note 证据）才写，报价数字只能来自人工报价单 `quote.json`（provided_by、provided_at、request_note、evidence、unit_price），任何数字不得自拟、暂估或套用示例值，缺依据就停下来问用户；功能内容来自 Luz-System 的 function-list 与 data/client/features.json，缺功能先走变更台账"
       ],
@@ -831,7 +832,7 @@
         "09-text_check.py 在 --final 下零 ERROR；WARN 逐条看过，保留的有理由",
         "Gate 2、3、4：数字前后一致，用词是客户的词，章节顺序服务于客户的决定",
         "客户新增需求或改规则时，变更台账已先登记，只改了受影响的章节",
-        "项目任务：`project.py checklist <项目> <阶段>` 里 rules 与 specialist 两步已记录；一次只出示 `project.py next` 指定的那一个文件，没有把评审页、Crawl 记录当作文件让用户审",
+        "既有逐文件项目任务：`project.py checklist <项目> <阶段>` 里 rules 与 specialist 两步已记录；一次只出示 `project.py next` 指定的那一个文件，没有把评审页、Crawl 记录当作文件让用户审",
         "回复只有成品路径和用户要的文字：无建议、改动说明、评分、备选或客套（15 › 自检）"
       ],
       "route_priority": 80,

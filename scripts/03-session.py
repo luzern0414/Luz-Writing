@@ -225,7 +225,8 @@ def project_context(path) -> dict | None:
         return None
     deliver = Path(project["deliver_root"]) if project.get("deliver_root") else state
     index = (project.get("crawl") or {}).get("evidence_index")
-    return {"state_root": str(state), "deliver_root": str(deliver),
+    return {**({"stage": project["current_stage"]} if project.get("workflow") == "commercial-v1" and project.get("current_stage") else {}),
+            "state_root": str(state), "deliver_root": str(deliver),
             "evidence_index": str(state / index) if isinstance(index, str) and index else None}
 
 

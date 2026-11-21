@@ -55,7 +55,8 @@ def crawl_errors(session, stage=None, caller=None, state_root=None):
     if stage is None:
         stage = os.environ.get("LUZ_CRAWL_STAGE") or None
     caller = caller or Path(__file__).resolve().parents[1].name.lower()
-    errors = module.validate_preflight(Path(session), caller, stage)
+    owner = module.stage_evidence_caller(session, caller, stage) if hasattr(module, "stage_evidence_caller") else caller
+    errors = module.validate_preflight(Path(session), owner, stage)
     # Standalone stages now also have explicit names. A name alone must not
     # make a standalone session ask the project's expiry-waiver interface.
     project = Path(state_root or session)

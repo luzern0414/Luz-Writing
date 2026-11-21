@@ -16,6 +16,16 @@
       "last_confirmed": "2026-11-05"
     },
     {
+      "key": "business-copy-from-input-to-deliverables",
+      "kind": "lesson",
+      "text": "企业服务写出每个场景的数据来源、执行动作和可核对输出，避免将功能词组当作整页内容。",
+      "why": "乐昀科技的客户演示稿，原公司资料为事实，厂商方案案例为结构参考。",
+      "uses": 1,
+      "first_seen": "2026-11-18",
+      "last_confirmed": "2026-11-18",
+      "scope": "project"
+    },
+    {
       "key": "chinese-first-readable-content",
       "kind": "preference",
       "text": "说明、报告和界面文案尽量使用中文；代码、字段、命令、路径、固定协议值、必要专名及核对用原文保留原样。必要缩写首次解释中文含义，不无故中英文夹杂。",
@@ -46,6 +56,16 @@
       "uses": 1,
       "first_seen": "2026-10-29",
       "last_confirmed": "2026-10-29"
+    },
+    {
+      "key": "commercial-direct-business-copy",
+      "kind": "preference",
+      "text": "商业项目文档直接保留事实、条件、动作、结果、授权范围和来源。待办写成具体状态，由当前材料决定保留项。",
+      "why": "用户要求逐份清理解释、思考过程、道歉、备注和过渡话术；来源标题与正式文件名保留。",
+      "uses": 1,
+      "first_seen": "2026-11-21",
+      "last_confirmed": "2026-11-21",
+      "scope": "documents"
     },
     {
       "key": "contract-meeting-only-short-comments",
@@ -153,11 +173,15 @@
     {
       "key": "table-only-search-output",
       "kind": "preference",
-      "text": "澄清允许自然语言；搜索结果和研究结果只输出表格、来源和状态信息，不写段落总结。",
-      "why": "用户对检索类产品输出边界的验收要求",
-      "uses": 2,
+      "text": "检索类产品的结果列表展示结果、来源和状态，澄清使用自然语言。",
+      "why": "结果列表按产品界面交付，用户要求的调研或检索报告采用通用文档母版。",
+      "uses": 3,
       "first_seen": "2026-10-30",
-      "last_confirmed": "2026-10-30"
+      "last_confirmed": "2026-11-19",
+      "previous": {
+        "text": "澄清允许自然语言；搜索结果和研究结果只输出表格、来源和状态信息，不写段落总结。",
+        "replaced_at": "2026-11-19"
+      }
     },
     {
       "key": "training-speech-per-slide",
@@ -197,6 +221,26 @@
       "last_confirmed": "2026-10-28"
     },
     {
+      "key": "agreement-exact-word-template",
+      "kind": "lesson",
+      "text": "用户指定编号的合作协议模板时，直接以当前Word原件为母版，逐项沿用标题、双方信息栏、条款顺序、签署栏和页码；只调整版式时保留原稿商业约定。",
+      "why": "本次用户要求重新按08合作协议书的格式修改，当前原件已更新为七条。",
+      "uses": 1,
+      "first_seen": "2026-11-20",
+      "last_confirmed": "2026-11-20",
+      "scope": "documents"
+    },
+    {
+      "key": "agreement-quote-subtotal-conflict",
+      "kind": "lesson",
+      "text": "合作协议价款依据双方确认的计价范围与人工报价。分项单价、数量和小计出现冲突时，保留书面确认位置。",
+      "why": "历史报价总计一致但有分项差额互相抵消，且历史包含本次范围之外的内容。",
+      "uses": 1,
+      "first_seen": "2026-11-20",
+      "last_confirmed": "2026-11-20",
+      "scope": "documents"
+    },
+    {
       "key": "article-accent-by-industry",
       "kind": "lesson",
       "text": "阅读型成品的主色按行业取：02-article_builder 默认 --theme auto 按标题和正文关键词匹配 Luz-Design themes.json 的行业主题，主题 action 作主色、actionTint 作浅底，引用线、高亮、标签页图标一起换色；匹配错时 --theme <key> 指定，没有对应行业时落到模板自带的中性色",
@@ -213,16 +257,6 @@
       "uses": 1,
       "first_seen": "2026-11-06",
       "last_confirmed": "2026-11-06"
-    },
-    {
-      "key": "business-copy-from-input-to-deliverables",
-      "kind": "lesson",
-      "text": "企业服务写出每个场景的数据来源、执行动作和可核对输出，避免将功能词组当作整页内容。",
-      "why": "乐昀科技的客户演示稿，原公司资料为事实，厂商方案案例为结构参考。",
-      "uses": 1,
-      "first_seen": "2026-11-18",
-      "last_confirmed": "2026-11-18",
-      "scope": "project"
     },
     {
       "key": "business-entry-research-gate",
@@ -319,6 +353,27 @@
       "uses": 1,
       "first_seen": "2026-11-02",
       "last_confirmed": "2026-11-02"
+    },
+    {
+      "key": "commercial-copy-handoff",
+      "kind": "lesson",
+      "text": "商业项目首批共同编制需求说明和系统方案，Writing 按 System 已核实的客户事实和同阶段外部依据写成客户语言。",
+      "why": "区分客户事实、公开参考和待确认决定",
+      "uses": 1,
+      "first_seen": "2026-11-21",
+      "last_confirmed": "2026-11-21",
+      "scope": "maintenance",
+      "codified": "SKILL.md › 调用协议"
+    },
+    {
+      "key": "commercial-manual-role-pair",
+      "kind": "lesson",
+      "text": "商业项目手册沿确认节点组织文字，同一笔演练单连接角色、规则和成品，实际项目单据和签字由真实来源填写。",
+      "why": "跨岗位读者需要同时找到确认文件、责任人和可观察结果。",
+      "uses": 1,
+      "first_seen": "2026-11-21",
+      "last_confirmed": "2026-11-21",
+      "scope": "maintenance"
     },
     {
       "key": "company-deck-source-framework-not-facts",
@@ -572,6 +627,17 @@
       "uses": 1,
       "first_seen": "2026-11-05",
       "last_confirmed": "2026-11-05"
+    },
+    {
+      "key": "product-copy-reading-scope",
+      "kind": "fact",
+      "text": "客户文章与技术阅读页按文档模板检查；产品动作与字段文案随可操作界面交 Design 验收。",
+      "why": "区分独立进入阅读页的读者与办理业务的操作人。",
+      "uses": 1,
+      "first_seen": "2026-11-21",
+      "last_confirmed": "2026-11-21",
+      "scope": "documents",
+      "codified": "references/16-output-paths-and-tools.md"
     },
     {
       "key": "research-patch-workflow",

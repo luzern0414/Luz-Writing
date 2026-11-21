@@ -183,7 +183,7 @@ class RealLuzProjectTests(unittest.TestCase):
             spec.loader.exec_module(module)
             from project_core import create_project  # type: ignore[import-not-found]
 
-            return create_project("豁免", Path(tmp) / "项目" / "001-豁免", Path(tmp) / "luz-project")
+            return create_project("豁免", Path(tmp) / "项目" / "001-豁免", Path(tmp) / "luz-project", workflow="legacy")
 
     def test_the_real_interface_answers_a_bool_for_a_real_project_and_for_a_missing_one(self) -> None:
         with tempfile.TemporaryDirectory() as tmp, mock.patch.dict(os.environ, {"LUZ_PROJECT_OUTPUT": str(Path(tmp) / "luz-project")}), \
